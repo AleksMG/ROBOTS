@@ -598,8 +598,6 @@ function update(robot, enemy, arena) {
         const stopBtn = document.getElementById('stopBtn');
         const resetBtn = document.getElementById('resetBtn');
         const fullscreenBtn = document.getElementById('fullscreenBtn');
-        const laserSound = document.getElementById('laserSound');
-        const explosionSound = document.getElementById('explosionSound');
         
         // Размеры арены
         const ARENA_WIDTH = arenaElement.offsetWidth;
@@ -711,7 +709,7 @@ function update(robot, enemy, arena) {
             }
             
             stop() {
-                // Остановка движения (в этой реализации движение мгновенное, поэтому просто обновляем позицию)
+                // Остановка движения
                 this.updateElement();
             }
             
@@ -745,16 +743,12 @@ function update(robot, enemy, arena) {
                 bulletElement.style.height = `${weapon.size}px`;
                 bulletElement.style.backgroundColor = weapon.color;
                 
-                // Эффект для лазера
                 if (this.weapon === 'laser') {
                     bulletElement.style.boxShadow = `0 0 5px ${weapon.color}`;
                 }
                 
                 bulletElement.dataset.id = bullets.length - 1;
                 arenaElement.appendChild(bulletElement);
-                
-                // Воспроизводим звук выстрела
-                playLaserSound();
             }
             
             setWeapon(weaponType) {
@@ -764,7 +758,6 @@ function update(robot, enemy, arena) {
             }
             
             canSee(x, y) {
-                // Проверка на прямой обзор (упрощенная версия)
                 const dx = x - this.x;
                 const dy = y - this.y;
                 const distance = Math.sqrt(dx*dx + dy*dy);
@@ -778,15 +771,11 @@ function update(robot, enemy, arena) {
             }
             
             scan() {
-                // Возвращает расстояние до ближайшего объекта (врага или стены)
                 const enemy = this.id === 1 ? robot2 : robot1;
-                
-                // Расстояние до врага
                 const dx = enemy.x - this.x;
                 const dy = enemy.y - this.y;
                 const enemyDistance = Math.sqrt(dx*dx + dy*dy);
                 
-                // Расстояние до ближайшей стены
                 const wallDistances = [
                     this.x, 
                     ARENA_WIDTH - this.x, 
@@ -802,9 +791,8 @@ function update(robot, enemy, arena) {
                 this.health = Math.max(0, this.health - damage);
                 this.updateElement();
                 
-                // Добавляем эффект попадания
                 this.element.style.animation = 'none';
-                void this.element.offsetWidth; // Trigger reflow
+                void this.element.offsetWidth;
                 this.element.style.animation = 'hitEffect 0.3s';
                 
                 return this.health <= 0;
@@ -816,49 +804,16 @@ function update(robot, enemy, arena) {
             }
         }
         
-        // Воспроизведение звуков
-        function playLaserSound() {
-            laserSound.currentTime = 0;
-            laserSound.volume = 0.3;
-            laserSound.play().catch(e => console.log("Audio play error:", e));
-        }
-        
-        function playExplosionSound() {
-            explosionSound.currentTime = 0;
-            explosionSound.volume = 0.2;
-            explosionSound.play().catch(e => console.log("Audio play error:", e));
-        }
-        
-        // Создание эффекта взрыва
-        function createExplosion(x, y, color) {
-            const explosion = document.createElement('div');
-            explosion.className = 'explosion';
-            explosion.style.left = `${x}px`;
-            explosion.style.top = `${y}px`;
-            explosion.style.background = `radial-gradient(circle, ${color} 0%, rgba(255,193,7,0) 70%)`;
-            arenaElement.appendChild(explosion);
-            
-            // Удаляем через 500ms
-            setTimeout(() => {
-                explosion.remove();
-            }, 500);
-        }
-        
         // Инициализация игры
         function initGame() {
-            // Очищаем пули и взрывы
             bullets = [];
             explosions = [];
             document.querySelectorAll('.bullet, .explosion').forEach(el => el.remove());
             
-            // Создаем роботов
             robot1 = new Robot(1, ARENA_WIDTH * 0.25, ARENA_HEIGHT / 2, 'var(--robot1-color)');
             robot2 = new Robot(2, ARENA_WIDTH * 0.75, ARENA_HEIGHT / 2, 'var(--robot2-color)');
             
-            // Сбрасываем время
             gameTime = 0;
-            
-            // Обновляем статистику
             updateStats();
         }
         
@@ -878,31 +833,29 @@ function update(robot, enemy, arena) {
         function gameLoop() {
             gameTime += 50;
             
-            // Обновляем роботов
             robot1.recharge();
             robot2.recharge();
             
-            // Выполняем пользовательский код для каждого робота
             try {
-                const updateRobot1 = new Function('robot', 'enemy', 'arena', `try { ${code1Element.value} } catch(e) { console.error(e); }`);
-                updateRobot1(createRobotAPI(robot1), createRobotAPI(robot2), createArenaAPI());
+                const updateRobot1 = new Function('robot', 'enemy', 'arena', 
+                    `try { ${code1Element.value} } catch(e) { console.error(e); }`);
+                updateRobot1(getRobotAPI(robot1), getRobotAPI(robot2), getArenaAPI());
                 error1Element.textContent = '';
             } catch (e) {
                 error1Element.textContent = `Ошибка в коде робота 1: ${e.message}`;
             }
             
             try {
-                const updateRobot2 = new Function('robot', 'enemy', 'arena', `try { ${code2Element.value} } catch(e) { console.error(e); }`);
-                updateRobot2(createRobotAPI(robot2), createRobotAPI(robot1), createArenaAPI());
+                const updateRobot2 = new Function('robot', 'enemy', 'arena', 
+                    `try { ${code2Element.value} } catch(e) { console.error(e); }`);
+                updateRobot2(getRobotAPI(robot2), getRobotAPI(robot1), getArenaAPI());
                 error2Element.textContent = '';
             } catch (e) {
                 error2Element.textContent = `Ошибка в коде робота 2: ${e.message}`;
             }
             
-            // Обновляем пули
             updateBullets();
             
-            // Проверяем условия победы
             if (robot1.health <= 0 || robot2.health <= 0) {
                 stopGame();
                 setTimeout(() => {
@@ -913,8 +866,8 @@ function update(robot, enemy, arena) {
             updateStats();
         }
         
-        // Создаем API для робота, чтобы ограничить доступ к некоторым методам
-        function createRobotAPI(robot) {
+        // API для робота
+        function getRobotAPI(robot) {
             return {
                 get x() { return robot.x; },
                 get y() { return robot.y; },
@@ -934,8 +887,8 @@ function update(robot, enemy, arena) {
             };
         }
         
-        // Создаем API для арены
-        function createArenaAPI() {
+        // API для арены
+        function getArenaAPI() {
             return {
                 width: ARENA_WIDTH,
                 height: ARENA_HEIGHT,
@@ -952,25 +905,17 @@ function update(robot, enemy, arena) {
                 bullet.x += bullet.dx;
                 bullet.y += bullet.dy;
                 
-                // Проверяем выход за границы
                 if (bullet.x < 0 || bullet.x > ARENA_WIDTH || bullet.y < 0 || bullet.y > ARENA_HEIGHT) {
-                    if (bullet.weapon === 'rocket') {
-                        createExplosion(bullet.x, bullet.y, WEAPONS.rocket.color);
-                        playExplosionSound();
-                    }
-                    
                     bullets.splice(i, 1);
                     bulletElements[i]?.remove();
                     continue;
                 }
                 
-                // Обновляем позицию пули на экране
                 if (bulletElements[i]) {
                     bulletElements[i].style.left = `${bullet.x}px`;
                     bulletElements[i].style.top = `${bullet.y}px`;
                 }
                 
-                // Проверяем столкновение с роботами
                 const targetRobot = bullet.owner === 1 ? robot2 : robot1;
                 const dx = targetRobot.x - bullet.x;
                 const dy = targetRobot.y - bullet.y;
@@ -978,23 +923,13 @@ function update(robot, enemy, arena) {
                 
                 if (distance < 25) {
                     const isDead = targetRobot.takeDamage(bullet.damage);
-                    
-                    // Увеличиваем статистику урона
                     const ownerRobot = bullet.owner === 1 ? robot1 : robot2;
                     ownerRobot.stats.damageDealt += bullet.damage;
-                    
-                    // Создаем эффект взрыва для ракет
-                    if (bullet.weapon === 'rocket') {
-                        createExplosion(bullet.x, bullet.y, WEAPONS.rocket.color);
-                        playExplosionSound();
-                    }
                     
                     bullets.splice(i, 1);
                     bulletElements[i]?.remove();
                     
-                    if (isDead) {
-                        return; // Прекращаем обработку, если робот уничтожен
-                    }
+                    if (isDead) return;
                 }
             }
         }
@@ -1009,7 +944,6 @@ function update(robot, enemy, arena) {
             
             startBtn.disabled = true;
             stopBtn.disabled = false;
-            resetBtn.disabled = false;
         }
         
         // Остановка игры
@@ -1036,15 +970,12 @@ function update(robot, enemy, arena) {
                     const robotId = this.dataset.robot;
                     const weaponType = this.dataset.weapon;
                     
-                    // Убираем активный класс у всех кнопок этого робота
                     document.querySelectorAll(`.weapon-btn[data-robot="${robotId}"]`).forEach(b => {
                         b.classList.remove('active');
                     });
                     
-                    // Добавляем активный класс текущей кнопке
                     this.classList.add('active');
                     
-                    // Устанавливаем оружие роботу
                     if (robotId === '1') {
                         robot1?.setWeapon(weaponType);
                     } else {
@@ -1060,20 +991,16 @@ function update(robot, enemy, arena) {
                 tab.addEventListener('click', function() {
                     const tabId = this.dataset.tab;
                     
-                    // Убираем активный класс у всех вкладок
                     document.querySelectorAll('.tab').forEach(t => {
                         t.classList.remove('active');
                     });
                     
-                    // Добавляем активный класс текущей вкладке
                     this.classList.add('active');
                     
-                    // Скрываем все содержимое вкладок
                     document.querySelectorAll('.tab-content').forEach(content => {
                         content.classList.remove('active');
                     });
                     
-                    // Показываем содержимое текущей вкладки
                     document.getElementById(`${tabId}-tab`).classList.add('active');
                 });
             });
@@ -1092,25 +1019,23 @@ function update(robot, enemy, arena) {
             }
         }
         
-        // Обработчики событий
-        startBtn.addEventListener('click', startGame);
-        stopBtn.addEventListener('click', stopGame);
-        resetBtn.addEventListener('click', resetGame);
-        fullscreenBtn.addEventListener('click', toggleFullscreen);
-        
         // Инициализация при загрузке
         window.addEventListener('DOMContentLoaded', () => {
             initGame();
             setupWeaponButtons();
             setupTabs();
             
-            // Добавляем обработчик изменения размера окна
+            startBtn.addEventListener('click', startGame);
+            stopBtn.addEventListener('click', stopGame);
+            resetBtn.addEventListener('click', resetGame);
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+            
             window.addEventListener('resize', () => {
                 if (!gameRunning) {
                     initGame();
                 }
             });
         });
-    </script>
+            </script>
 </body>
 </html>
