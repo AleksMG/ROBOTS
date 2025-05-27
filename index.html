@@ -1,209 +1,542 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Robot Battle</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PvP Битва программируемых роботов</title>
     <style>
-        #arena {
-            width: 600px;
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+        }
+        
+        .game-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 20px;
+        }
+        
+        .arena {
+            width: 400px;
             height: 400px;
-            border: 3px solid #333;
+            background-color: #2d2d2d;
             position: relative;
-            background: #eee;
+            border: 2px solid #4CAF50;
+            margin-bottom: 20px;
         }
         
         .robot {
-            width: 50px;
-            height: 50px;
+            width: 30px;
+            height: 30px;
             position: absolute;
-            transition: all 0.3s;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        #robot1 {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        #robot2 {
+            background-color: #FF5722;
+            color: white;
+        }
+        
+        .bullet {
+            width: 10px;
+            height: 10px;
+            background-color: #FFEB3B;
+            position: absolute;
+            border-radius: 50%;
         }
         
         .health-bar {
-            width: 100%;
             height: 5px;
-            background: #ff0000;
+            position: absolute;
+            top: -10px;
+            left: 0;
+            background-color: #4CAF50;
         }
         
-        #controls {
-            margin: 20px 0;
+        .editor-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 20px;
         }
         
-        .log {
-            border: 1px solid #ccc;
+        .editor {
+            width: 48%;
+            height: 300px;
+            background-color: #2d2d2d;
+            border: 1px solid #444;
             padding: 10px;
-            height: 200px;
-            overflow-y: scroll;
+            font-family: 'Courier New', monospace;
+            color: #e0e0e0;
+            resize: none;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #2d2d2d;
+            border-radius: 4px;
+        }
+        
+        .stat-box {
+            text-align: center;
+        }
+        
+        .error {
+            color: #f44336;
+            margin-top: 5px;
+        }
+        
+        .documentation {
+            background-color: #2d2d2d;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .documentation h3 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+        
+        .command {
+            color: #2196F3;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div id="arena">
-        <div id="robot1" class="robot" style="left:50px; top:150px">
-            <div class="health-bar"></div>
-        </div>
-        <div id="robot2" class="robot" style="right:50px; top:150px">
-            <div class="health-bar"></div>
+    <h1>PvP Битва программируемых роботов</h1>
+    
+    <div class="game-container">
+        <div class="arena" id="arena">
+            <div class="robot" id="robot1">1</div>
+            <div class="robot" id="robot2">2</div>
         </div>
     </div>
     
-    <div id="controls">
-        <button onclick="startBattle()">Start Battle</button>
-        <button onclick="toggleAuto()">Auto Mode</button>
+    <div class="stats">
+        <div class="stat-box">
+            <h3>Робот 1 (Синий)</h3>
+            <p>Здоровье: <span id="health1">100</span>%</p>
+            <p>Энергия: <span id="energy1">100</span>%</p>
+        </div>
+        <div class="stat-box">
+            <h3>Робот 2 (Красный)</h3>
+            <p>Здоровье: <span id="health2">100</span>%</p>
+            <p>Энергия: <span id="energy2">100</span>%</p>
+        </div>
     </div>
     
-    <div class="log" id="battleLog"></div>
-
+    <div class="editor-container">
+        <div>
+            <h3>Программа робота 1 (Синий)</h3>
+            <textarea class="editor" id="code1">// Пример программы для робота 1
+function update(robot, enemy, arena) {
+    // Повернуться к врагу
+    robot.rotateTo(enemy.x, enemy.y);
+    
+    // Если враг в пределах видимости - стрелять
+    if (robot.canSee(enemy.x, enemy.y)) {
+        robot.fire();
+    }
+    
+    // Двигаться случайным образом
+    if (Math.random() < 0.1) {
+        robot.move(Math.random() * 360);
+    }
+}</textarea>
+            <div class="error" id="error1"></div>
+        </div>
+        
+        <div>
+            <h3>Программа робота 2 (Красный)</h3>
+            <textarea class="editor" id="code2">// Пример программы для робота 2
+function update(robot, enemy, arena) {
+    // Держать дистанцию от врага
+    const dx = robot.x - enemy.x;
+    const dy = robot.y - enemy.y;
+    const distance = Math.sqrt(dx*dx + dy*dy);
+    
+    if (distance < 150) {
+        // Отступать, если враг слишком близко
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+        robot.move(angle);
+    } else {
+        // Приближаться к врагу
+        robot.rotateTo(enemy.x, enemy.y);
+        robot.moveTo(enemy.x, enemy.y);
+    }
+    
+    // Стрелять, если враг в поле зрения
+    if (robot.canSee(enemy.x, enemy.y)) {
+        robot.fire();
+    }
+}</textarea>
+            <div class="error" id="error2"></div>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <button id="startBtn">Начать бой</button>
+        <button id="stopBtn" disabled>Остановить</button>
+        <button id="resetBtn">Сбросить</button>
+    </div>
+    
+    <div class="documentation">
+        <h3>Документация API робота</h3>
+        <p><span class="command">robot.x</span>, <span class="command">robot.y</span> - текущие координаты робота</p>
+        <p><span class="command">robot.health</span> - текущее здоровье (0-100)</p>
+        <p><span class="command">robot.energy</span> - текущая энергия (0-100)</p>
+        <p><span class="command">robot.angle</span> - текущий угол поворота (0-359)</p>
+        <p><span class="command">robot.move(angle)</span> - двигаться в указанном направлении (0-359)</p>
+        <p><span class="command">robot.moveTo(x, y)</span> - двигаться к указанным координатам</p>
+        <p><span class="command">robot.rotateTo(x, y)</span> - повернуться к указанным координатам</p>
+        <p><span class="command">robot.rotate(angle)</span> - повернуться на указанный угол</p>
+        <p><span class="command">robot.fire()</span> - выстрелить в текущем направлении</p>
+        <p><span class="command">robot.canSee(x, y)</span> - проверяет, видит ли робот указанную точку</p>
+        <p><span class="command">enemy</span> - объект вражеского робота (имеет те же свойства, что и robot)</p>
+        <p><span class="command">arena.width</span>, <span class="command">arena.height</span> - размеры арены</p>
+    </div>
+    
     <script>
+        // Игровые переменные
+        let gameRunning = false;
+        let gameInterval;
+        let bullets = [];
+        let robot1, robot2;
+        let arena;
+        
+        // DOM элементы
+        const arenaElement = document.getElementById('arena');
+        const robot1Element = document.getElementById('robot1');
+        const robot2Element = document.getElementById('robot2');
+        const health1Element = document.getElementById('health1');
+        const health2Element = document.getElementById('health2');
+        const energy1Element = document.getElementById('energy1');
+        const energy2Element = document.getElementById('energy2');
+        const code1Element = document.getElementById('code1');
+        const code2Element = document.getElementById('code2');
+        const error1Element = document.getElementById('error1');
+        const error2Element = document.getElementById('error2');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        
+        // Размеры арены
+        const ARENA_WIDTH = 400;
+        const ARENA_HEIGHT = 400;
+        
+        // Класс робота
         class Robot {
-            constructor(id, name, color) {
+            constructor(id, x, y, color) {
                 this.id = id;
-                this.name = name;
+                this.x = x;
+                this.y = y;
+                this.angle = 0;
                 this.health = 100;
-                this.attack = 10;
-                this.defense = 5;
-                this.speed = 1;
+                this.energy = 100;
                 this.color = color;
-                this.element = document.getElementById(id);
-                this.element.style.backgroundColor = color;
+                this.cooldown = 0;
+                this.element = document.getElementById(`robot${id}`);
+                this.healthBar = document.createElement('div');
+                this.healthBar.className = 'health-bar';
+                this.element.appendChild(this.healthBar);
+                this.updateElement();
             }
-
-            updateDisplay() {
-                const healthBar = this.element.querySelector('.health-bar');
-                healthBar.style.width = this.health + '%';
-                healthBar.style.background = this.health > 30 ? '#00ff00' : '#ff0000';
+            
+            updateElement() {
+                this.element.style.left = `${this.x - 15}px`;
+                this.element.style.top = `${this.y - 15}px`;
+                this.element.style.transform = `rotate(${this.angle}deg)`;
+                this.healthBar.style.width = `${this.health}%`;
+                this.healthBar.style.backgroundColor = this.health > 50 ? '#4CAF50' : this.health > 20 ? '#FFC107' : '#F44336';
             }
-
-            moveTowards(target) {
-                const rect = this.element.getBoundingClientRect();
-                const targetRect = target.element.getBoundingClientRect();
+            
+            move(angle) {
+                if (this.energy <= 0) return;
                 
-                const dx = targetRect.left - rect.left;
-                const dy = targetRect.top - rect.top;
+                const rad = angle * Math.PI / 180;
+                const dx = Math.cos(rad) * 2;
+                const dy = Math.sin(rad) * 2;
                 
-                this.element.style.left = rect.left + dx * 0.1 * this.speed + 'px';
-                this.element.style.top = rect.top + dy * 0.1 * this.speed + 'px';
+                this.x = Math.max(15, Math.min(ARENA_WIDTH - 15, this.x + dx));
+                this.y = Math.max(15, Math.min(ARENA_HEIGHT - 15, this.y + dy));
+                this.angle = angle;
+                
+                this.energy = Math.max(0, this.energy - 0.1);
+                this.updateElement();
             }
-
+            
+            moveTo(x, y) {
+                const angle = Math.atan2(y - this.y, x - this.x) * 180 / Math.PI;
+                this.move(angle);
+            }
+            
+            rotateTo(x, y) {
+                this.angle = Math.atan2(y - this.y, x - this.x) * 180 / Math.PI;
+                this.updateElement();
+            }
+            
+            rotate(angle) {
+                this.angle = (this.angle + angle) % 360;
+                if (this.angle < 0) this.angle += 360;
+                this.updateElement();
+            }
+            
+            fire() {
+                if (this.cooldown > 0 || this.energy < 10) return;
+                
+                const rad = this.angle * Math.PI / 180;
+                const bullet = {
+                    x: this.x,
+                    y: this.y,
+                    dx: Math.cos(rad) * 5,
+                    dy: Math.sin(rad) * 5,
+                    owner: this.id
+                };
+                
+                bullets.push(bullet);
+                this.cooldown = 10;
+                this.energy = Math.max(0, this.energy - 10);
+                
+                // Создаем элемент пули
+                const bulletElement = document.createElement('div');
+                bulletElement.className = 'bullet';
+                bulletElement.style.left = `${bullet.x - 5}px`;
+                bulletElement.style.top = `${bullet.y - 5}px`;
+                bulletElement.dataset.id = bullets.length - 1;
+                arenaElement.appendChild(bulletElement);
+            }
+            
+            canSee(x, y) {
+                // Проверка на прямой обзор (упрощенная версия)
+                const dx = x - this.x;
+                const dy = y - this.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                if (distance > 200) return false;
+                
+                const angleToTarget = Math.atan2(dy, dx) * 180 / Math.PI;
+                const angleDiff = Math.abs(((angleToTarget - this.angle) + 180) % 360 - 180);
+                
+                return angleDiff < 45;
+            }
+            
             takeDamage(damage) {
-                this.health -= damage;
-                this.health = Math.max(0, this.health);
-                this.updateDisplay();
+                this.health = Math.max(0, this.health - damage);
+                this.updateElement();
+                return this.health <= 0;
             }
-
-            decideAction(enemies) {
-                // Базовый AI (переопределить в дочерних классах)
-                return {
-                    action: 'attack',
-                    target: enemies[0]
-                };
+            
+            recharge() {
+                this.energy = Math.min(100, this.energy + 0.2);
+                if (this.cooldown > 0) this.cooldown--;
             }
         }
-
-        // Пример бота-агрессора
-        class AggressiveBot extends Robot {
-            decideAction(enemies) {
-                return {
-                    action: 'attack',
-                    target: enemies[Math.floor(Math.random() * enemies.length)]
-                };
+        
+        // Инициализация игры
+        function initGame() {
+            // Очищаем пули
+            bullets = [];
+            document.querySelectorAll('.bullet').forEach(b => b.remove());
+            
+            // Создаем роботов
+            robot1 = new Robot(1, 100, 200, '#2196F3');
+            robot2 = new Robot(2, 300, 200, '#FF5722');
+            
+            // Обновляем статистику
+            updateStats();
+        }
+        
+        // Обновление статистики
+        function updateStats() {
+            health1Element.textContent = Math.round(robot1.health);
+            health2Element.textContent = Math.round(robot2.health);
+            energy1Element.textContent = Math.round(robot1.energy);
+            energy2Element.textContent = Math.round(robot2.energy);
+        }
+        
+        // Основной игровой цикл
+        function gameLoop() {
+            // Обновляем роботов
+            robot1.recharge();
+            robot2.recharge();
+            
+            // Выполняем пользовательский код для каждого робота
+            try {
+                const updateRobot1 = new Function('robot', 'enemy', 'arena', `try { ${code1Element.value} } catch(e) { console.error(e); }`);
+                updateRobot1(createRobotAPI(robot1), createRobotAPI(robot2), { width: ARENA_WIDTH, height: ARENA_HEIGHT });
+                error1Element.textContent = '';
+            } catch (e) {
+                error1Element.textContent = `Ошибка в коде робота 1: ${e.message}`;
             }
-        }
-
-        // Пример защитного бота
-        class DefensiveBot extends Robot {
-            decideAction(enemies) {
-                this.defense += 2;
-                return {
-                    action: 'defend',
-                    target: null
-                };
+            
+            try {
+                const updateRobot2 = new Function('robot', 'enemy', 'arena', `try { ${code2Element.value} } catch(e) { console.error(e); }`);
+                updateRobot2(createRobotAPI(robot2), createRobotAPI(robot1), { width: ARENA_WIDTH, height: ARENA_HEIGHT });
+                error2Element.textContent = '';
+            } catch (e) {
+                error2Element.textContent = `Ошибка в коде робота 2: ${e.message}`;
             }
-        }
-
-        // Твой собственный бот
-        class MySmartBot extends Robot {
-            decideAction(enemies) {
-                if(this.health < 30) {
-                    return {
-                        action: 'heal',
-                        amount: 15
-                    };
-                }
-                return {
-                    action: 'attack',
-                    target: enemies[0]
-                };
+            
+            // Обновляем пули
+            updateBullets();
+            
+            // Проверяем условия победы
+            if (robot1.health <= 0 || robot2.health <= 0) {
+                stopGame();
+                alert(robot1.health <= 0 ? 'Робот 2 (Красный) победил!' : 'Робот 1 (Синий) победил!');
             }
+            
+            updateStats();
         }
-
-        let battleInProgress = false;
-        let autoMode = false;
-        let robots = [];
-
-        function initBattle() {
-            robots = [
-                new MySmartBot('robot1', 'SmartBot', '#2196F3'),
-                new AggressiveBot('robot2', 'AggroBot', '#f44336')
-            ];
+        
+        // Создаем API для робота, чтобы ограничить доступ к некоторым методам
+        function createRobotAPI(robot) {
+            return {
+                get x() { return robot.x; },
+                get y() { return robot.y; },
+                get angle() { return robot.angle; },
+                get health() { return robot.health; },
+                get energy() { return robot.energy; },
+                move: (angle) => robot.move(angle),
+                moveTo: (x, y) => robot.moveTo(x, y),
+                rotateTo: (x, y) => robot.rotateTo(x, y),
+                rotate: (angle) => robot.rotate(angle),
+                fire: () => robot.fire(),
+                canSee: (x, y) => robot.canSee(x, y)
+            };
         }
-
-        function log(message) {
-            const logElement = document.getElementById('battleLog');
-            logElement.innerHTML += `<div>${message}</div>`;
-            logElement.scrollTop = logElement.scrollHeight;
-        }
-
-        async function battleStep() {
-            if(!battleInProgress) return;
-
-            for(const robot of robots) {
-                if(robot.health <= 0) continue;
+        
+        // Обновление пуль
+        function updateBullets() {
+            const bulletElements = document.querySelectorAll('.bullet');
+            
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const bullet = bullets[i];
+                bullet.x += bullet.dx;
+                bullet.y += bullet.dy;
                 
-                const enemies = robots.filter(r => r !== robot && r.health > 0);
-                if(enemies.length === 0) break;
-
-                const action = robot.decideAction(enemies);
-                
-                switch(action.action) {
-                    case 'attack':
-                        robot.moveTowards(action.target);
-                        const damage = robot.attack - action.target.defense;
-                        action.target.takeDamage(Math.max(1, damage));
-                        log(`${robot.name} attacks ${action.target.name} (${damage} damage)`);
-                        break;
-                        
-                    case 'heal':
-                        robot.health = Math.min(100, robot.health + action.amount);
-                        log(`${robot.name} heals for ${action.amount} HP`);
-                        break;
+                // Проверяем выход за границы
+                if (bullet.x < 0 || bullet.x > ARENA_WIDTH || bullet.y < 0 || bullet.y > ARENA_HEIGHT) {
+                    bullets.splice(i, 1);
+                    bulletElements[i]?.remove();
+                    continue;
                 }
-
-                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Обновляем позицию пули на экране
+                if (bulletElements[i]) {
+                    bulletElements[i].style.left = `${bullet.x - 5}px`;
+                    bulletElements[i].style.top = `${bullet.y - 5}px`;
+                }
+                
+                // Проверяем столкновение с роботами
+                const targetRobot = bullet.owner === 1 ? robot2 : robot1;
+                const dx = targetRobot.x - bullet.x;
+                const dy = targetRobot.y - bullet.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                if (distance < 20) {
+                    const isDead = targetRobot.takeDamage(10);
+                    bullets.splice(i, 1);
+                    bulletElements[i]?.remove();
+                    
+                    if (isDead) {
+                        return; // Прекращаем обработку, если робот уничтожен
+                    }
+                }
             }
-
-            checkWinner();
         }
-
-        function checkWinner() {
-            const alive = robots.filter(r => r.health > 0);
-            if(alive.length === 1) {
-                log(`🏆 ${alive[0].name} wins!`);
-                battleInProgress = false;
-            }
+        
+        // Запуск игры
+        function startGame() {
+            if (gameRunning) return;
+            
+            initGame();
+            gameRunning = true;
+            gameInterval = setInterval(gameLoop, 50);
+            
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
         }
-
-        function startBattle() {
-            if(battleInProgress) return;
-            battleInProgress = true;
-            initBattle();
-            if(autoMode) setInterval(battleStep, 1000);
+        
+        // Остановка игры
+        function stopGame() {
+            if (!gameRunning) return;
+            
+            clearInterval(gameInterval);
+            gameRunning = false;
+            
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
         }
-
-        function toggleAuto() {
-            autoMode = !autoMode;
-            document.querySelector('#controls button:nth-child(2)').textContent = 
-                autoMode ? 'Manual Mode' : 'Auto Mode';
+        
+        // Сброс игры
+        function resetGame() {
+            stopGame();
+            initGame();
         }
+        
+        // Обработчики событий
+        startBtn.addEventListener('click', startGame);
+        stopBtn.addEventListener('click', stopGame);
+        resetBtn.addEventListener('click', resetGame);
+        
+        // Инициализация при загрузке
+        initGame();
     </script>
 </body>
 </html>
