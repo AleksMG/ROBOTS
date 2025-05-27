@@ -1,278 +1,706 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Бильярдный бой шаров</title>
+    <title>Бой роботов - профессиональная версия</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background: #121212;
-            color: white;
             margin: 0;
             padding: 20px;
+            background: #121212;
+            color: #fff;
         }
         #arena {
             width: 800px;
             height: 500px;
+            position: relative;
             margin: 20px auto;
             background: #0a0a0a;
-            border: 3px solid #333;
-            position: relative;
+            border: 3px solid #4CAF50;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+        }
+        .robot {
+            width: 60px;
+            height: 80px;
+            position: absolute;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+        }
+        #robot1 {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="20" width="60" height="60" rx="10" fill="%232196F3"/><circle cx="50" cy="40" r="10" fill="%23fff"/><rect x="40" y="60" width="20" height="10" fill="%23fff"/></svg>') center/contain no-repeat;
+        }
+        #robot2 {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="20" width="60" height="60" rx="10" fill="%23FF5722"/><circle cx="50" cy="40" r="10" fill="%23fff"/><rect x="40" y="60" width="20" height="10" fill="%23fff"/></svg>') center/contain no-repeat;
+        }
+        .health-bar {
+            width: 100%;
+            height: 8px;
+            background: #333;
+            margin-bottom: 5px;
+            border-radius: 5px;
             overflow: hidden;
         }
-        .ball {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            position: absolute;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            color: white;
-            transform: translate(-50%, -50%);
-            transition: transform 0.05s linear;
+        .health-fill {
+            height: 100%;
+            background: #4CAF50;
+            width: 100%;
+            transition: width 0.3s;
         }
-        #ball1 {
-            background: radial-gradient(circle at 30% 30%, #2196F3, #0d47a1);
-            box-shadow: 0 0 10px #2196F3;
+        .energy-bar {
+            width: 100%;
+            height: 4px;
+            background: #222;
+            margin-bottom: 5px;
+            border-radius: 2px;
+            overflow: hidden;
         }
-        #ball2 {
-            background: radial-gradient(circle at 30% 30%, #FF5722, #bf360c);
-            box-shadow: 0 0 10px #FF5722;
+        .energy-fill {
+            height: 100%;
+            background: #2196F3;
+            width: 100%;
+            transition: width 0.3s;
         }
         .bullet {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
             position: absolute;
-            background: yellow;
+            border-radius: 50%;
             transform: translate(-50%, -50%);
+            z-index: 1;
+        }
+        .explosion {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23FFC107"/></svg>') center/contain no-repeat;
+            animation: explode 0.5s forwards;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            pointer-events: none;
+        }
+        @keyframes explode {
+            0% { transform: translate(-50%, -50%) scale(0.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+        }
+        .radar-scan {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(76, 175, 80, 0.1);
+            transform: translate(-50%, -50%);
+            animation: radarScan 2s linear infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+        @keyframes radarScan {
+            0% { width: 0; height: 0; opacity: 0.8; }
+            100% { width: 400px; height: 400px; opacity: 0; }
         }
         .hit-effect {
             position: absolute;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: rgba(255, 255, 0, 0.7);
-            transform: translate(-50%, -50%);
-            animation: hit 0.3s forwards;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 0, 0, 0.3);
+            animation: hitFlash 0.3s forwards;
+            border-radius: 10px;
         }
-        @keyframes hit {
-            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+        @keyframes hitFlash {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
         }
-        button {
-            padding: 10px 20px;
-            margin: 10px;
-            font-size: 16px;
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px;
+            flex-wrap: wrap;
+        }
+        .weapon-selector {
+            background: #1E1E1E;
+            padding: 15px;
+            border-radius: 5px;
+            min-width: 250px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .weapon-btn {
+            padding: 8px 15px;
+            margin: 5px;
             cursor: pointer;
             background: #333;
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 3px;
+            transition: all 0.2s;
         }
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .weapon-btn:hover {
+            background: #444;
+        }
+        .weapon-btn.active {
+            background: #4CAF50;
+            box-shadow: 0 0 5px #4CAF50;
+        }
+        #startBtn, #stopBtn {
+            padding: 12px 30px;
+            font-size: 18px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.2s;
+        }
+        #startBtn {
+            background: #4CAF50;
+        }
+        #startBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+        }
+        #stopBtn {
+            background: #f44336;
+        }
+        #stopBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+        }
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px;
+        }
+        .stat-box {
+            background: #1E1E1E;
+            padding: 15px;
+            border-radius: 5px;
+            min-width: 150px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .winner-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 24px;
+            z-index: 100;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <h1>Бильярдный бой шаров</h1>
+    <h1>Профессиональный бой роботов</h1>
+    
     <div id="arena">
-        <div id="ball1" class="ball">1</div>
-        <div id="ball2" class="ball">2</div>
+        <div id="robot1" class="robot">
+            <div class="health-bar"><div class="health-fill" id="health1"></div></div>
+            <div class="energy-bar"><div class="energy-fill" id="energy1"></div></div>
+        </div>
+        <div id="robot2" class="robot">
+            <div class="health-bar"><div class="health-fill" id="health2"></div></div>
+            <div class="energy-bar"><div class="energy-fill" id="energy2"></div></div>
+        </div>
     </div>
-    <button id="startBtn">Старт</button>
-    <button id="stopBtn" disabled>Стоп</button>
-
+    
+    <div class="stats">
+        <div class="stat-box">
+            <h3>Робот 1 (Синий)</h3>
+            <p>Здоровье: <span id="healthText1">100</span>%</p>
+            <p>Энергия: <span id="energyText1">100</span>%</p>
+            <p>Оружие: <span id="weaponText1">Пистолет</span></p>
+        </div>
+        <div class="stat-box">
+            <h3>Робот 2 (Красный)</h3>
+            <p>Здоровье: <span id="healthText2">100</span>%</p>
+            <p>Энергия: <span id="energyText2">100</span>%</p>
+            <p>Оружие: <span id="weaponText2">Пистолет</span></p>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <div class="weapon-selector">
+            <h3>Робот 1 (Синий)</h3>
+            <button class="weapon-btn active" data-robot="1" data-weapon="pistol">Пистолет</button>
+            <button class="weapon-btn" data-robot="1" data-weapon="laser">Лазер</button>
+            <button class="weapon-btn" data-robot="1" data-weapon="rocket">Ракета</button>
+        </div>
+        
+        <div class="weapon-selector">
+            <h3>Робот 2 (Красный)</h3>
+            <button class="weapon-btn active" data-robot="2" data-weapon="pistol">Пистолет</button>
+            <button class="weapon-btn" data-robot="2" data-weapon="laser">Лазер</button>
+            <button class="weapon-btn" data-robot="2" data-weapon="rocket">Ракета</button>
+        </div>
+    </div>
+    
+    <button id="startBtn">Начать бой</button>
+    <button id="stopBtn" disabled>Остановить</button>
+    
+    <div class="winner-message" id="winnerMessage"></div>
+    
     <script>
-        // Настройки
-        const config = {
-            width: 800,
-            height: 500,
-            friction: 0.99,
-            ballSpeed: 5,
-            bulletSpeed: 10,
-            fireRate: 30,
-            ballRadius: 20
+        // Конфигурация игры
+        const CONFIG = {
+            arenaWidth: 800,
+            arenaHeight: 500,
+            robotSpeed: 2.78, // 10 км/ч в пикселях (примерно)
+            scanRange: 250,
+            updateInterval: 50,
+            radarInterval: 2000,
+            robotSize: 30
         };
 
-        // Состояние игры
-        const balls = [
-            { id: 1, x: 200, y: 250, dx: 0, dy: 0, health: 100, cooldown: 0 },
-            { id: 2, x: 600, y: 250, dx: 0, dy: 0, health: 100, cooldown: 0 }
-        ];
-        const bullets = [];
-        let gameRunning = false;
-        let animationId;
+        // Типы оружия
+        const WEAPONS = {
+            pistol: {
+                name: "Пистолет",
+                damage: 10,
+                speed: 10,
+                cooldown: 20,
+                color: '#FFEB3B',
+                size: 6,
+                energyCost: 5,
+                range: 300,
+                spread: 5
+            },
+            laser: {
+                name: "Лазер",
+                damage: 7,
+                speed: 20,
+                cooldown: 5,
+                color: '#F44336',
+                size: 3,
+                energyCost: 3,
+                range: 400,
+                spread: 2
+            },
+            rocket: {
+                name: "Ракета",
+                damage: 25,
+                speed: 6,
+                cooldown: 50,
+                color: '#4CAF50',
+                size: 10,
+                energyCost: 15,
+                range: 350,
+                spread: 10
+            }
+        };
 
-        // Инициализация
-        function initGame() {
-            // Сброс позиций и скоростей
-            balls[0].x = 200;
-            balls[0].y = 250;
-            balls[0].dx = (Math.random() - 0.5) * config.ballSpeed;
-            balls[0].dy = (Math.random() - 0.5) * config.ballSpeed;
-            balls[0].health = 100;
-            
-            balls[1].x = 600;
-            balls[1].y = 250;
-            balls[1].dx = (Math.random() - 0.5) * config.ballSpeed;
-            balls[1].dy = (Math.random() - 0.5) * config.ballSpeed;
-            balls[1].health = 100;
-            
-            // Очистка пуль
-            bullets.length = 0;
-            document.querySelectorAll('.bullet, .hit-effect').forEach(el => el.remove());
-            
-            // Показ шаров
-            document.getElementById('ball1').style.display = '';
-            document.getElementById('ball2').style.display = '';
+        // Класс робота
+        class Robot {
+            constructor(id) {
+                this.id = id;
+                this.health = 100;
+                this.energy = 100;
+                this.weapon = 'pistol';
+                this.cooldown = 0;
+                this.x = id === '1' ? 150 : 650;
+                this.y = 250;
+                this.angle = id === '1' ? 0 : 180;
+                this.element = document.getElementById(`robot${id}`);
+                this.healthElement = document.getElementById(`health${id}`);
+                this.energyElement = document.getElementById(`energy${id}`);
+                this.healthText = document.getElementById(`healthText${id}`);
+                this.energyText = document.getElementById(`energyText${id}`);
+                this.weaponText = document.getElementById(`weaponText${id}`);
+                this.lastRadarTime = 0;
+                this.updateVisuals();
+                
+                // Начальная позиция
+                this.element.style.left = `${this.x - 30}px`;
+                this.element.style.top = `${this.y - 40}px`;
+            }
+
+            updateVisuals() {
+                this.element.style.left = `${this.x - 30}px`;
+                this.element.style.top = `${this.y - 40}px`;
+                this.element.style.transform = `rotate(${this.angle}deg)`;
+                this.healthElement.style.width = `${this.health}%`;
+                this.energyElement.style.width = `${this.energy}%`;
+                this.healthText.textContent = this.health;
+                this.energyText.textContent = Math.floor(this.energy);
+                this.weaponText.textContent = WEAPONS[this.weapon].name;
+                
+                // Цвет здоровья
+                this.healthElement.style.background = 
+                    this.health > 50 ? '#4CAF50' : 
+                    this.health > 20 ? '#FFC107' : '#F44336';
+            }
+
+            setWeapon(weaponType) {
+                if (WEAPONS[weaponType]) {
+                    this.weapon = weaponType;
+                    this.updateVisuals();
+                    return true;
+                }
+                return false;
+            }
+
+            move(angle) {
+                if (this.energy <= 0) return false;
+                
+                this.angle = angle;
+                const rad = angle * Math.PI / 180;
+                const newX = this.x + Math.cos(rad) * CONFIG.robotSpeed;
+                const newY = this.y + Math.sin(rad) * CONFIG.robotSpeed;
+                
+                // Проверка границ арены
+                if (newX < CONFIG.robotSize || newX > CONFIG.arenaWidth - CONFIG.robotSize ||
+                    newY < CONFIG.robotSize || newY > CONFIG.arenaHeight - CONFIG.robotSize) {
+                    return false;
+                }
+                
+                this.x = newX;
+                this.y = newY;
+                this.energy -= 0.3;
+                this.updateVisuals();
+                return true;
+            }
+
+            moveTo(x, y) {
+                const angle = Math.atan2(y - this.y, x - this.x) * 180 / Math.PI;
+                return this.move(angle);
+            }
+
+            rotateTo(x, y) {
+                this.angle = Math.atan2(y - this.y, x - this.x) * 180 / Math.PI;
+                this.updateVisuals();
+            }
+
+            rotate(angle) {
+                this.angle = (this.angle + angle) % 360;
+                this.updateVisuals();
+            }
+
+            canSee(x, y) {
+                const dx = x - this.x;
+                const dy = y - this.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                if (distance > WEAPONS[this.weapon].range) return false;
+                
+                const angleToTarget = Math.atan2(dy, dx) * 180 / Math.PI;
+                const angleDiff = Math.abs(((angleToTarget - this.angle) + 180) % 360 - 180);
+                
+                return angleDiff < 30;
+            }
+
+            scan() {
+                const now = Date.now();
+                if (now - this.lastRadarTime < CONFIG.radarInterval) return false;
+                
+                this.lastRadarTime = now;
+                
+                // Визуализация радара
+                const radar = document.createElement('div');
+                radar.className = 'radar-scan';
+                radar.style.left = `${this.x}px`;
+                radar.style.top = `${this.y}px`;
+                document.getElementById('arena').appendChild(radar);
+                
+                setTimeout(() => {
+                    radar.remove();
+                }, 2000);
+                
+                return true;
+            }
+
+            fire() {
+                const weapon = WEAPONS[this.weapon];
+                if (this.cooldown > 0 || this.energy < weapon.energyCost) return false;
+                
+                this.cooldown = weapon.cooldown;
+                this.energy -= weapon.energyCost;
+                
+                // Добавляем разброс в выстрел
+                const spreadAngle = (Math.random() - 0.5) * weapon.spread;
+                const rad = (this.angle + spreadAngle) * Math.PI / 180;
+                
+                const bullet = {
+                    x: this.x,
+                    y: this.y,
+                    dx: Math.cos(rad) * weapon.speed,
+                    dy: Math.sin(rad) * weapon.speed,
+                    owner: this.id,
+                    damage: weapon.damage,
+                    color: weapon.color,
+                    size: weapon.size,
+                    range: weapon.range,
+                    distance: 0
+                };
+                
+                bullets.push(bullet);
+                
+                // Создание визуальной пули
+                const bulletElement = document.createElement('div');
+                bulletElement.className = 'bullet';
+                bulletElement.style.left = `${bullet.x}px`;
+                bulletElement.style.top = `${bullet.y}px`;
+                bulletElement.style.width = `${bullet.size}px`;
+                bulletElement.style.height = `${bullet.size}px`;
+                bulletElement.style.backgroundColor = bullet.color;
+                
+                if (this.weapon === 'laser') {
+                    bulletElement.style.boxShadow = `0 0 5px ${bullet.color}, 0 0 10px ${bullet.color}`;
+                } else if (this.weapon === 'rocket') {
+                    bulletElement.style.boxShadow = `0 0 8px ${bullet.color}`;
+                }
+                
+                document.getElementById('arena').appendChild(bulletElement);
+                
+                this.updateVisuals();
+                return true;
+            }
+
+            takeDamage(damage) {
+                this.health = Math.max(0, this.health - damage);
+                
+                // Эффект попадания
+                const hitEffect = document.createElement('div');
+                hitEffect.className = 'hit-effect';
+                this.element.appendChild(hitEffect);
+                
+                setTimeout(() => {
+                    hitEffect.remove();
+                }, 300);
+                
+                this.updateVisuals();
+                return this.health <= 0;
+            }
+
+            recharge() {
+                this.energy = Math.min(100, this.energy + 0.5);
+                if (this.cooldown > 0) this.cooldown--;
+                this.updateVisuals();
+            }
         }
 
-        // Игровой цикл
-        function gameLoop() {
-            // Движение шаров
-            balls.forEach(ball => {
-                if (ball.health <= 0) return;
-                
-                ball.x += ball.dx;
-                ball.y += ball.dy;
-                
-                // Отражение от стен
-                if (ball.x < config.ballRadius || ball.x > config.width - config.ballRadius) {
-                    ball.dx = -ball.dx * 0.95;
-                    ball.x = Math.max(config.ballRadius, Math.min(config.width - config.ballRadius, ball.x));
-                }
-                if (ball.y < config.ballRadius || ball.y > config.height - config.ballRadius) {
-                    ball.dy = -ball.dy * 0.95;
-                    ball.y = Math.max(config.ballRadius, Math.min(config.height - config.ballRadius, ball.y));
-                }
-                
-                // Трение
-                ball.dx *= config.friction;
-                ball.dy *= config.friction;
-                
-                // Обновление позиции
-                const ballElement = document.getElementById(`ball${ball.id}`);
-                ballElement.style.transform = `translate(${ball.x}px, ${ball.y}px)`;
-                
-                // Стрельба
-                if (ball.cooldown > 0) {
-                    ball.cooldown--;
-                } else if (Math.random() > 0.98) {
-                    const enemy = balls.find(b => b.id !== ball.id);
-                    if (enemy && enemy.health > 0) {
-                        const dx = enemy.x - ball.x;
-                        const dy = enemy.y - ball.y;
-                        const angle = Math.atan2(dy, dx);
-                        
-                        bullets.push({
-                            x: ball.x,
-                            y: ball.y,
-                            dx: Math.cos(angle) * config.bulletSpeed,
-                            dy: Math.sin(angle) * config.bulletSpeed,
-                            owner: ball.id
-                        });
-                        
-                        const bulletElement = document.createElement('div');
-                        bulletElement.className = 'bullet';
-                        bulletElement.style.transform = `translate(${ball.x}px, ${ball.y}px)`;
-                        document.getElementById('arena').appendChild(bulletElement);
-                        
-                        ball.cooldown = config.fireRate;
-                    }
-                }
-            });
-            
-            // Движение пуль
+        // Игровые переменные
+        let gameRunning = false;
+        let gameInterval;
+        let bullets = [];
+        let robot1, robot2;
+
+        // Обновление пуль
+        function updateBullets() {
             const bulletElements = document.querySelectorAll('.bullet');
+            const arena = document.getElementById('arena');
+            
             for (let i = bullets.length - 1; i >= 0; i--) {
                 const bullet = bullets[i];
                 bullet.x += bullet.dx;
                 bullet.y += bullet.dy;
+                bullet.distance += Math.sqrt(bullet.dx*bullet.dx + bullet.dy*bullet.dy);
                 
-                // Обновление позиции
+                // Обновление позиции пули
                 if (bulletElements[i]) {
-                    bulletElements[i].style.transform = `translate(${bullet.x}px, ${bullet.y}px)`;
+                    bulletElements[i].style.left = `${bullet.x}px`;
+                    bulletElements[i].style.top = `${bullet.y}px`;
                 }
                 
                 // Проверка попадания
-                const targetBall = balls.find(b => b.id !== bullet.owner);
-                if (targetBall && targetBall.health > 0) {
-                    const dx = targetBall.x - bullet.x;
-                    const dy = targetBall.y - bullet.y;
-                    const distance = Math.sqrt(dx*dx + dy*dy);
+                const target = bullet.owner === '1' ? robot2 : robot1;
+                const dx = target.x - bullet.x;
+                const dy = target.y - bullet.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                if (distance < CONFIG.robotSize) {
+                    // Попадание
+                    const isDead = target.takeDamage(bullet.damage);
+                    createExplosion(bullet.x, bullet.y);
                     
-                    if (distance < config.ballRadius) {
-                        // Эффект попадания
-                        const hitEffect = document.createElement('div');
-                        hitEffect.className = 'hit-effect';
-                        hitEffect.style.transform = `translate(${bullet.x}px, ${bullet.y}px)`;
-                        document.getElementById('arena').appendChild(hitEffect);
-                        setTimeout(() => hitEffect.remove(), 300);
-                        
-                        targetBall.health -= 10;
-                        
-                        if (targetBall.health <= 0) {
-                            document.getElementById(`ball${targetBall.id}`).style.display = 'none';
-                            stopGame();
-                            setTimeout(() => alert(`Шар ${bullet.owner} победил!`), 100);
-                            return;
-                        }
-                        
-                        // Удаление пули
-                        if (bulletElements[i]) {
-                            bulletElements[i].remove();
-                        }
-                        bullets.splice(i, 1);
-                        continue;
+                    // Удаление пули
+                    bullets.splice(i, 1);
+                    bulletElements[i]?.remove();
+                    
+                    if (isDead) {
+                        endGame(bullet.owner === '1' ? 'Робот 1 (Синий) победил!' : 'Робот 2 (Красный) победил!');
+                        return;
                     }
                 }
-                
-                // Удаление за пределами
-                if (bullet.x < 0 || bullet.x > config.width || 
-                    bullet.y < 0 || bullet.y > config.height) {
-                    if (bulletElements[i]) {
-                        bulletElements[i].remove();
-                    }
+                // Удаление за пределами арены или дальности
+                else if (bullet.x < 0 || bullet.x > CONFIG.arenaWidth || 
+                         bullet.y < 0 || bullet.y > CONFIG.arenaHeight ||
+                         bullet.distance > bullet.range) {
                     bullets.splice(i, 1);
+                    bulletElements[i]?.remove();
+                }
+            }
+        }
+
+        // Создание взрыва
+        function createExplosion(x, y) {
+            const explosion = document.createElement('div');
+            explosion.className = 'explosion';
+            explosion.style.left = `${x}px`;
+            explosion.style.top = `${y}px`;
+            document.getElementById('arena').appendChild(explosion);
+            
+            setTimeout(() => {
+                explosion.remove();
+            }, 500);
+        }
+
+        // ИИ роботов
+        function updateAI() {
+            // Робот 1 - агрессивный
+            const dx1 = robot2.x - robot1.x;
+            const dy1 = robot2.y - robot1.y;
+            const distance1 = Math.sqrt(dx1*dx1 + dy1*dy1);
+            
+            if (distance1 < 300) {
+                robot1.rotateTo(robot2.x, robot2.y);
+                if (distance1 > 150) {
+                    robot1.moveTo(robot2.x, robot2.y);
+                } else if (distance1 < 100) {
+                    const angle = Math.atan2(robot1.y - robot2.y, robot1.x - robot2.x) * 180 / Math.PI;
+                    robot1.move(angle);
+                }
+                
+                if (robot1.canSee(robot2.x, robot2.y) && Math.random() > 0.3) {
+                    robot1.fire();
+                }
+            } else {
+                robot1.move(Math.random() * 360);
+            }
+            
+            // Робот 2 - осторожный
+            const dx2 = robot1.x - robot2.x;
+            const dy2 = robot1.y - robot2.y;
+            const distance2 = Math.sqrt(dx2*dx2 + dy2*dy2);
+            
+            robot2.rotateTo(robot1.x, robot1.y);
+            
+            if (distance2 > 200) {
+                robot2.moveTo(robot1.x, robot1.y);
+            } else if (distance2 < 120) {
+                const angle = Math.atan2(robot2.y - robot1.y, robot2.x - robot1.x) * 180 / Math.PI;
+                robot2.move(angle);
+            }
+            
+            if (robot2.canSee(robot1.x, robot1.y) {
+                if (distance2 > 150 || robot2.health < 50) {
+                    if (Math.random() > 0.5) robot2.fire();
+                } else {
+                    robot2.fire();
                 }
             }
             
-            if (gameRunning) {
-                animationId = requestAnimationFrame(gameLoop);
+            // Случайное сканирование
+            if (Math.random() > 0.95) {
+                robot1.scan();
+                robot2.scan();
             }
+        }
+
+        // Игровой цикл
+        function gameLoop() {
+            if (!gameRunning) return;
+            
+            // Обновление роботов
+            robot1.recharge();
+            robot2.recharge();
+            
+            // ИИ роботов
+            updateAI();
+            
+            // Обновление пуль
+            updateBullets();
+        }
+
+        // Завершение игры
+        function endGame(message) {
+            stopGame();
+            const winnerMessage = document.getElementById('winnerMessage');
+            winnerMessage.textContent = message;
+            winnerMessage.style.display = 'block';
+            
+            setTimeout(() => {
+                winnerMessage.style.display = 'none';
+            }, 3000);
+        }
+
+        // Инициализация игры
+        function initGame() {
+            // Очистка предыдущего состояния
+            bullets = [];
+            document.querySelectorAll('.bullet, .explosion, .radar-scan').forEach(el => el.remove());
+            
+            // Создание роботов
+            robot1 = new Robot('1');
+            robot2 = new Robot('2');
+            
+            // Установка оружия из кнопок
+            const weapon1 = document.querySelector('.weapon-btn.active[data-robot="1"]').dataset.weapon;
+            const weapon2 = document.querySelector('.weapon-btn.active[data-robot="2"]').dataset.weapon;
+            robot1.setWeapon(weapon1);
+            robot2.setWeapon(weapon2);
         }
 
         // Управление игрой
         function startGame() {
             if (gameRunning) return;
+            
             initGame();
             gameRunning = true;
+            gameInterval = setInterval(gameLoop, CONFIG.updateInterval);
+            
             document.getElementById('startBtn').disabled = true;
             document.getElementById('stopBtn').disabled = false;
-            gameLoop();
         }
 
         function stopGame() {
+            if (!gameRunning) return;
+            
+            clearInterval(gameInterval);
             gameRunning = false;
-            cancelAnimationFrame(animationId);
+            
             document.getElementById('startBtn').disabled = false;
             document.getElementById('stopBtn').disabled = true;
         }
 
         // Инициализация
-        document.getElementById('startBtn').addEventListener('click', startGame);
-        document.getElementById('stopBtn').addEventListener('click', stopGame);
-        
-        // Начальное движение
-        balls[0].dx = (Math.random() - 0.5) * config.ballSpeed;
-        balls[0].dy = (Math.random() - 0.5) * config.ballSpeed;
-        balls[1].dx = (Math.random() - 0.5) * config.ballSpeed;
-        balls[1].dy = (Math.random() - 0.5) * config.ballSpeed;
+        function setup() {
+            // Кнопки оружия
+            document.querySelectorAll('.weapon-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const robotId = this.dataset.robot;
+                    const weapon = this.dataset.weapon;
+                    
+                    document.querySelectorAll(`.weapon-btn[data-robot="${robotId}"]`)
+                        .forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    if (robotId === "1" && robot1) {
+                        robot1.setWeapon(weapon);
+                    } else if (robotId === "2" && robot2) {
+                        robot2.setWeapon(weapon);
+                    }
+                });
+            });
+            
+            // Управление игрой
+            document.getElementById('startBtn').addEventListener('click', startGame);
+            document.getElementById('stopBtn').addEventListener('click', stopGame);
+            
+            // Инициализация роботов
+            initGame();
+        }
+
+        // Запуск при загрузке
+        window.addEventListener('DOMContentLoaded', setup);
     </script>
 </body>
 </html>
