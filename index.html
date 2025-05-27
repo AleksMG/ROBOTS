@@ -766,15 +766,16 @@ function update(robot, enemy, arena) {
             explosions = [];
             document.querySelectorAll('.bullet, .explosion').forEach(el => el.remove());
             
+            // Получаем выбранное оружие из кнопок
+            const weapon1 = document.querySelector('.weapon-btn.active[data-robot="1"]').dataset.weapon;
+            const weapon2 = document.querySelector('.weapon-btn.active[data-robot="2"]').dataset.weapon;
+            
             robot1 = new Robot(1, ARENA_WIDTH * 0.25, ARENA_HEIGHT / 2, 'var(--robot1-color)');
             robot2 = new Robot(2, ARENA_WIDTH * 0.75, ARENA_HEIGHT / 2, 'var(--robot2-color)');
             
-            // Установка начального оружия из активных кнопок
-            const activeWeapon1 = document.querySelector('.weapon-btn.active[data-robot="1"]')?.dataset.weapon || 'pistol';
-            const activeWeapon2 = document.querySelector('.weapon-btn.active[data-robot="2"]')?.dataset.weapon || 'pistol';
-            
-            robot1.setWeapon(activeWeapon1);
-            robot2.setWeapon(activeWeapon2);
+            // Устанавливаем выбранное оружие
+            robot1.setWeapon(weapon1);
+            robot2.setWeapon(weapon2);
             
             gameTime = 0;
             updateStats();
@@ -949,7 +950,7 @@ function update(robot, enemy, arena) {
         function setupWeaponButtons() {
             document.querySelectorAll('.weapon-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    const robotId = parseInt(this.dataset.robot);
+                    const robotId = this.dataset.robot;
                     const weaponType = this.dataset.weapon;
                     
                     // Снимаем выделение со всех кнопок этого робота
@@ -961,10 +962,10 @@ function update(robot, enemy, arena) {
                     this.classList.add('active');
                     
                     // Меняем оружие соответствующему роботу
-                    if (robotId === 1 && robot1) {
-                        robot1.setWeapon(weaponType);
-                    } else if (robotId === 2 && robot2) {
-                        robot2.setWeapon(weaponType);
+                    if (robotId === "1") {
+                        if (robot1) robot1.setWeapon(weaponType);
+                    } else if (robotId === "2") {
+                        if (robot2) robot2.setWeapon(weaponType);
                     }
                 });
             });
