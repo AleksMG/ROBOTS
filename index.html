@@ -1,66 +1,178 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Тест роботов</title>
+    <title>Бой роботов</title>
     <style>
-        .robot { width: 50px; height: 50px; position: absolute; }
-        #robot1 { background: blue; }
-        #robot2 { background: red; }
-        .weapon-btn { padding: 5px; margin: 2px; }
-        .active { background: green; color: white; }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #arena {
+            width: 600px;
+            height: 300px;
+            position: relative;
+            margin: 0 auto;
+            background: #f0f0f0;
+            border: 3px solid #333;
+            overflow: hidden;
+        }
+        .robot {
+            width: 50px;
+            height: 80px;
+            position: absolute;
+            bottom: 20px;
+            transition: left 0.3s ease;
+        }
+        #robot1 {
+            left: 50px;
+            background: blue;
+        }
+        #robot2 {
+            right: 50px;
+            background: red;
+        }
+        .bullet {
+            width: 10px;
+            height: 5px;
+            background: black;
+            position: absolute;
+            bottom: 100px;
+        }
+        .controls {
+            margin: 20px;
+        }
+        .weapon-btn {
+            padding: 8px 15px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .active {
+            background: #4CAF50;
+            color: white;
+        }
+        #startBtn {
+            padding: 10px 25px;
+            font-size: 18px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <div id="arena" style="width:500px;height:300px;position:relative;border:1px solid black">
+    <h1>Бой роботов</h1>
+    
+    <div id="arena">
         <div id="robot1" class="robot"></div>
         <div id="robot2" class="robot"></div>
     </div>
-
-    <div>
-        <button class="weapon-btn active" data-robot="1" data-weapon="pistol">Робот1: Пистолет</button>
-        <button class="weapon-btn" data-robot="1" data-weapon="laser">Робот1: Лазер</button>
-        <button class="weapon-btn active" data-robot="2" data-weapon="pistol">Робот2: Пистолет</button>
-        <button class="weapon-btn" data-robot="2" data-weapon="rocket">Робот2: Ракета</button>
+    
+    <div class="controls">
+        <h3>Робот 1 (Синий)</h3>
+        <button class="weapon-btn active" data-robot="1" data-weapon="pistol">Пистолет</button>
+        <button class="weapon-btn" data-robot="1" data-weapon="laser">Лазер</button>
+        <button class="weapon-btn" data-robot="1" data-weapon="rocket">Ракета</button>
+        
+        <h3>Робот 2 (Красный)</h3>
+        <button class="weapon-btn active" data-robot="2" data-weapon="pistol">Пистолет</button>
+        <button class="weapon-btn" data-robot="2" data-weapon="laser">Лазер</button>
+        <button class="weapon-btn" data-robot="2" data-weapon="rocket">Ракета</button>
     </div>
-
+    
     <button id="startBtn">Начать бой</button>
-
+    
     <script>
-        // Упрощенная версия кода
+        // Конфигурация оружия
         const WEAPONS = {
-            pistol: { damage: 10 },
-            laser: { damage: 5 },
-            rocket: { damage: 25 }
+            pistol: { damage: 10, speed: 8, color: 'black' },
+            laser: { damage: 5, speed: 15, color: 'red' },
+            rocket: { damage: 25, speed: 5, color: 'orange' }
         };
 
+        // Класс робота
         class Robot {
             constructor(id) {
                 this.id = id;
                 this.weapon = 'pistol';
                 this.element = document.getElementById(`robot${id}`);
+                this.health = 100;
+                this.position = id === '1' ? 50 : 500;
                 this.updatePosition();
             }
 
             setWeapon(weapon) {
                 if (WEAPONS[weapon]) {
                     this.weapon = weapon;
-                    console.log(`Робот ${this.id} теперь использует: ${weapon}`);
+                    console.log(`Робот ${this.id} выбрал ${weapon}`);
                     return true;
                 }
                 return false;
             }
 
             updatePosition() {
-                this.element.style.left = this.id === '1' ? '50px' : '400px';
-                this.element.style.top = '100px';
+                this.element.style.left = this.position + 'px';
+            }
+
+            move() {
+                const direction = this.id === '1' ? 1 : -1;
+                this.position += direction * 3;
+                this.updatePosition();
+            }
+
+            fire() {
+                const weapon = WEAPONS[this.weapon];
+                const bullet = document.createElement('div');
+                bullet.className = 'bullet';
+                bullet.style.background = weapon.color;
+                bullet.style.left = (this.position + 25) + 'px';
+                bullet.dataset.damage = weapon.damage;
+                bullet.dataset.owner = this.id;
+                document.getElementById('arena').appendChild(bullet);
+
+                // Движение пули
+                const moveBullet = setInterval(() => {
+                    const currentLeft = parseInt(bullet.style.left);
+                    const direction = this.id === '1' ? 1 : -1;
+                    bullet.style.left = (currentLeft + direction * weapon.speed) + 'px';
+
+                    // Проверка попадания
+                    checkHit(bullet);
+
+                    // Удаление за пределами арены
+                    if (currentLeft > 600 || currentLeft < 0) {
+                        clearInterval(moveBullet);
+                        bullet.remove();
+                    }
+                }, 50);
             }
         }
 
-        // Инициализация
+        // Проверка попадания
+        function checkHit(bullet) {
+            const bulletLeft = parseInt(bullet.style.left);
+            const owner = bullet.dataset.owner;
+            const damage = parseInt(bullet.dataset.damage);
+            
+            if (owner === '1' && bulletLeft > 500 && bulletLeft < 550) {
+                // Попадание по роботу 2
+                robot2.health -= damage;
+                bullet.remove();
+                console.log(`Робот 2 получил урон: ${damage}`);
+            } else if (owner === '2' && bulletLeft > 50 && bulletLeft < 100) {
+                // Попадание по роботу 1
+                robot1.health -= damage;
+                bullet.remove();
+                console.log(`Робот 1 получил урон: ${damage}`);
+            }
+        }
+
+        // Инициализация роботов
         const robot1 = new Robot('1');
         const robot2 = new Robot('2');
 
-        // Обработчики кнопок оружия
+        // Выбор оружия
         document.querySelectorAll('.weapon-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const robotId = this.dataset.robot;
@@ -75,15 +187,28 @@
             });
         });
 
-        // Старт боя
+        // Начало боя
         document.getElementById('startBtn').addEventListener('click', () => {
             console.log('Бой начат!');
-            console.log('Робот 1:', robot1.weapon);
-            console.log('Робот 2:', robot2.weapon);
-            alert(`Бой начат!\nРобот 1: ${robot1.weapon}\nРобот 2: ${robot2.weapon}`);
+            
+            const battleInterval = setInterval(() => {
+                // Движение
+                robot1.move();
+                robot2.move();
+                
+                // Стрельба
+                if (Math.random() > 0.8) robot1.fire();
+                if (Math.random() > 0.8) robot2.fire();
+                
+                // Проверка здоровья
+                if (robot1.health <= 0 || robot2.health <= 0) {
+                    clearInterval(battleInterval);
+                    const winner = robot1.health <= 0 ? 'Робот 2 (Красный)' : 'Робот 1 (Синий)';
+                    console.log(`Бой окончен! Победил ${winner}`);
+                    alert(`Победил ${winner}!`);
+                }
+            }, 200);
         });
-
-        console.log('Система инициализирована');
     </script>
 </body>
 </html>
