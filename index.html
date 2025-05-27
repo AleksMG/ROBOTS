@@ -30,15 +30,14 @@
             align-items: center;
             font-weight: bold;
             color: white;
-            transition: transform 0.1s;
             z-index: 10;
         }
         #robot1 {
-            background: radial-gradient(circle at 30% 30%, #2196F3, #0d47a1);
+            background: #2196F3;
             box-shadow: 0 0 10px #2196F3;
         }
         #robot2 {
-            background: radial-gradient(circle at 30% 30%, #FF5722, #bf360c);
+            background: #FF5722;
             box-shadow: 0 0 10px #FF5722;
         }
         .health-bar {
@@ -62,97 +61,48 @@
             border-radius: 50%;
             z-index: 5;
         }
-        .pistol {
+        .pistol-bullet {
             width: 6px;
             height: 6px;
             background: #FFEB3B;
-            box-shadow: 0 0 3px #FFEB3B;
         }
-        .laser {
+        .laser-beam {
             width: 2px;
             height: 20px;
             background: #F44336;
-            box-shadow: 0 0 5px #F44336;
             transform-origin: center bottom;
         }
         .rocket {
             width: 10px;
             height: 10px;
             background: #4CAF50;
-            box-shadow: 0 0 8px #4CAF50;
         }
-        .controls {
-            margin: 20px;
-        }
-        .weapon-selector {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-bottom: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            background: #333;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 0 5px;
-            transition: all 0.2s;
-        }
-        button:hover {
-            background: #444;
-        }
-        button.active {
-            background: #4CAF50;
-            box-shadow: 0 0 5px #4CAF50;
-        }
-        .start-btn {
-            padding: 12px 30px;
-            font-size: 16px;
-            background: #4CAF50;
-        }
-        @keyframes hit {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.3); }
-            100% { transform: scale(1); }
-        }
-        .hit-animation {
-            animation: hit 0.3s;
-        }
-        .radar-scan {
+        .radar {
             position: absolute;
             border-radius: 50%;
             border: 1px dashed rgba(76, 175, 80, 0.3);
             transform: translate(-50%, -50%);
             pointer-events: none;
             z-index: 1;
-            opacity: 0;
             animation: radar 2s infinite;
         }
         @keyframes radar {
             0% { opacity: 0.7; transform: translate(-50%, -50%) scale(0.1); }
             100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
         }
+        .controls {
+            margin: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <h1>Тактический бой роботов</h1>
-    
-    <div class="weapon-selector">
-        <div>
-            <h3>Робот 1 (Синий)</h3>
-            <button class="weapon-btn active" data-robot="1" data-weapon="pistol">Пистолет</button>
-            <button class="weapon-btn" data-robot="1" data-weapon="laser">Лазер</button>
-            <button class="weapon-btn" data-robot="1" data-weapon="rocket">Ракета</button>
-        </div>
-        <div>
-            <h3>Робот 2 (Красный)</h3>
-            <button class="weapon-btn active" data-robot="2" data-weapon="pistol">Пистолет</button>
-            <button class="weapon-btn" data-robot="2" data-weapon="laser">Лазер</button>
-            <button class="weapon-btn" data-robot="2" data-weapon="rocket">Ракета</button>
-        </div>
-    </div>
     
     <div id="arena">
         <div id="robot1" class="robot">
@@ -166,19 +116,17 @@
     </div>
     
     <div class="controls">
-        <button id="startBtn" class="start-btn">Начать бой</button>
+        <button id="startBtn">Начать бой</button>
         <button id="stopBtn" disabled>Остановить</button>
     </div>
 
     <script>
         // Конфигурация игры
         const CONFIG = {
-            arenaWidth: 800,
-            arenaHeight: 500,
-            robotSpeed: 2.5,
-            rotationSpeed: 3,
-            scanRange: 300,
-            scanAngle: 60,
+            width: 800,
+            height: 500,
+            robotSpeed: 2,
+            scanRange: 250,
             updateInterval: 50
         };
 
@@ -188,32 +136,26 @@
                 name: "Пистолет",
                 damage: 10,
                 speed: 8,
-                cooldown: 25,
-                accuracy: 0.8,
-                range: 300,
-                class: "pistol",
-                behavior: "aggressive"
+                cooldown: 30,
+                class: "pistol-bullet",
+                accuracy: 0.8
             },
             laser: {
                 name: "Лазер",
-                damage: 7,
+                damage: 6,
                 speed: 20,
                 cooldown: 15,
-                accuracy: 0.95,
-                range: 400,
-                class: "laser",
-                behavior: "defensive"
+                class: "laser-beam",
+                accuracy: 0.95
             },
             rocket: {
                 name: "Ракета",
                 damage: 25,
                 speed: 5,
-                cooldown: 50,
-                accuracy: 0.7,
-                range: 250,
-                splashRadius: 40,
+                cooldown: 60,
                 class: "rocket",
-                behavior: "random"
+                accuracy: 0.7,
+                splashRadius: 40
             }
         };
 
@@ -225,14 +167,11 @@
                 this.x = id === 1 ? 150 : 650;
                 this.y = Math.random() * 400 + 50;
                 this.angle = 0;
-                this.turretAngle = 0;
                 this.cooldown = 0;
                 this.weapon = WEAPONS.pistol;
                 this.element = document.getElementById(`robot${id}`);
                 this.healthElement = document.getElementById(`health${id}`);
-                this.moveDirection = Math.random() * Math.PI * 2;
-                this.moveCounter = 0;
-                this.target = null;
+                this.strategy = id === 1 ? this.aggressiveStrategy : this.defensiveStrategy;
                 this.updatePosition();
             }
 
@@ -243,35 +182,16 @@
             }
 
             move(dx, dy) {
-                this.x = Math.max(25, Math.min(CONFIG.arenaWidth - 25, this.x + dx));
-                this.y = Math.max(25, Math.min(CONFIG.arenaHeight - 25, this.y + dy));
+                this.x = Math.max(25, Math.min(CONFIG.width - 25, this.x + dx));
+                this.y = Math.max(25, Math.min(CONFIG.height - 25, this.y + dy));
                 this.angle = Math.atan2(dy, dx);
                 this.updatePosition();
-            }
-
-            rotateTurretTo(x, y) {
-                const dx = x - this.x;
-                const dy = y - this.y;
-                this.turretAngle = Math.atan2(dy, dx);
-            }
-
-            canSee(x, y) {
-                const dx = x - this.x;
-                const dy = y - this.y;
-                const distance = Math.sqrt(dx*dx + dy*dy);
-                
-                if (distance > this.weapon.range) return false;
-                
-                const angleToTarget = Math.atan2(dy, dx);
-                const angleDiff = Math.abs(((angleToTarget - this.turretAngle + Math.PI) % (Math.PI * 2)) - Math.PI;
-                
-                return Math.abs(angleDiff) < CONFIG.scanAngle * Math.PI / 180;
             }
 
             scan(enemy) {
                 // Визуализация радара
                 const radar = document.createElement('div');
-                radar.className = 'radar-scan';
+                radar.className = 'radar';
                 radar.style.left = `${this.x}px`;
                 radar.style.top = `${this.y}px`;
                 radar.style.width = `${CONFIG.scanRange * 2}px`;
@@ -287,8 +207,6 @@
                 return {
                     distance,
                     angle: Math.atan2(dy, dx),
-                    x: enemy.x,
-                    y: enemy.y,
                     visible: distance < CONFIG.scanRange
                 };
             }
@@ -299,7 +217,7 @@
                 this.cooldown = this.weapon.cooldown;
                 
                 // Добавляем неточность
-                let fireAngle = this.turretAngle;
+                let fireAngle = this.angle;
                 if (this.weapon.accuracy < 1) {
                     const inaccuracy = (1 - this.weapon.accuracy) * 0.5;
                     fireAngle += (Math.random() * inaccuracy * 2) - inaccuracy;
@@ -311,100 +229,75 @@
                     dx: Math.cos(fireAngle) * this.weapon.speed,
                     dy: Math.sin(fireAngle) * this.weapon.speed,
                     owner: this.id,
-                    weapon: this.weapon,
-                    damage: this.weapon.damage,
-                    splashRadius: this.weapon.splashRadius
+                    weapon: this.weapon
                 };
             }
 
             takeDamage(damage) {
                 this.health = Math.max(0, this.health - damage);
-                this.element.classList.add('hit-animation');
-                setTimeout(() => this.element.classList.remove('hit-animation'), 300);
+                this.element.style.transform = 'scale(1.3)';
+                setTimeout(() => this.element.style.transform = 'scale(1)', 200);
                 this.updatePosition();
                 return this.health <= 0;
             }
 
-            update() {
-                if (this.cooldown > 0) this.cooldown--;
+            aggressiveStrategy(enemy) {
+                const scan = this.scan(enemy);
                 
-                // Случайное изменение направления движения
-                if (this.moveCounter-- <= 0 || Math.random() < 0.05) {
-                    this.moveDirection = Math.random() * Math.PI * 2;
-                    this.moveCounter = Math.random() * 50 + 30;
+                if (scan.distance > 200) {
+                    // Агрессивное преследование
+                    const dx = Math.cos(scan.angle) * CONFIG.robotSpeed;
+                    const dy = Math.sin(scan.angle) * CONFIG.robotSpeed;
+                    this.move(dx, dy);
+                } else if (Math.random() > 0.7) {
+                    // Уклонение
+                    const evadeAngle = scan.angle + (Math.random() > 0.5 ? Math.PI/2 : -Math.PI/2);
+                    this.move(Math.cos(evadeAngle) * CONFIG.robotSpeed, Math.sin(evadeAngle) * CONFIG.robotSpeed);
                 }
+                
+                // Частая стрельба
+                if (scan.visible && Math.random() > 0.7) {
+                    return this.fire();
+                }
+                return null;
             }
 
-            decideMovement(enemy, scan) {
-                const moveSpeed = CONFIG.robotSpeed;
+            defensiveStrategy(enemy) {
+                const scan = this.scan(enemy);
                 
-                switch(this.weapon.behavior) {
-                    case "aggressive":
-                        // Агрессивное преследование
-                        if (scan.distance > 200) {
-                            const dx = Math.cos(scan.angle) * moveSpeed;
-                            const dy = Math.sin(scan.angle) * moveSpeed;
-                            this.move(dx, dy);
-                        } else if (Math.random() > 0.7) {
-                            // Уклонение
-                            const evadeAngle = scan.angle + (Math.random() > 0.5 ? Math.PI/2 : -Math.PI/2);
-                            this.move(Math.cos(evadeAngle) * moveSpeed, Math.sin(evadeAngle) * moveSpeed);
-                        }
-                        break;
-                        
-                    case "defensive":
-                        // Обороняющийся стиль
-                        if (scan.distance < 150) {
-                            const evadeAngle = scan.angle + Math.PI;
-                            this.move(Math.cos(evadeAngle) * moveSpeed, Math.sin(evadeAngle) * moveSpeed);
-                        } else if (Math.random() > 0.8) {
-                            // Случайные перемещения
-                            this.move(Math.cos(this.moveDirection) * moveSpeed * 0.7, 
-                                     Math.sin(this.moveDirection) * moveSpeed * 0.7);
-                        }
-                        break;
-                        
-                    case "random":
-                        // Хаотичное движение
-                        this.move(Math.cos(this.moveDirection) * moveSpeed * 0.5, 
-                                 Math.sin(this.moveDirection) * moveSpeed * 0.5);
-                        break;
+                if (scan.distance < 150) {
+                    // Отступление
+                    const evadeAngle = scan.angle + Math.PI;
+                    this.move(Math.cos(evadeAngle) * CONFIG.robotSpeed, Math.sin(evadeAngle) * CONFIG.robotSpeed);
+                } else if (Math.random() > 0.8) {
+                    // Случайное перемещение
+                    const randomAngle = Math.random() * Math.PI * 2;
+                    this.move(Math.cos(randomAngle) * CONFIG.robotSpeed * 0.7, Math.sin(randomAngle) * CONFIG.robotSpeed * 0.7);
                 }
+                
+                // Точная стрельба
+                if (scan.visible && Math.random() > 0.8) {
+                    return this.fire();
+                }
+                return null;
+            }
+
+            update(enemy) {
+                if (this.cooldown > 0) this.cooldown--;
+                return this.strategy(enemy);
             }
         }
 
         // Игровой движок
-        class GameEngine {
+        class Game {
             constructor() {
                 this.robots = [new Robot(1), new Robot(2)];
                 this.bullets = [];
                 this.running = false;
                 this.interval = null;
                 
-                this.initControls();
-            }
-            
-            initControls() {
                 document.getElementById('startBtn').addEventListener('click', () => this.start());
                 document.getElementById('stopBtn').addEventListener('click', () => this.stop());
-                
-                // Выбор оружия
-                document.querySelectorAll('.weapon-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const robotId = parseInt(btn.dataset.robot);
-                        const weapon = btn.dataset.weapon;
-                        
-                        document.querySelectorAll(`.weapon-btn[data-robot="${robotId}"]`)
-                            .forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        
-                        this.robots[robotId-1].weapon = WEAPONS[weapon];
-                    });
-                });
-                
-                // Активируем пистолеты по умолчанию
-                document.querySelector('.weapon-btn[data-robot="1"]').click();
-                document.querySelector('.weapon-btn[data-robot="2"]').click();
             }
             
             start() {
@@ -412,7 +305,7 @@
                 
                 this.robots = [new Robot(1), new Robot(2)];
                 this.bullets = [];
-                document.querySelectorAll('.bullet, .laser, .rocket, .radar-scan').forEach(el => el.remove());
+                document.querySelectorAll('.bullet, .radar').forEach(el => el.remove());
                 
                 this.running = true;
                 document.getElementById('startBtn').disabled = true;
@@ -430,52 +323,21 @@
             }
             
             update() {
-                // Обновление ИИ
-                this.updateAI(0, 1); // Робот 1
-                this.updateAI(1, 0); // Робот 2
+                // Обновление роботов
+                const bullet1 = this.robots[0].update(this.robots[1]);
+                const bullet2 = this.robots[1].update(this.robots[0]);
+                
+                if (bullet1) {
+                    this.bullets.push(bullet1);
+                    this.createBullet(bullet1);
+                }
+                if (bullet2) {
+                    this.bullets.push(bullet2);
+                    this.createBullet(bullet2);
+                }
                 
                 // Обновление пуль
                 this.updateBullets();
-                
-                // Обновление роботов
-                this.robots.forEach(robot => robot.update());
-            }
-            
-            updateAI(robotIndex, enemyIndex) {
-                const robot = this.robots[robotIndex];
-                const enemy = this.robots[enemyIndex];
-                
-                // Сканирование противника
-                const scan = robot.scan(enemy);
-                
-                // Поворот башни к врагу
-                robot.rotateTurretTo(enemy.x, enemy.y);
-                
-                // Принятие решений о движении
-                robot.decideMovement(enemy, scan);
-                
-                // Стрельба при видимости цели
-                if (robot.canSee(enemy.x, enemy.y)) {
-                    if (robot.weapon === WEAPONS.laser) {
-                        // Лазеры стреляют чаще
-                        if (Math.random() > 0.7) {
-                            this.fireBullet(robot);
-                        }
-                    } else {
-                        // Другое оружие с обычной частотой
-                        if (Math.random() > 0.85) {
-                            this.fireBullet(robot);
-                        }
-                    }
-                }
-            }
-            
-            fireBullet(robot) {
-                const bullet = robot.fire();
-                if (bullet) {
-                    this.bullets.push(bullet);
-                    this.createBullet(bullet);
-                }
             }
             
             createBullet(bullet) {
@@ -484,7 +346,7 @@
                 el.style.left = `${bullet.x}px`;
                 el.style.top = `${bullet.y}px`;
                 
-                if (bullet.weapon.class === "laser") {
+                if (bullet.weapon.class === "laser-beam") {
                     el.style.transform = `rotate(${Math.atan2(bullet.dy, bullet.dx) + Math.PI/2}rad)`;
                 }
                 
@@ -510,13 +372,13 @@
                     const dx = enemy.x - bullet.x;
                     const dy = enemy.y - bullet.y;
                     const distance = Math.sqrt(dx*dx + dy*dy);
-                    const hitRadius = bullet.splashRadius ? bullet.splashRadius + 25 : 25;
+                    const hitRadius = bullet.weapon.splashRadius ? bullet.weapon.splashRadius + 25 : 25;
                     
                     if (distance < hitRadius) {
                         // Попадание
-                        const damage = bullet.splashRadius ? 
-                            bullet.damage * (1 - distance / (hitRadius * 1.5)) : 
-                            bullet.damage;
+                        const damage = bullet.weapon.splashRadius ? 
+                            bullet.weapon.damage * (1 - distance / (hitRadius * 1.5)) : 
+                            bullet.weapon.damage;
                         
                         if (enemy.takeDamage(damage)) {
                             this.stop();
@@ -529,8 +391,8 @@
                         bulletElements[i]?.remove();
                     }
                     // Удаление за пределами
-                    else if (bullet.x < 0 || bullet.x > CONFIG.arenaWidth || 
-                             bullet.y < 0 || bullet.y > CONFIG.arenaHeight) {
+                    else if (bullet.x < 0 || bullet.x > CONFIG.width || 
+                             bullet.y < 0 || bullet.y > CONFIG.height) {
                         this.bullets.splice(i, 1);
                         bulletElements[i]?.remove();
                     }
@@ -539,7 +401,7 @@
         }
 
         // Запуск игры
-        const game = new GameEngine();
+        new Game();
     </script>
 </body>
 </html>
