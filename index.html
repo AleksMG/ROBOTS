@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Быстрый бой шаров</title>
+    <title>Бильярдный бой шаров</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -20,7 +20,7 @@
             position: relative;
             overflow: hidden;
         }
-        .robot {
+        .ball {
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -30,200 +30,169 @@
             align-items: center;
             font-weight: bold;
             color: white;
-            will-change: transform;
+            transform: translate(-50%, -50%);
+            transition: transform 0.05s linear;
         }
-        #robot1 {
-            background: #2196F3;
+        #ball1 {
+            background: radial-gradient(circle at 30% 30%, #2196F3, #0d47a1);
             box-shadow: 0 0 10px #2196F3;
         }
-        #robot2 {
-            background: #FF5722;
+        #ball2 {
+            background: radial-gradient(circle at 30% 30%, #FF5722, #bf360c);
             box-shadow: 0 0 10px #FF5722;
         }
         .bullet {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             position: absolute;
             background: yellow;
-            will-change: transform;
+            transform: translate(-50%, -50%);
+        }
+        .hit-effect {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 0, 0.7);
+            transform: translate(-50%, -50%);
+            animation: hit 0.3s forwards;
+        }
+        @keyframes hit {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
         }
         button {
             padding: 10px 20px;
             margin: 10px;
             font-size: 16px;
             cursor: pointer;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
-    <h1>Быстрый бой шаров</h1>
-    <div id="arena"></div>
+    <h1>Бильярдный бой шаров</h1>
+    <div id="arena">
+        <div id="ball1" class="ball">1</div>
+        <div id="ball2" class="ball">2</div>
+    </div>
     <button id="startBtn">Старт</button>
     <button id="stopBtn" disabled>Стоп</button>
 
     <script>
-        // Настройки с увеличенной скоростью
+        // Настройки
         const config = {
             width: 800,
             height: 500,
-            friction: 0.99,  // Уменьшил трение для более долгого движения
-            robotSpeed: 8,   // Увеличил скорость шаров
-            bulletSpeed: 12, // Увеличил скорость пуль
-            fireRate: 20     // Увеличил частоту стрельбы
+            friction: 0.99,
+            ballSpeed: 5,
+            bulletSpeed: 10,
+            fireRate: 30,
+            ballRadius: 20
         };
 
-        // Игровые объекты
-        let robots = [];
-        let bullets = [];
+        // Состояние игры
+        const balls = [
+            { id: 1, x: 200, y: 250, dx: 0, dy: 0, health: 100, cooldown: 0 },
+            { id: 2, x: 600, y: 250, dx: 0, dy: 0, health: 100, cooldown: 0 }
+        ];
+        const bullets = [];
         let gameRunning = false;
-        let gameInterval;
-        let lastTime = 0;
+        let animationId;
 
-        // Класс шара
-        class Robot {
-            constructor(id, x, y) {
-                this.id = id;
-                this.x = x;
-                this.y = y;
-                this.dx = (Math.random() - 0.5) * config.robotSpeed;
-                this.dy = (Math.random() - 0.5) * config.robotSpeed;
-                this.health = 100;
-                this.cooldown = 0;
-                this.element = document.createElement('div');
-                this.element.className = 'robot';
-                this.element.id = `robot${id}`;
-                this.element.textContent = id;
-                document.getElementById('arena').appendChild(this.element);
-                this.update();
-            }
-
-            update(deltaTime) {
-                // Плавное движение с учетом времени кадра
-                const frameCorrection = deltaTime / (1000/60);
-                
-                this.x += this.dx * frameCorrection;
-                this.y += this.dy * frameCorrection;
-                
-                // Отражение от стен с сохранением скорости
-                if (this.x < 20 || this.x > config.width - 20) {
-                    this.dx = -this.dx;
-                    this.x = Math.max(20, Math.min(config.width - 20, this.x));
-                }
-                if (this.y < 20 || this.y > config.height - 20) {
-                    this.dy = -this.dy;
-                    this.y = Math.max(20, Math.min(config.height - 20, this.y));
-                }
-                
-                // Применяем трение
-                this.dx *= config.friction;
-                this.dy *= config.friction;
-                
-                // Плавное позиционирование
-                this.element.style.transform = `translate(${this.x - 20}px, ${this.y - 20}px)`;
-            }
-
-            fire(angle) {
-                if (this.cooldown <= 0) {
-                    this.cooldown = config.fireRate;
-                    return {
-                        x: this.x,
-                        y: this.y,
-                        dx: Math.cos(angle) * config.bulletSpeed,
-                        dy: Math.sin(angle) * config.bulletSpeed,
-                        owner: this.id
-                    };
-                }
-                return null;
-            }
-
-            takeDamage(damage) {
-                this.health -= damage;
-                if (this.health <= 0) {
-                    this.element.style.display = 'none';
-                    return true;
-                }
-                return false;
-            }
-        }
-
-        // Инициализация игры
+        // Инициализация
         function initGame() {
-            // Очистка
-            document.getElementById('arena').innerHTML = '';
-            robots = [];
-            bullets = [];
+            // Сброс позиций и скоростей
+            balls[0].x = 200;
+            balls[0].y = 250;
+            balls[0].dx = (Math.random() - 0.5) * config.ballSpeed;
+            balls[0].dy = (Math.random() - 0.5) * config.ballSpeed;
+            balls[0].health = 100;
             
-            // Создание шаров в случайных позициях
-            robots.push(new Robot(1, 100 + Math.random() * 600, 100 + Math.random() * 300));
-            robots.push(new Robot(2, 100 + Math.random() * 600, 100 + Math.random() * 300));
+            balls[1].x = 600;
+            balls[1].y = 250;
+            balls[1].dx = (Math.random() - 0.5) * config.ballSpeed;
+            balls[1].dy = (Math.random() - 0.5) * config.ballSpeed;
+            balls[1].health = 100;
+            
+            // Очистка пуль
+            bullets.length = 0;
+            document.querySelectorAll('.bullet, .hit-effect').forEach(el => el.remove());
+            
+            // Показ шаров
+            document.getElementById('ball1').style.display = '';
+            document.getElementById('ball2').style.display = '';
         }
 
         // Игровой цикл
-        function gameLoop(timestamp) {
-            if (!lastTime) lastTime = timestamp;
-            const deltaTime = timestamp - lastTime;
-            lastTime = timestamp;
-            
+        function gameLoop() {
             // Движение шаров
-            robots.forEach(robot => {
-                robot.update(deltaTime);
-                if (robot.cooldown > 0) robot.cooldown--;
+            balls.forEach(ball => {
+                if (ball.health <= 0) return;
+                
+                ball.x += ball.dx;
+                ball.y += ball.dy;
+                
+                // Отражение от стен
+                if (ball.x < config.ballRadius || ball.x > config.width - config.ballRadius) {
+                    ball.dx = -ball.dx * 0.95;
+                    ball.x = Math.max(config.ballRadius, Math.min(config.width - config.ballRadius, ball.x));
+                }
+                if (ball.y < config.ballRadius || ball.y > config.height - config.ballRadius) {
+                    ball.dy = -ball.dy * 0.95;
+                    ball.y = Math.max(config.ballRadius, Math.min(config.height - config.ballRadius, ball.y));
+                }
+                
+                // Трение
+                ball.dx *= config.friction;
+                ball.dy *= config.friction;
+                
+                // Обновление позиции
+                const ballElement = document.getElementById(`ball${ball.id}`);
+                ballElement.style.transform = `translate(${ball.x}px, ${ball.y}px)`;
+                
+                // Стрельба
+                if (ball.cooldown > 0) {
+                    ball.cooldown--;
+                } else if (Math.random() > 0.98) {
+                    const enemy = balls.find(b => b.id !== ball.id);
+                    if (enemy && enemy.health > 0) {
+                        const dx = enemy.x - ball.x;
+                        const dy = enemy.y - ball.y;
+                        const angle = Math.atan2(dy, dx);
+                        
+                        bullets.push({
+                            x: ball.x,
+                            y: ball.y,
+                            dx: Math.cos(angle) * config.bulletSpeed,
+                            dy: Math.sin(angle) * config.bulletSpeed,
+                            owner: ball.id
+                        });
+                        
+                        const bulletElement = document.createElement('div');
+                        bulletElement.className = 'bullet';
+                        bulletElement.style.transform = `translate(${ball.x}px, ${ball.y}px)`;
+                        document.getElementById('arena').appendChild(bulletElement);
+                        
+                        ball.cooldown = config.fireRate;
+                    }
+                }
             });
             
-            // Автоматическая стрельба
-            if (robots.length === 2) {
-                const dx = robots[1].x - robots[0].x;
-                const dy = robots[1].y - robots[0].y;
-                const distance = Math.sqrt(dx*dx + dy*dy);
-                const angle = Math.atan2(dy, dx);
-                
-                if (Math.random() > 0.95) {
-                    const bullet = robots[0].fire(angle);
-                    if (bullet) {
-                        bullets.push(bullet);
-                        createBullet(bullet);
-                    }
-                }
-                
-                const dx2 = robots[0].x - robots[1].x;
-                const dy2 = robots[0].y - robots[1].y;
-                const angle2 = Math.atan2(dy2, dx2);
-                
-                if (Math.random() > 0.95) {
-                    const bullet = robots[1].fire(angle2);
-                    if (bullet) {
-                        bullets.push(bullet);
-                        createBullet(bullet);
-                    }
-                }
-            }
-            
-            // Обновление пуль
-            updateBullets(deltaTime);
-            
-            if (gameRunning) {
-                requestAnimationFrame(gameLoop);
-            }
-        }
-
-        // Создание пули
-        function createBullet(bullet) {
-            const el = document.createElement('div');
-            el.className = 'bullet';
-            el.style.transform = `translate(${bullet.x}px, ${bullet.y}px)`;
-            document.getElementById('arena').appendChild(el);
-        }
-
-        // Обновление пуль
-        function updateBullets(deltaTime) {
-            const frameCorrection = deltaTime / (1000/60);
+            // Движение пуль
             const bulletElements = document.querySelectorAll('.bullet');
-            
             for (let i = bullets.length - 1; i >= 0; i--) {
                 const bullet = bullets[i];
-                bullet.x += bullet.dx * frameCorrection;
-                bullet.y += bullet.dy * frameCorrection;
+                bullet.x += bullet.dx;
+                bullet.y += bullet.dy;
                 
                 // Обновление позиции
                 if (bulletElements[i]) {
@@ -231,20 +200,33 @@
                 }
                 
                 // Проверка попадания
-                if (robots.length > 1) {
-                    const targetId = bullet.owner === 1 ? 1 : 0;
-                    const enemy = robots[targetId];
-                    const dx = enemy.x - bullet.x;
-                    const dy = enemy.y - bullet.y;
+                const targetBall = balls.find(b => b.id !== bullet.owner);
+                if (targetBall && targetBall.health > 0) {
+                    const dx = targetBall.x - bullet.x;
+                    const dy = targetBall.y - bullet.y;
                     const distance = Math.sqrt(dx*dx + dy*dy);
                     
-                    if (distance < 30 && enemy.element.style.display !== 'none') {
-                        if (enemy.takeDamage(10)) {
+                    if (distance < config.ballRadius) {
+                        // Эффект попадания
+                        const hitEffect = document.createElement('div');
+                        hitEffect.className = 'hit-effect';
+                        hitEffect.style.transform = `translate(${bullet.x}px, ${bullet.y}px)`;
+                        document.getElementById('arena').appendChild(hitEffect);
+                        setTimeout(() => hitEffect.remove(), 300);
+                        
+                        targetBall.health -= 10;
+                        
+                        if (targetBall.health <= 0) {
+                            document.getElementById(`ball${targetBall.id}`).style.display = 'none';
                             stopGame();
                             setTimeout(() => alert(`Шар ${bullet.owner} победил!`), 100);
                             return;
                         }
-                        document.getElementById('arena').removeChild(bulletElements[i]);
+                        
+                        // Удаление пули
+                        if (bulletElements[i]) {
+                            bulletElements[i].remove();
+                        }
                         bullets.splice(i, 1);
                         continue;
                     }
@@ -254,10 +236,14 @@
                 if (bullet.x < 0 || bullet.x > config.width || 
                     bullet.y < 0 || bullet.y > config.height) {
                     if (bulletElements[i]) {
-                        document.getElementById('arena').removeChild(bulletElements[i]);
+                        bulletElements[i].remove();
                     }
                     bullets.splice(i, 1);
                 }
+            }
+            
+            if (gameRunning) {
+                animationId = requestAnimationFrame(gameLoop);
             }
         }
 
@@ -266,14 +252,14 @@
             if (gameRunning) return;
             initGame();
             gameRunning = true;
-            lastTime = 0;
-            requestAnimationFrame(gameLoop);
             document.getElementById('startBtn').disabled = true;
             document.getElementById('stopBtn').disabled = false;
+            gameLoop();
         }
 
         function stopGame() {
             gameRunning = false;
+            cancelAnimationFrame(animationId);
             document.getElementById('startBtn').disabled = false;
             document.getElementById('stopBtn').disabled = true;
         }
@@ -281,6 +267,12 @@
         // Инициализация
         document.getElementById('startBtn').addEventListener('click', startGame);
         document.getElementById('stopBtn').addEventListener('click', stopGame);
+        
+        // Начальное движение
+        balls[0].dx = (Math.random() - 0.5) * config.ballSpeed;
+        balls[0].dy = (Math.random() - 0.5) * config.ballSpeed;
+        balls[1].dx = (Math.random() - 0.5) * config.ballSpeed;
+        balls[1].dy = (Math.random() - 0.5) * config.ballSpeed;
     </script>
 </body>
 </html>
