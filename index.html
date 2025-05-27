@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Продвинутый бой роботов</title>
+    <title>Тактический бой роботов</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: #0f0f0f;
+            background: #121212;
             color: white;
             margin: 0;
             padding: 20px;
@@ -15,8 +15,8 @@
             width: 800px;
             height: 500px;
             margin: 20px auto;
-            background: #111;
-            border: 2px solid #333;
+            background: #0a0a0a;
+            border: 3px solid #333;
             position: relative;
             overflow: hidden;
         }
@@ -29,6 +29,7 @@
             justify-content: center;
             align-items: center;
             font-weight: bold;
+            color: white;
             transition: transform 0.1s;
             z-index: 10;
         }
@@ -42,10 +43,10 @@
         }
         .health-bar {
             width: 60px;
-            height: 6px;
+            height: 5px;
             background: #333;
             position: absolute;
-            top: -15px;
+            top: -10px;
             left: 50%;
             transform: translateX(-50%);
             border-radius: 3px;
@@ -54,7 +55,6 @@
         .health-fill {
             height: 100%;
             background: #4CAF50;
-            width: 100%;
             transition: width 0.3s;
         }
         .bullet {
@@ -62,20 +62,33 @@
             border-radius: 50%;
             z-index: 5;
         }
+        .pistol {
+            width: 6px;
+            height: 6px;
+            background: #FFEB3B;
+            box-shadow: 0 0 3px #FFEB3B;
+        }
         .laser {
             width: 2px;
             height: 20px;
-            background: red;
+            background: #F44336;
+            box-shadow: 0 0 5px #F44336;
             transform-origin: center bottom;
         }
         .rocket {
             width: 10px;
             height: 10px;
             background: #4CAF50;
-            box-shadow: 0 0 5px #4CAF50;
+            box-shadow: 0 0 8px #4CAF50;
         }
         .controls {
             margin: 20px;
+        }
+        .weapon-selector {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
         }
         button {
             padding: 10px 20px;
@@ -90,45 +103,52 @@
         button:hover {
             background: #444;
         }
+        button.active {
+            background: #4CAF50;
+            box-shadow: 0 0 5px #4CAF50;
+        }
         .start-btn {
             padding: 12px 30px;
             font-size: 16px;
             background: #4CAF50;
         }
-        .weapon-selector {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-bottom: 20px;
+        @keyframes hit {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
         }
-        @keyframes hitPulse {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(1.5); opacity: 0; }
+        .hit-animation {
+            animation: hit 0.3s;
         }
-        .hit-effect {
+        .radar-scan {
             position: absolute;
-            width: 30px;
-            height: 30px;
-            background: rgba(255, 0, 0, 0.5);
             border-radius: 50%;
-            animation: hitPulse 0.3s forwards;
-            z-index: 15;
+            border: 1px dashed rgba(76, 175, 80, 0.3);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0;
+            animation: radar 2s infinite;
+        }
+        @keyframes radar {
+            0% { opacity: 0.7; transform: translate(-50%, -50%) scale(0.1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
         }
     </style>
 </head>
 <body>
-    <h1>Продвинутый бой роботов</h1>
+    <h1>Тактический бой роботов</h1>
     
     <div class="weapon-selector">
         <div>
             <h3>Робот 1 (Синий)</h3>
-            <button class="weapon-btn" data-robot="1" data-weapon="pistol">Пистолет</button>
+            <button class="weapon-btn active" data-robot="1" data-weapon="pistol">Пистолет</button>
             <button class="weapon-btn" data-robot="1" data-weapon="laser">Лазер</button>
             <button class="weapon-btn" data-robot="1" data-weapon="rocket">Ракета</button>
         </div>
         <div>
             <h3>Робот 2 (Красный)</h3>
-            <button class="weapon-btn" data-robot="2" data-weapon="pistol">Пистолет</button>
+            <button class="weapon-btn active" data-robot="2" data-weapon="pistol">Пистолет</button>
             <button class="weapon-btn" data-robot="2" data-weapon="laser">Лазер</button>
             <button class="weapon-btn" data-robot="2" data-weapon="rocket">Ракета</button>
         </div>
@@ -169,34 +189,31 @@
                 damage: 10,
                 speed: 8,
                 cooldown: 25,
-                color: '#FFEB3B',
-                size: 6,
-                accuracy: 0.75,
+                accuracy: 0.8,
                 range: 300,
-                movePattern: 'aggressive'
+                class: "pistol",
+                behavior: "aggressive"
             },
             laser: {
                 name: "Лазер",
                 damage: 7,
                 speed: 20,
                 cooldown: 15,
-                color: '#F44336',
-                size: 2,
                 accuracy: 0.95,
                 range: 400,
-                movePattern: 'defensive'
+                class: "laser",
+                behavior: "defensive"
             },
             rocket: {
                 name: "Ракета",
                 damage: 25,
                 speed: 5,
                 cooldown: 50,
-                color: '#4CAF50',
-                size: 10,
-                accuracy: 0.65,
+                accuracy: 0.7,
                 range: 250,
                 splashRadius: 40,
-                movePattern: 'random'
+                class: "rocket",
+                behavior: "random"
             }
         };
 
@@ -207,35 +224,35 @@
                 this.health = 100;
                 this.x = id === 1 ? 150 : 650;
                 this.y = Math.random() * 400 + 50;
-                this.angle = id === 1 ? 0 : 180;
-                this.turretAngle = this.angle;
+                this.angle = 0;
+                this.turretAngle = 0;
                 this.cooldown = 0;
                 this.weapon = WEAPONS.pistol;
                 this.element = document.getElementById(`robot${id}`);
                 this.healthElement = document.getElementById(`health${id}`);
                 this.moveDirection = Math.random() * Math.PI * 2;
                 this.moveCounter = 0;
-                this.updateVisuals();
+                this.target = null;
+                this.updatePosition();
             }
 
-            updateVisuals() {
+            updatePosition() {
                 this.element.style.left = `${this.x - 25}px`;
                 this.element.style.top = `${this.y - 25}px`;
-                this.element.style.transform = `rotate(${this.angle}deg)`;
                 this.healthElement.style.width = `${this.health}%`;
             }
 
             move(dx, dy) {
                 this.x = Math.max(25, Math.min(CONFIG.arenaWidth - 25, this.x + dx));
                 this.y = Math.max(25, Math.min(CONFIG.arenaHeight - 25, this.y + dy));
-                this.angle = Math.atan2(dy, dx) * 180 / Math.PI;
-                this.updateVisuals();
+                this.angle = Math.atan2(dy, dx);
+                this.updatePosition();
             }
 
             rotateTurretTo(x, y) {
                 const dx = x - this.x;
                 const dy = y - this.y;
-                this.turretAngle = Math.atan2(dy, dx) * 180 / Math.PI;
+                this.turretAngle = Math.atan2(dy, dx);
             }
 
             canSee(x, y) {
@@ -245,10 +262,35 @@
                 
                 if (distance > this.weapon.range) return false;
                 
-                const angleToTarget = Math.atan2(dy, dx) * 180 / Math.PI;
-                const angleDiff = Math.abs(((angleToTarget - this.turretAngle) + 180) % 360 - 180);
+                const angleToTarget = Math.atan2(dy, dx);
+                const angleDiff = Math.abs(((angleToTarget - this.turretAngle + Math.PI) % (Math.PI * 2)) - Math.PI;
                 
-                return angleDiff < CONFIG.scanAngle;
+                return Math.abs(angleDiff) < CONFIG.scanAngle * Math.PI / 180;
+            }
+
+            scan(enemy) {
+                // Визуализация радара
+                const radar = document.createElement('div');
+                radar.className = 'radar-scan';
+                radar.style.left = `${this.x}px`;
+                radar.style.top = `${this.y}px`;
+                radar.style.width = `${CONFIG.scanRange * 2}px`;
+                radar.style.height = `${CONFIG.scanRange * 2}px`;
+                document.getElementById('arena').appendChild(radar);
+                
+                setTimeout(() => radar.remove(), 2000);
+                
+                const dx = enemy.x - this.x;
+                const dy = enemy.y - this.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                return {
+                    distance,
+                    angle: Math.atan2(dy, dx),
+                    x: enemy.x,
+                    y: enemy.y,
+                    visible: distance < CONFIG.scanRange
+                };
             }
 
             fire() {
@@ -259,39 +301,27 @@
                 // Добавляем неточность
                 let fireAngle = this.turretAngle;
                 if (this.weapon.accuracy < 1) {
-                    const inaccuracy = (1 - this.weapon.accuracy) * 30;
+                    const inaccuracy = (1 - this.weapon.accuracy) * 0.5;
                     fireAngle += (Math.random() * inaccuracy * 2) - inaccuracy;
                 }
                 
-                const rad = fireAngle * Math.PI / 180;
                 return {
                     x: this.x,
                     y: this.y,
-                    dx: Math.cos(rad) * this.weapon.speed,
-                    dy: Math.sin(rad) * this.weapon.speed,
+                    dx: Math.cos(fireAngle) * this.weapon.speed,
+                    dy: Math.sin(fireAngle) * this.weapon.speed,
                     owner: this.id,
                     weapon: this.weapon,
                     damage: this.weapon.damage,
-                    color: this.weapon.color,
-                    size: this.weapon.size,
                     splashRadius: this.weapon.splashRadius
                 };
             }
 
-            takeDamage(damage, x, y) {
+            takeDamage(damage) {
                 this.health = Math.max(0, this.health - damage);
-                
-                // Эффект попадания
-                if (x && y) {
-                    const hit = document.createElement('div');
-                    hit.className = 'hit-effect';
-                    hit.style.left = `${x}px`;
-                    hit.style.top = `${y}px`;
-                    document.getElementById('arena').appendChild(hit);
-                    setTimeout(() => hit.remove(), 300);
-                }
-                
-                this.updateVisuals();
+                this.element.classList.add('hit-animation');
+                setTimeout(() => this.element.classList.remove('hit-animation'), 300);
+                this.updatePosition();
                 return this.health <= 0;
             }
 
@@ -303,42 +333,41 @@
                     this.moveDirection = Math.random() * Math.PI * 2;
                     this.moveCounter = Math.random() * 50 + 30;
                 }
-                
-                this.updateVisuals();
             }
 
             decideMovement(enemy, scan) {
                 const moveSpeed = CONFIG.robotSpeed;
                 
-                switch(this.weapon.movePattern) {
-                    case 'aggressive':
+                switch(this.weapon.behavior) {
+                    case "aggressive":
                         // Агрессивное преследование
                         if (scan.distance > 200) {
                             const dx = Math.cos(scan.angle) * moveSpeed;
                             const dy = Math.sin(scan.angle) * moveSpeed;
                             this.move(dx, dy);
                         } else if (Math.random() > 0.7) {
-                            // Случайные уклонения
-                            const evadeAngle = scan.angle + (Math.random() > 0.5 ? 90 : -90);
+                            // Уклонение
+                            const evadeAngle = scan.angle + (Math.random() > 0.5 ? Math.PI/2 : -Math.PI/2);
                             this.move(Math.cos(evadeAngle) * moveSpeed, Math.sin(evadeAngle) * moveSpeed);
                         }
                         break;
                         
-                    case 'defensive':
+                    case "defensive":
                         // Обороняющийся стиль
                         if (scan.distance < 150) {
                             const evadeAngle = scan.angle + Math.PI;
                             this.move(Math.cos(evadeAngle) * moveSpeed, Math.sin(evadeAngle) * moveSpeed);
                         } else if (Math.random() > 0.8) {
                             // Случайные перемещения
-                            this.move(Math.cos(this.moveDirection) * moveSpeed, Math.sin(this.moveDirection) * moveSpeed);
+                            this.move(Math.cos(this.moveDirection) * moveSpeed * 0.7, 
+                                     Math.sin(this.moveDirection) * moveSpeed * 0.7);
                         }
                         break;
                         
-                    case 'random':
+                    case "random":
                         // Хаотичное движение
-                        this.move(Math.cos(this.moveDirection) * moveSpeed * 0.7, 
-                                 Math.sin(this.moveDirection) * moveSpeed * 0.7);
+                        this.move(Math.cos(this.moveDirection) * moveSpeed * 0.5, 
+                                 Math.sin(this.moveDirection) * moveSpeed * 0.5);
                         break;
                 }
             }
@@ -383,7 +412,7 @@
                 
                 this.robots = [new Robot(1), new Robot(2)];
                 this.bullets = [];
-                document.querySelectorAll('.bullet, .hit-effect, .laser, .rocket').forEach(el => el.remove());
+                document.querySelectorAll('.bullet, .laser, .rocket, .radar-scan').forEach(el => el.remove());
                 
                 this.running = true;
                 document.getElementById('startBtn').disabled = true;
@@ -417,24 +446,16 @@
                 const enemy = this.robots[enemyIndex];
                 
                 // Сканирование противника
-                const dx = enemy.x - robot.x;
-                const dy = enemy.y - robot.y;
-                const distance = Math.sqrt(dx*dx + dy*dy);
-                const angle = Math.atan2(dy, dx);
+                const scan = robot.scan(enemy);
                 
                 // Поворот башни к врагу
                 robot.rotateTurretTo(enemy.x, enemy.y);
                 
                 // Принятие решений о движении
-                robot.decideMovement(enemy, {
-                    distance,
-                    angle,
-                    x: enemy.x,
-                    y: enemy.y
-                });
+                robot.decideMovement(enemy, scan);
                 
                 // Стрельба при видимости цели
-                if (robot.canSee(enemy.x, enemy.y) {
+                if (robot.canSee(enemy.x, enemy.y)) {
                     if (robot.weapon === WEAPONS.laser) {
                         // Лазеры стреляют чаще
                         if (Math.random() > 0.7) {
@@ -459,22 +480,19 @@
             
             createBullet(bullet) {
                 const el = document.createElement('div');
-                el.className = bullet.weapon === WEAPONS.laser ? 'laser' : 
-                                bullet.weapon === WEAPONS.rocket ? 'rocket' : 'bullet';
+                el.className = `bullet ${bullet.weapon.class}`;
                 el.style.left = `${bullet.x}px`;
                 el.style.top = `${bullet.y}px`;
-                el.style.backgroundColor = bullet.color;
                 
-                if (bullet.weapon === WEAPONS.laser) {
-                    el.style.transform = `rotate(${bullet.weapon === WEAPONS.laser ? 
-                        Math.atan2(bullet.dy, bullet.dx) + Math.PI/2 : 0}rad)`;
+                if (bullet.weapon.class === "laser") {
+                    el.style.transform = `rotate(${Math.atan2(bullet.dy, bullet.dx) + Math.PI/2}rad)`;
                 }
                 
                 document.getElementById('arena').appendChild(el);
             }
             
             updateBullets() {
-                const bulletElements = document.querySelectorAll('.bullet, .laser, .rocket');
+                const bulletElements = document.querySelectorAll('.bullet');
                 
                 for (let i = this.bullets.length - 1; i >= 0; i--) {
                     const bullet = this.bullets[i];
@@ -485,11 +503,6 @@
                     if (bulletElements[i]) {
                         bulletElements[i].style.left = `${bullet.x}px`;
                         bulletElements[i].style.top = `${bullet.y}px`;
-                        
-                        // Для лазеров - изменение длины
-                        if (bullet.weapon === WEAPONS.laser) {
-                            bulletElements[i].style.height = `${Math.min(50, bullet.weapon.range/5)}px`;
-                        }
                     }
                     
                     // Проверка попадания
@@ -497,26 +510,23 @@
                     const dx = enemy.x - bullet.x;
                     const dy = enemy.y - bullet.y;
                     const distance = Math.sqrt(dx*dx + dy*dy);
-                    const hitRadius = bullet.weapon.splashRadius ? 
-                        bullet.weapon.splashRadius + 25 : 25;
+                    const hitRadius = bullet.splashRadius ? bullet.splashRadius + 25 : 25;
                     
                     if (distance < hitRadius) {
                         // Попадание
-                        const isDead = enemy.takeDamage(
-                            bullet.damage * (bullet.weapon.splashRadius ? 
-                                1 - (distance / (hitRadius * 1.5)) : 1),
-                            bullet.x, bullet.y
-                        );
+                        const damage = bullet.splashRadius ? 
+                            bullet.damage * (1 - distance / (hitRadius * 1.5)) : 
+                            bullet.damage;
                         
-                        // Удаление пули
-                        this.bullets.splice(i, 1);
-                        bulletElements[i]?.remove();
-                        
-                        if (isDead) {
+                        if (enemy.takeDamage(damage)) {
                             this.stop();
                             setTimeout(() => alert(`Робот ${bullet.owner} победил!`), 100);
                             return;
                         }
+                        
+                        // Удаление пули
+                        this.bullets.splice(i, 1);
+                        bulletElements[i]?.remove();
                     }
                     // Удаление за пределами
                     else if (bullet.x < 0 || bullet.x > CONFIG.arenaWidth || 
