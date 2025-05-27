@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Robot Battle</title>
+    <style>
+        #arena {
+            width: 600px;
+            height: 400px;
+            border: 3px solid #333;
+            position: relative;
+            background: #eee;
+        }
+        
+        .robot {
+            width: 50px;
+            height: 50px;
+            position: absolute;
+            transition: all 0.3s;
+        }
+        
+        .health-bar {
+            width: 100%;
+            height: 5px;
+            background: #ff0000;
+        }
+        
+        #controls {
+            margin: 20px 0;
+        }
+        
+        .log {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 200px;
+            overflow-y: scroll;
+        }
+    </style>
+</head>
+<body>
+    <div id="arena">
+        <div id="robot1" class="robot" style="left:50px; top:150px">
+            <div class="health-bar"></div>
+        </div>
+        <div id="robot2" class="robot" style="right:50px; top:150px">
+            <div class="health-bar"></div>
+        </div>
+    </div>
+    
+    <div id="controls">
+        <button onclick="startBattle()">Start Battle</button>
+        <button onclick="toggleAuto()">Auto Mode</button>
+    </div>
+    
+    <div class="log" id="battleLog"></div>
+
+    <script>
+        class Robot {
+            constructor(id, name, color) {
+                this.id = id;
+                this.name = name;
+                this.health = 100;
+                this.attack = 10;
+                this.defense = 5;
+                this.speed = 1;
+                this.color = color;
+                this.element = document.getElementById(id);
+                this.element.style.backgroundColor = color;
+            }
+
+            updateDisplay() {
+                const healthBar = this.element.querySelector('.health-bar');
+                healthBar.style.width = this.health + '%';
+                healthBar.style.background = this.health > 30 ? '#00ff00' : '#ff0000';
+            }
+
+            moveTowards(target) {
+                const rect = this.element.getBoundingClientRect();
+                const targetRect = target.element.getBoundingClientRect();
+                
+                const dx = targetRect.left - rect.left;
+                const dy = targetRect.top - rect.top;
+                
+                this.element.style.left = rect.left + dx * 0.1 * this.speed + 'px';
+                this.element.style.top = rect.top + dy * 0.1 * this.speed + 'px';
+            }
+
+            takeDamage(damage) {
+                this.health -= damage;
+                this.health = Math.max(0, this.health);
+                this.updateDisplay();
+            }
+
+            decideAction(enemies) {
+                // Базовый AI (переопределить в дочерних классах)
+                return {
+                    action: 'attack',
+                    target: enemies[0]
+                };
+            }
+        }
+
+        // Пример бота-агрессора
+        class AggressiveBot extends Robot {
+            decideAction(enemies) {
+                return {
+                    action: 'attack',
+                    target: enemies[Math.floor(Math.random() * enemies.length)]
+                };
+            }
+        }
+
+        // Пример защитного бота
+        class DefensiveBot extends Robot {
+            decideAction(enemies) {
+                this.defense += 2;
+                return {
+                    action: 'defend',
+                    target: null
+                };
+            }
+        }
+
+        // Твой собственный бот
+        class MySmartBot extends Robot {
+            decideAction(enemies) {
+                if(this.health < 30) {
+                    return {
+                        action: 'heal',
+                        amount: 15
+                    };
+                }
+                return {
+                    action: 'attack',
+                    target: enemies[0]
+                };
+            }
+        }
+
+        let battleInProgress = false;
+        let autoMode = false;
+        let robots = [];
+
+        function initBattle() {
+            robots = [
+                new MySmartBot('robot1', 'SmartBot', '#2196F3'),
+                new AggressiveBot('robot2', 'AggroBot', '#f44336')
+            ];
+        }
+
+        function log(message) {
+            const logElement = document.getElementById('battleLog');
+            logElement.innerHTML += `<div>${message}</div>`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        async function battleStep() {
+            if(!battleInProgress) return;
+
+            for(const robot of robots) {
+                if(robot.health <= 0) continue;
+                
+                const enemies = robots.filter(r => r !== robot && r.health > 0);
+                if(enemies.length === 0) break;
+
+                const action = robot.decideAction(enemies);
+                
+                switch(action.action) {
+                    case 'attack':
+                        robot.moveTowards(action.target);
+                        const damage = robot.attack - action.target.defense;
+                        action.target.takeDamage(Math.max(1, damage));
+                        log(`${robot.name} attacks ${action.target.name} (${damage} damage)`);
+                        break;
+                        
+                    case 'heal':
+                        robot.health = Math.min(100, robot.health + action.amount);
+                        log(`${robot.name} heals for ${action.amount} HP`);
+                        break;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            checkWinner();
+        }
+
+        function checkWinner() {
+            const alive = robots.filter(r => r.health > 0);
+            if(alive.length === 1) {
+                log(`🏆 ${alive[0].name} wins!`);
+                battleInProgress = false;
+            }
+        }
+
+        function startBattle() {
+            if(battleInProgress) return;
+            battleInProgress = true;
+            initBattle();
+            if(autoMode) setInterval(battleStep, 1000);
+        }
+
+        function toggleAuto() {
+            autoMode = !autoMode;
+            document.querySelector('#controls button:nth-child(2)').textContent = 
+                autoMode ? 'Manual Mode' : 'Auto Mode';
+        }
+    </script>
+</body>
+</html>
