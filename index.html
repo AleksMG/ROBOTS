@@ -489,9 +489,9 @@ function update(robot, enemy, arena) {
                     <h4>Основные свойства</h4>
                     <div class="command-block">
                         <p><span class="command">robot.x</span>, <span class="command">robot.y</span> - текущие координаты робота</p>
+                        <p><span class="command">robot.angle</span> - текущий угол поворота (0-359)</p>
                         <p><span class="command">robot.health</span> - текущее здоровье (0-100)</p>
                         <p><span class="command">robot.energy</span> - текущая энергия (0-100)</p>
-                        <p><span class="command">robot.angle</span> - текущий угол поворота (0-359)</p>
                         <p><span class="command">robot.weapon</span> - текущее оружие ('pistol', 'laser', 'rocket')</p>
                     </div>
                     
@@ -518,55 +518,10 @@ function update(robot, enemy, arena) {
                         <p><span class="command">arena.width</span>, <span class="command">arena.height</span> - размеры арены</p>
                         <p><span class="command">arena.getTime()</span> - возвращает текущее время боя (мс)</p>
                     </div>
-                    
-                    <h4>Примеры кода</h4>
-                    <div class="command-block">
-                        <pre>// Простая агрессивная стратегия
-function update(robot, enemy, arena) {
-    // Всегда поворачиваться к врагу
-    robot.rotateTo(enemy.x, enemy.y);
-    
-    // Стрелять, если видит врага
-    if (robot.canSee(enemy.x, enemy.y)) {
-        robot.fire();
-    }
-    
-    // Двигаться к врагу
-    robot.moveTo(enemy.x, enemy.y);
-}</pre>
-                    </div>
-                    
-                    <div class="command-block">
-                        <pre>// Осторожная стратегия с уклонением
-function update(robot, enemy, arena) {
-    // Держать дистанцию 100-200px от врага
-    const dx = robot.x - enemy.x;
-    const dy = robot.y - enemy.y;
-    const distance = Math.sqrt(dx*dx + dy*dy);
-    
-    if (distance < 100) {
-        // Отступать
-        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-        robot.move(angle);
-    } else if (distance > 200) {
-        // Приближаться
-        robot.moveTo(enemy.x, enemy.y);
-    }
-    
-    // Стрелять, если видит врага
-    robot.rotateTo(enemy.x, enemy.y);
-    if (robot.canSee(enemy.x, enemy.y)) {
-        robot.fire();
-    }
-}</pre>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <audio id="laserSound" src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU..."></audio>
-    <audio id="explosionSound" src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU..."></audio>
     
     <script>
         // Игровые переменные
@@ -754,6 +709,7 @@ function update(robot, enemy, arena) {
             setWeapon(weaponType) {
                 if (WEAPONS[weaponType]) {
                     this.weapon = weaponType;
+                    console.log(`Робот ${this.id} сменил оружие на ${weaponType}`);
                 }
             }
             
@@ -813,6 +769,13 @@ function update(robot, enemy, arena) {
             robot1 = new Robot(1, ARENA_WIDTH * 0.25, ARENA_HEIGHT / 2, 'var(--robot1-color)');
             robot2 = new Robot(2, ARENA_WIDTH * 0.75, ARENA_HEIGHT / 2, 'var(--robot2-color)');
             
+            // Установка начального оружия из активных кнопок
+            const activeWeapon1 = document.querySelector('.weapon-btn.active[data-robot="1"]')?.dataset.weapon || 'pistol';
+            const activeWeapon2 = document.querySelector('.weapon-btn.active[data-robot="2"]')?.dataset.weapon || 'pistol';
+            
+            robot1.setWeapon(activeWeapon1);
+            robot2.setWeapon(activeWeapon2);
+            
             gameTime = 0;
             updateStats();
         }
@@ -831,30 +794,51 @@ function update(robot, enemy, arena) {
         
         // Основной игровой цикл
         function gameLoop() {
+            if (!robot1 || !robot2) return;
+            
             gameTime += 50;
             
             robot1.recharge();
             robot2.recharge();
             
+            // Обновляем робота 1
             try {
-                const updateRobot1 = new Function('robot', 'enemy', 'arena', 
-                    `try { ${code1Element.value} } catch(e) { console.error(e); }`);
-                updateRobot1(getRobotAPI(robot1), getRobotAPI(robot2), getArenaAPI());
+                const updateFunc1 = new Function('robot', 'enemy', 'arena', `
+                    try {
+                        ${code1Element.value}
+                        if (typeof update === 'function') {
+                            update(robot, enemy, arena);
+                        }
+                    } catch(e) {
+                        console.error('Robot 1 error:', e);
+                    }
+                `);
+                updateFunc1(getRobotAPI(robot1), getRobotAPI(robot2), getArenaAPI());
                 error1Element.textContent = '';
             } catch (e) {
                 error1Element.textContent = `Ошибка в коде робота 1: ${e.message}`;
             }
             
+            // Обновляем робота 2
             try {
-                const updateRobot2 = new Function('robot', 'enemy', 'arena', 
-                    `try { ${code2Element.value} } catch(e) { console.error(e); }`);
-                updateRobot2(getRobotAPI(robot2), getRobotAPI(robot1), getArenaAPI());
+                const updateFunc2 = new Function('robot', 'enemy', 'arena', `
+                    try {
+                        ${code2Element.value}
+                        if (typeof update === 'function') {
+                            update(robot, enemy, arena);
+                        }
+                    } catch(e) {
+                        console.error('Robot 2 error:', e);
+                    }
+                `);
+                updateFunc2(getRobotAPI(robot2), getRobotAPI(robot1), getArenaAPI());
                 error2Element.textContent = '';
             } catch (e) {
                 error2Element.textContent = `Ошибка в коде робота 2: ${e.message}`;
             }
             
             updateBullets();
+            updateStats();
             
             if (robot1.health <= 0 || robot2.health <= 0) {
                 stopGame();
@@ -862,8 +846,6 @@ function update(robot, enemy, arena) {
                     alert(robot1.health <= 0 ? 'Робот 2 (Красный) победил!' : 'Робот 1 (Синий) победил!');
                 }, 100);
             }
-            
-            updateStats();
         }
         
         // API для робота
@@ -967,19 +949,22 @@ function update(robot, enemy, arena) {
         function setupWeaponButtons() {
             document.querySelectorAll('.weapon-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    const robotId = this.dataset.robot;
+                    const robotId = parseInt(this.dataset.robot);
                     const weaponType = this.dataset.weapon;
                     
+                    // Снимаем выделение со всех кнопок этого робота
                     document.querySelectorAll(`.weapon-btn[data-robot="${robotId}"]`).forEach(b => {
                         b.classList.remove('active');
                     });
                     
+                    // Выделяем текущую кнопку
                     this.classList.add('active');
                     
-                    if (robotId === '1') {
-                        robot1?.setWeapon(weaponType);
-                    } else {
-                        robot2?.setWeapon(weaponType);
+                    // Меняем оружие соответствующему роботу
+                    if (robotId === 1 && robot1) {
+                        robot1.setWeapon(weaponType);
+                    } else if (robotId === 2 && robot2) {
+                        robot2.setWeapon(weaponType);
                     }
                 });
             });
@@ -1036,6 +1021,6 @@ function update(robot, enemy, arena) {
                 }
             });
         });
-            </script>
+    </script>
 </body>
 </html>
