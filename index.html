@@ -1,157 +1,674 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Real Stickman Fight</title>
+    <title>ADVANCED AI STICKMAN BATTLE</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; }
-        canvas { display: block; width: 100%; height: 100%; }
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background: #111; 
+            font-family: 'Arial', sans-serif;
+        }
+        canvas { 
+            display: block; 
+            width: 100vw; 
+            height: 100vh; 
+        }
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            color: white;
+        }
+        .health-bar {
+            position: absolute;
+            top: 20px;
+            height: 20px;
+            width: 200px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        #p1-health { left: 20px; }
+        #p2-health { right: 20px; }
+        .health-fill {
+            height: 100%;
+            transition: width 0.3s;
+        }
+        #p1-health .health-fill { 
+            background: linear-gradient(to right, #00f7ff, #00b4ff); 
+            width: 100%;
+        }
+        #p2-health .health-fill { 
+            background: linear-gradient(to right, #ff2a6d, #ff6a00); 
+            width: 100%;
+            float: right;
+        }
+        #ai-debug {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            max-width: 300px;
+        }
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+        #game-over h1 {
+            color: #ff2a6d;
+            margin-top: 0;
+        }
+        #restart-btn {
+            background: #00f7ff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: all 0.3s;
+        }
+        #restart-btn:hover {
+            background: #00b4ff;
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
     <canvas id="game"></canvas>
+    
+    <div id="ui">
+        <div id="p1-health" class="health-bar">
+            <div class="health-fill"></div>
+        </div>
+        <div id="p2-health" class="health-bar">
+            <div class="health-fill"></div>
+        </div>
+        
+        <div id="ai-debug"></div>
+        
+        <div id="game-over">
+            <h1>GAME OVER</h1>
+            <p id="winner-text"></p>
+            <button id="restart-btn">RESTART BATTLE</button>
+        </div>
+    </div>
 
     <script>
-        // Настройки
+        // Game Constants
+        const GRAVITY = 0.5;
+        const FRICTION = 0.9;
+        const MAX_SPEED = 8;
+        const JUMP_FORCE = 12;
+        const ATTACK_RANGE = 80;
+        const ATTACK_DAMAGE = 10;
+        const SPECIAL_DAMAGE = 20;
+        const SPECIAL_COOLDOWN = 180;
+        const AI_UPDATE_INTERVAL = 30;
+        
+        // Game State
+        const game = {
+            running: true,
+            frameCount: 0,
+            particles: [],
+            backgrounds: [],
+            camera: { x: 0, y: 0, targetX: 0, targetY: 0, zoom: 1 }
+        };
+        
+        // Initialize canvas
         const canvas = document.getElementById('game');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-
-        // Игроки
-        const players = [
-            { x: 300, y: 300, speed: 5, color: '#00f7ff', health: 100, direction: 1, state: 'run', attackCooldown: 0, isJumping: false },
-            { x: 700, y: 300, speed: 5, color: '#ff2a6d', health: 100, direction: -1, state: 'run', attackCooldown: 0, isJumping: false }
-        ];
-
-        // Эффекты
-        const effects = {
-            swords: [],
-            blood: [],
-            bullets: []
-        };
-
-        // Физика
-        function updatePhysics() {
-            players.forEach(p => {
-                // Гравитация
-                if (p.y < 300) {
-                    p.y += 5;
-                } else {
-                    p.y = 300;
-                    p.isJumping = false;
-                }
-
-                // Границы экрана
-                p.x = Math.max(50, Math.min(canvas.width - 50, p.x));
-            });
-        }
-
-        // ИИ
-        function updateAI() {
-            players.forEach((p, i) => {
-                const enemy = players[i === 0 ? 1 : 0];
-                const distance = Math.abs(p.x - enemy.x);
-
-                // Преследование
-                if (distance > 150) {
-                    p.state = 'run';
-                    p.direction = p.x < enemy.x ? 1 : -1;
-                    p.x += p.direction * p.speed;
-                }
-                // Атака
-                else if (distance < 100 && p.attackCooldown === 0) {
-                    p.state = 'attack';
-                    p.attackCooldown = 30;
-                    effects.swords.push({
-                        x: p.x,
-                        y: p.y,
-                        direction: p.direction,
-                        frame: 0
-                    });
-                    enemy.health -= 10;
-                    
-                    // Кровь
-                    for (let j = 0; j < 10; j++) {
-                        effects.blood.push({
-                            x: enemy.x + Math.random() * 40 - 20,
-                            y: enemy.y + Math.random() * 30,
-                            alpha: 1
-                        });
-                    }
-                }
-                // Прыжок
-                else if (!p.isJumping && Math.random() < 0.02) {
-                    p.isJumping = true;
-                    p.y -= 80;
-                }
-
-                if (p.attackCooldown > 0) p.attackCooldown--;
-            });
-        }
-
-        // Отрисовка
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Resize handler
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        // Stickman class
+        class Stickman {
+            constructor(x, y, color, isAI = true) {
+                this.x = x;
+                this.y = y;
+                this.vx = 0;
+                this.vy = 0;
+                this.width = 20;
+                this.height = 50;
+                this.color = color;
+                this.health = 100;
+                this.maxHealth = 100;
+                this.dir = 1;
+                this.state = 'idle';
+                this.prevState = 'idle';
+                this.animationFrame = 0;
+                this.attackCooldown = 0;
+                this.jumpCooldown = 0;
+                this.specialCooldown = 0;
+                this.stamina = 100;
+                this.isAI = isAI;
+                this.aiState = 'evaluate';
+                this.aiTimer = 0;
+                this.strategy = 'balanced';
+                this.personality = {
+                    aggression: isAI ? Math.random() * 0.5 + 0.3 : 0,
+                    caution: isAI ? Math.random() * 0.5 + 0.2 : 0,
+                    reactionTime: isAI ? Math.random() * 30 + 30 : 0
+                };
+                this.comboCount = 0;
+                this.lastHitTime = 0;
+                this.invulnerable = 0;
+            }
             
-            // Игроки
-            players.forEach(p => {
-                // Ноги (анимация бега)
-                const legFrame = Math.sin(Date.now() * 0.005) * 15;
+            update(enemy, environment) {
+                // Apply gravity
+                this.vy += GRAVITY;
+                
+                // Apply friction
+                this.vx *= FRICTION;
+                
+                // Limit speed
+                this.vx = Math.max(-MAX_SPEED, Math.min(MAX_SPEED, this.vx));
+                this.vy = Math.max(-JUMP_FORCE * 2, Math.min(JUMP_FORCE * 2, this.vy));
+                
+                // Update position
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // Ground collision
+                if (this.y > environment.groundLevel) {
+                    this.y = environment.groundLevel;
+                    this.vy = 0;
+                }
+                
+                // Boundary checks
+                const margin = 100;
+                if (this.x < margin) this.x = margin;
+                if (this.x > canvas.width - margin) this.x = canvas.width - margin;
+                
+                // Update cooldowns
+                if (this.attackCooldown > 0) this.attackCooldown--;
+                if (this.jumpCooldown > 0) this.jumpCooldown--;
+                if (this.specialCooldown > 0) this.specialCooldown--;
+                if (this.invulnerable > 0) this.invulnerable--;
+                
+                // Regenerate stamina
+                if (this.state !== 'run' && this.state !== 'attack' && this.state !== 'special') {
+                    this.stamina = Math.min(100, this.stamina + 0.2);
+                }
+                
+                // State transitions
+                if (Math.abs(this.vx) > 0.5 && this.state !== 'jump' && this.state !== 'attack' && this.state !== 'special') {
+                    this.state = 'run';
+                } else if (Math.abs(this.vx) <= 0.5 && this.state === 'run' && this.state !== 'jump') {
+                    this.state = 'idle';
+                }
+                
+                // Animation frame
+                this.animationFrame++;
+                
+                // AI behavior
+                if (this.isAI && game.frameCount % AI_UPDATE_INTERVAL === 0) {
+                    this.aiBehavior(enemy, environment);
+                }
+            }
+            
+            aiBehavior(enemy, environment) {
+                const distance = Math.abs(this.x - enemy.x);
+                const heightDiff = this.y - enemy.y;
+                const healthRatio = this.health / this.maxHealth;
+                const enemyHealthRatio = enemy.health / enemy.maxHealth;
+                const rng = Math.random();
+                
+                // Update AI state machine
+                switch(this.aiState) {
+                    case 'evaluate':
+                        // Evaluate situation and choose strategy
+                        if (healthRatio < 0.4) {
+                            this.strategy = (rng > 0.6) ? 'defensive' : 'aggressive';
+                        } else if (enemyHealthRatio < 0.4) {
+                            this.strategy = (rng > 0.4) ? 'aggressive' : 'balanced';
+                        } else {
+                            this.strategy = 'balanced';
+                        }
+                        
+                        // Choose next state based on strategy
+                        if (this.strategy === 'defensive' && distance < 150 && rng > 0.7) {
+                            this.aiState = 'evade';
+                            this.aiTimer = 30 + rng * 30;
+                        } else if (distance < ATTACK_RANGE * 1.2 && this.attackCooldown === 0 && rng > this.personality.caution) {
+                            this.aiState = 'attack';
+                            this.aiTimer = 15;
+                        } else if (distance > ATTACK_RANGE * 1.5 || (this.strategy === 'defensive' && distance < ATTACK_RANGE)) {
+                            this.aiState = 'move';
+                            this.aiTimer = 45 + rng * 45;
+                        } else {
+                            this.aiState = 'idle';
+                            this.aiTimer = 20 + rng * 20;
+                        }
+                        break;
+                        
+                    case 'move':
+                        // Movement logic
+                        const moveDir = (this.strategy === 'defensive' && distance < ATTACK_RANGE) ? 
+                            (this.x < enemy.x ? -1 : 1) : 
+                            (this.x < enemy.x ? 1 : -1);
+                            
+                        this.vx = moveDir * (this.speed * (0.8 + rng * 0.4));
+                        this.dir = moveDir;
+                        
+                        if (this.aiTimer-- <= 0 || (distance < ATTACK_RANGE && this.strategy === 'aggressive')) {
+                            this.aiState = 'evaluate';
+                        }
+                        break;
+                        
+                    case 'attack':
+                        // Attack logic
+                        if (this.attackCooldown === 0) {
+                            this.state = 'attack';
+                            this.attackCooldown = 30;
+                            this.dir = (this.x < enemy.x) ? 1 : -1;
+                            
+                            if (distance < ATTACK_RANGE && Math.abs(heightDiff) < 30) {
+                                const damage = ATTACK_DAMAGE * (1 + this.comboCount * 0.1);
+                                enemy.takeDamage(damage, this.dir * 5, -2);
+                                this.comboCount = Math.min(5, this.comboCount + 1);
+                                this.lastHitTime = game.frameCount;
+                                
+                                // Special attack chance
+                                if (this.specialCooldown === 0 && rng > 0.8) {
+                                    this.aiState = 'special';
+                                    this.aiTimer = 10;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (this.aiTimer-- <= 0) {
+                            this.aiState = 'evaluate';
+                        }
+                        break;
+                        
+                    case 'special':
+                        // Special attack
+                        if (this.specialCooldown === 0) {
+                            this.state = 'special';
+                            this.specialCooldown = SPECIAL_COOLDOWN;
+                            this.dir = (this.x < enemy.x) ? 1 : -1;
+                            
+                            if (distance < ATTACK_RANGE * 1.5 && Math.abs(heightDiff) < 40) {
+                                enemy.takeDamage(SPECIAL_DAMAGE, this.dir * 10, -5);
+                                spawnBlood(enemy, 20);
+                                this.comboCount = 0;
+                            }
+                        }
+                        this.aiState = 'evaluate';
+                        break;
+                        
+                    case 'evade':
+                        // Evasive maneuvers
+                        if (this.jumpCooldown === 0 && rng > 0.5) {
+                            this.vy = -JUMP_FORCE * (0.7 + rng * 0.3);
+                            this.jumpCooldown = 30;
+                            this.state = 'jump';
+                        }
+                        
+                        // Move away
+                        const evadeDir = (this.x < enemy.x) ? -1 : 1;
+                        this.vx = evadeDir * this.speed * 0.8;
+                        this.dir = evadeDir;
+                        
+                        if (this.aiTimer-- <= 0) {
+                            this.aiState = 'evaluate';
+                        }
+                        break;
+                        
+                    case 'idle':
+                        // Wait and evaluate
+                        if (this.aiTimer-- <= 0) {
+                            this.aiState = 'evaluate';
+                        }
+                        break;
+                }
+                
+                // Reset combo if too much time passed
+                if (game.frameCount - this.lastHitTime > 120) {
+                    this.comboCount = 0;
+                }
+            }
+            
+            takeDamage(amount, knockbackX, knockbackY) {
+                if (this.invulnerable > 0) return;
+                
+                this.health -= amount;
+                this.vx += knockbackX;
+                this.vy += knockbackY;
+                this.invulnerable = 15;
+                this.stamina = Math.max(0, this.stamina - 10);
+                
+                // Blood effect
+                spawnBlood(this, 5 + amount);
+                
+                // Check if health is below 0
+                if (this.health <= 0) {
+                    this.health = 0;
+                    this.state = 'ko';
+                    game.running = false;
+                    showGameOver(this === p1 ? p2 : p1);
+                }
+            }
+            
+            get speed() {
+                return MAX_SPEED * (0.8 + this.stamina / 250);
+            }
+        }
+        
+        // Game objects
+        const environment = {
+            groundLevel: canvas.height - 100,
+            platforms: [
+                { x: 300, y: canvas.height - 200, width: 200, height: 20 },
+                { x: canvas.width - 500, y: canvas.height - 250, width: 200, height: 20 }
+            ]
+        };
+        
+        let p1 = new Stickman(300, environment.groundLevel, '#00f7ff', true);
+        let p2 = new Stickman(canvas.width - 300, environment.groundLevel, '#ff2a6d', true);
+        
+        // Effects
+        function spawnBlood(target, count = 10) {
+            for (let i = 0; i < count; i++) {
+                game.particles.push({
+                    type: 'blood',
+                    x: target.x + Math.random() * 40 - 20,
+                    y: target.y + Math.random() * 30,
+                    vx: (Math.random() - 0.5) * 5,
+                    vy: Math.random() * -3 - 2,
+                    size: Math.random() * 3 + 2,
+                    alpha: 1,
+                    decay: 0.01 + Math.random() * 0.03
+                });
+            }
+        }
+        
+        function spawnHitEffect(x, y, dir) {
+            for (let i = 0; i < 8; i++) {
+                game.particles.push({
+                    type: 'hit',
+                    x: x,
+                    y: y,
+                    vx: dir * (Math.random() * 3 + 2),
+                    vy: (Math.random() - 0.5) * 4,
+                    size: Math.random() * 2 + 1,
+                    alpha: 1,
+                    decay: 0.02 + Math.random() * 0.03
+                });
+            }
+        }
+        
+        function spawnDust(x, y) {
+            for (let i = 0; i < 5; i++) {
+                game.particles.push({
+                    type: 'dust',
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: Math.random() * -1,
+                    size: Math.random() * 3 + 2,
+                    alpha: 0.8,
+                    decay: 0.01 + Math.random() * 0.02
+                });
+            }
+        }
+        
+        // Background generation
+        function generateBackground() {
+            game.backgrounds = [];
+            const starCount = 200;
+            
+            for (let i = 0; i < starCount; i++) {
+                game.backgrounds.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 1.5 + 0.5,
+                    brightness: Math.random() * 0.5 + 0.5,
+                    parallax: Math.random() * 0.5 + 0.5
+                });
+            }
+        }
+        
+        // Drawing functions
+        function drawStickman(p) {
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.scale(p.dir, 1);
+            
+            // Apply hit flash
+            if (p.invulnerable > 0 && p.invulnerable % 4 < 2) {
+                ctx.fillStyle = 'white';
+            } else {
                 ctx.fillStyle = p.color;
+            }
+            
+            // Body parts
+            const animOffset = Math.sin(p.animationFrame * 0.1) * 10 * (p.state === 'run' ? 1 : 0.3);
+            const jumpOffset = p.state === 'jump' ? Math.max(0, 20 - p.vy) : 0;
+            const attackFrame = p.state === 'attack' ? Math.min(5, Math.floor(p.animationFrame * 0.5)) : 0;
+            const specialFrame = p.state === 'special' ? Math.min(8, Math.floor(p.animationFrame * 0.4)) : 0;
+            
+            // Head
+            ctx.beginPath();
+            ctx.arc(0, -15, 15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Body
+            ctx.fillRect(-10, 0, 20, 40);
+            
+            // Arms (with attack animation)
+            if (p.state === 'attack') {
+                ctx.fillRect(-25 - attackFrame * 5, 10, 15 + attackFrame * 5, 5);
+                ctx.fillRect(10, 10, 15, 5);
                 
-                // Тело
-                ctx.fillRect(p.x - 10, p.y, 20, 50);
+                // Draw sword
+                if (attackFrame > 0) {
+                    ctx.fillStyle = '#ddd';
+                    ctx.fillRect(5 - attackFrame * 8, 5, 30 + attackFrame * 5, 4);
+                    ctx.fillStyle = '#aaa';
+                    ctx.fillRect(5 - attackFrame * 8, 5, 10, 4);
+                }
+            } 
+            else if (p.state === 'special') {
+                ctx.fillRect(-25 - specialFrame * 3, 10, 15 + specialFrame * 3, 5);
+                ctx.fillRect(10, 10, 15, 5);
                 
-                // Голова
-                ctx.beginPath();
-                ctx.arc(p.x, p.y - 15, 15, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Руки
-                ctx.fillRect(p.x - 25, p.y + 10, 15, 5);
-                ctx.fillRect(p.x + 10, p.y + 10, 15, 5);
-                
-                // Ноги
-                ctx.fillRect(p.x - 15, p.y + 50, 15, 5);
-                ctx.fillRect(p.x, p.y + 50 + legFrame, 15, 5);
-                
-                // HP-бар
-                ctx.fillStyle = 'red';
-                ctx.fillRect(p.x - 25, p.y - 30, 50, 5);
-                ctx.fillStyle = 'lime';
-                ctx.fillRect(p.x - 25, p.y - 30, (p.health / 100) * 50, 5);
-            });
-
-            // Мечи
-            effects.swords.forEach((sword, i) => {
-                ctx.fillStyle = '#fff';
-                ctx.fillRect(
-                    sword.x + (sword.direction * (20 + sword.frame * 8)),
-                    sword.y + 10,
-                    40 * sword.direction,
-                    5
-                );
-                sword.frame++;
-                if (sword.frame > 5) effects.swords.splice(i, 1);
-            });
-
-            // Кровь
-            effects.blood.forEach((b, i) => {
-                ctx.fillStyle = `rgba(255, 0, 0, ${b.alpha})`;
-                ctx.fillRect(b.x, b.y, 5, 5);
-                b.alpha -= 0.02;
-                if (b.alpha <= 0) effects.blood.splice(i, 1);
+                // Draw special attack effect
+                if (specialFrame > 3) {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${0.7 - specialFrame * 0.07})`;
+                    ctx.beginPath();
+                    ctx.arc(30 + specialFrame * 5, 15, 15 + specialFrame * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            else {
+                ctx.fillRect(-25, 10, 15, 5);
+                ctx.fillRect(10, 10, 15, 5);
+            }
+            
+            // Legs (with run/jump animation)
+            if (p.state === 'jump') {
+                ctx.fillRect(-15, 40, 15, 5);
+                ctx.fillRect(0, 40, 15, 5);
+            } else {
+                ctx.fillRect(-15, 40, 15, 5);
+                ctx.fillRect(0, 40 + animOffset, 15, 5);
+            }
+            
+            // Stamina bar
+            if (p.stamina < 100) {
+                ctx.fillStyle = 'rgba(255, 255, 0, 0.7)';
+                ctx.fillRect(-15, -25, 30 * (p.stamina / 100), 3);
+            }
+            
+            ctx.restore();
+        }
+        
+        function drawPlatforms() {
+            ctx.fillStyle = '#444';
+            environment.platforms.forEach(plat => {
+                ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
             });
         }
-
-        // Игровой цикл
+        
+        function drawParticles() {
+            game.particles.forEach((p, i) => {
+                if (p.alpha <= 0) {
+                    game.particles.splice(i, 1);
+                    return;
+                }
+                
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.1;
+                p.alpha -= p.decay;
+                
+                switch(p.type) {
+                    case 'blood':
+                        ctx.fillStyle = `rgba(200, 0, 0, ${p.alpha})`;
+                        break;
+                    case 'hit':
+                        ctx.fillStyle = `rgba(255, 255, 100, ${p.alpha})`;
+                        break;
+                    case 'dust':
+                        ctx.fillStyle = `rgba(150, 150, 150, ${p.alpha})`;
+                        break;
+                }
+                
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+            });
+        }
+        
+        function drawBackground() {
+            // Dark gradient background
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#111122');
+            gradient.addColorStop(1, '#000011');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Stars
+            game.backgrounds.forEach(star => {
+                const x = (star.x - game.camera.x * star.parallax) % canvas.width;
+                const y = (star.y - game.camera.y * star.parallax) % canvas.height;
+                
+                ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`;
+                ctx.fillRect(x, y, star.size, star.size);
+            });
+        }
+        
+        function updateCamera() {
+            const centerX = (p1.x + p2.x) / 2;
+            const centerY = (p1.y + p2.y) / 2;
+            
+            game.camera.targetX = centerX - canvas.width / 2;
+            game.camera.targetY = centerY - canvas.height / 2;
+            
+            // Smooth camera movement
+            game.camera.x += (game.camera.targetX - game.camera.x) * 0.1;
+            game.camera.y += (game.camera.targetY - game.camera.y) * 0.1;
+            
+            // Apply camera transform
+            ctx.setTransform(1, 0, 0, 1, -game.camera.x, -game.camera.y);
+        }
+        
+        function resetCamera() {
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+        }
+        
+        // UI functions
+        function updateUI() {
+            document.getElementById('p1-health').querySelector('.health-fill').style.width = `${(p1.health / p1.maxHealth) * 100}%`;
+            document.getElementById('p2-health').querySelector('.health-fill').style.width = `${(p2.health / p2.maxHealth) * 100}%`;
+            
+            // AI debug info
+            const debugInfo = `
+                <strong>P1 (${p1.color})</strong><br>
+                Strategy: ${p1.strategy}<br>
+                State: ${p1.aiState}<br>
+                Aggression: ${Math.round(p1.personality.aggression * 100)}%<br>
+                Caution: ${Math.round(p1.personality.caution * 100)}%<br>
+                Combo: ${p1.comboCount}<br><br>
+                <strong>P2 (${p2.color})</strong><br>
+                Strategy: ${p2.strategy}<br>
+                State: ${p2.aiState}<br>
+                Aggression: ${Math.round(p2.personality.aggression * 100)}%<br>
+                Caution: ${Math.round(p2.personality.caution * 100)}%<br>
+                Combo: ${p2.comboCount}
+            `;
+            
+            document.getElementById('ai-debug').innerHTML = debugInfo;
+        }
+        
+        function showGameOver(winner) {
+            document.getElementById('winner-text').textContent = `${winner === p1 ? 'BLUE' : 'RED'} STICKMAN WINS!`;
+            document.getElementById('game-over').style.display = 'block';
+        }
+        
+        function resetGame() {
+            p1 = new Stickman(300, environment.groundLevel, '#00f7ff', true);
+            p2 = new Stickman(canvas.width - 300, environment.groundLevel, '#ff2a6d', true);
+            game.particles = [];
+            game.running = true;
+            document.getElementById('game-over').style.display = 'none';
+        }
+        
+        // Event listeners
+        document.getElementById('restart-btn').addEventListener('click', resetGame);
+        
+        // Game loop
         function gameLoop() {
-            updatePhysics();
-            updateAI();
-            draw();
+            if (game.running) {
+                // Update game state
+                p1.update(p2, environment);
+                p2.update(p1, environment);
+                game.frameCount++;
+                
+                // Update camera
+                updateCamera();
+                
+                // Draw everything
+                drawBackground();
+                drawPlatforms();
+                drawStickman(p1);
+                drawStickman(p2);
+                drawParticles();
+                
+                // Reset camera for UI
+                resetCamera();
+                
+                // Update UI
+                updateUI();
+            }
+            
             requestAnimationFrame(gameLoop);
         }
-
+        
+        // Initialize
+        generateBackground();
         gameLoop();
     </script>
 </body>
