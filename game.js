@@ -4,98 +4,59 @@ const ctx = canvas.getContext("2d");
 canvas.width = 1000;
 canvas.height = 500;
 
-// Текстуры
-const textures = {
-    sword: { width: 40, height: 5, color: "#fff" },
-    bullet: { width: 10, height: 3, color: "#ff0" },
-    blood: { particles: [] }
-};
-
 // Игроки
 const players = [
-    {
-        x: 200, y: 350, width: 20, height: 60,
-        color: "#00f7ff", health: 200,
-        state: "run", direction: 1,
-        speed: 4, jumpPower: 15,
-        weapons: ["sword", "gun"],
-        cooldowns: { attack: 0, shoot: 0 },
-        combo: 0,
-        isJumping: false
-    },
-    {
-        x: 800, y: 350, width: 20, height: 60,
-        color: "#ff2a6d", health: 200,
-        state: "run", direction: -1,
-        speed: 4, jumpPower: 15,
-        weapons: ["sword", "gun"],
-        cooldowns: { attack: 0, shoot: 0 },
-        combo: 0,
-        isJumping: false
-    }
+    { x: 200, y: 350, speed: 4, color: "#00f7ff", health: 100, direction: 1, state: "run", attackCooldown: 0, isJumping: false },
+    { x: 800, y: 350, speed: 4, color: "#ff2a6d", health: 100, direction: -1, state: "run", attackCooldown: 0, isJumping: false }
 ];
 
-// Пули и кровь
+// Оружие и эффекты
+const swords = [];
 const bullets = [];
-const bloodParticles = [];
+const blood = [];
 
 // Анимации
-const states = {
-    idle: { frame: 0, maxFrames: 4 },
-    run: { frame: 0, maxFrames: 6 },
-    attack: { frame: 0, maxFrames: 5, damageFrame: 2 },
-    shoot: { frame: 0, maxFrames: 3 },
-    jump: { frame: 0, maxFrames: 4 },
-    death: { frame: 0, maxFrames: 7 }
-};
+let frameCount = 0;
 
-// ИИ-логика
+// ИИ
 function updateAI() {
-    players.forEach((player, index) => {
-        const enemy = players[index === 0 ? 1 : 0];
-        const distance = Math.abs(player.x - enemy.x);
+    players.forEach((p, i) => {
+        const enemy = players[i === 0 ? 1 : 0];
+        const distance = Math.abs(p.x - enemy.x);
 
-        // Преследование или отступление
-        if (distance > 150) {
-            player.state = "run";
-            player.direction = (player.x < enemy.x) ? 1 : -1;
-            player.x += player.direction * player.speed;
+        // Преследование или отступ
+        if (distance > 150 || (p.health < 50 && distance < 100)) {
+            p.state = "run";
+            p.direction = p.x < enemy.x ? 1 : -1;
+            p.x += p.direction * p.speed;
         } 
         // Атака мечом
-        else if (distance < 80 && player.cooldowns.attack === 0) {
-            player.state = "attack";
-            player.cooldowns.attack = 30;
+        else if (distance < 80 && p.attackCooldown === 0) {
+            p.state = "attack";
+            p.attackCooldown = 30;
+            swords.push({ x: p.x, y: p.y, direction: p.direction, frame: 0 });
+            enemy.health -= 10;
+            // Кровь
+            for (let j = 0; j < 8; j++) {
+                blood.push({ x: enemy.x + Math.random() * 30, y: enemy.y + 20, alpha: 1 });
+            }
         }
-        // Прыжок с сальто
-        else if (Math.random() < 0.02 && !player.isJumping) {
-            player.state = "jump";
-            player.isJumping = true;
-            player.y -= player.jumpPower;
-        }
-        // Стрельба
-        else if (distance > 100 && player.cooldowns.shoot === 0) {
-            player.state = "shoot";
-            bullets.push({
-                x: player.x + (player.direction * 40),
-                y: player.y - 10,
-                direction: player.direction,
-                speed: 8,
-                damage: 10
-            });
-            player.cooldowns.shoot = 40;
+        // Прыжок
+        else if (!p.isJumping && Math.random() < 0.02) {
+            p.state = "jump";
+            p.isJumping = true;
+            p.y -= 80;
         }
 
         // Гравитация
-        if (player.y < 350) {
-            player.y += 2;
-        } else {
-            player.y = 350;
-            player.isJumping = false;
+        if (p.y < 350) p.y += 5;
+        else {
+            p.y = 350;
+            p.isJumping = false;
         }
 
-        // Кулдауны
-        if (player.cooldowns.attack > 0) player.cooldowns.attack--;
-        if (player.cooldowns.shoot > 0) player.cooldowns.shoot--;
+        // Кулдаун
+        if (p.attackCooldown > 0) p.attackCooldown--;
     });
 }
 
@@ -105,119 +66,60 @@ function draw() {
     ctx.fillStyle = "#111";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Игроки
-    players.forEach(player => {
+    // Стикмены
+    players.forEach(p => {
         // Ноги (анимация бега)
-        const legFrame = Math.floor(states.run.frame) % 2 === 0 ? -10 : 10;
-        ctx.fillStyle = player.color;
-        ctx.fillRect(player.x - 15, player.y + 50, 15, 5); // Левая нога
-        ctx.fillRect(player.x + 20, player.y + 50 + legFrame, 15, 5); // Правая нога
+        const legFrame = Math.sin(frameCount * 0.2) * 10;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x - 10, p.y + 50, 15, 5); // Левая
+        ctx.fillRect(p.x + 15, p.y + 50 + legFrame, 15, 5); // Правая
 
         // Тело
-        ctx.fillRect(player.x, player.y, player.width, player.height);
+        ctx.fillRect(p.x, p.y, 20, 50);
 
         // Голова
         ctx.beginPath();
-        ctx.arc(player.x + 10, player.y - 15, 15, 0, Math.PI * 2);
+        ctx.arc(p.x + 10, p.y - 10, 12, 0, Math.PI * 2);
         ctx.fill();
 
-        // Руки (анимация атаки/стрельбы)
-        if (player.state === "attack") {
-            // Меч
-            ctx.fillStyle = textures.sword.color;
-            ctx.fillRect(
-                player.x + (player.direction * 30),
-                player.y + 10,
-                textures.sword.width * player.direction,
-                textures.sword.height
-            );
-            // Руки с мечом
-            ctx.fillStyle = player.color;
-            ctx.fillRect(player.x + (player.direction * 25), player.y + 10, 10, 5);
-        } else if (player.state === "shoot") {
-            // Автомат
-            ctx.fillStyle = "#555";
-            ctx.fillRect(player.x + (player.direction * 30), player.y + 5, 25, 5);
-        } else {
-            // Обычные руки
-            ctx.fillRect(player.x - 15, player.y + 10, 15, 5);
-            ctx.fillRect(player.x + 20, player.y + 10, 15, 5);
-        }
+        // Руки
+        ctx.fillRect(p.x - 10, p.y + 10, 15, 5); // Левая
+        ctx.fillRect(p.x + 15, p.y + 10, 15, 5); // Правая
 
         // HP-бар
-        ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
-        ctx.fillRect(player.x - 20, player.y - 40, 60, 5);
+        ctx.fillStyle = "red";
+        ctx.fillRect(p.x - 10, p.y - 30, 40, 3);
         ctx.fillStyle = "lime";
-        ctx.fillRect(player.x - 20, player.y - 40, (player.health / 200) * 60, 5);
+        ctx.fillRect(p.x - 10, p.y - 30, (p.health / 100) * 40, 3);
     });
 
-    // Пули
-    bullets.forEach(bullet => {
-        ctx.fillStyle = textures.bullet.color;
-        ctx.fillRect(bullet.x, bullet.y, textures.bullet.width, textures.bullet.height);
+    // Мечи
+    swords.forEach((sword, i) => {
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(
+            sword.x + (sword.direction * (20 + sword.frame * 5)),
+            sword.y + 10,
+            30 * sword.direction,
+            5
+        );
+        sword.frame++;
+        if (sword.frame > 5) swords.splice(i, 1);
     });
 
     // Кровь
-    bloodParticles.forEach(particle => {
-        ctx.fillStyle = `rgba(255, 0, 0, ${particle.opacity})`;
-        ctx.fillRect(particle.x, particle.y, 3, 3);
-    });
-}
-
-// Физика
-function update() {
-    updateAI();
-
-    // Пули
-    bullets.forEach((bullet, index) => {
-        bullet.x += bullet.direction * bullet.speed;
-
-        // Попадание
-        players.forEach(player => {
-            if (
-                bullet.x > player.x && bullet.x < player.x + player.width &&
-                bullet.y > player.y && bullet.y < player.y + player.height
-            ) {
-                player.health -= bullet.damage;
-                bullets.splice(index, 1);
-                
-                // Кровь
-                for (let i = 0; i < 10; i++) {
-                    bloodParticles.push({
-                        x: player.x + Math.random() * 30,
-                        y: player.y + Math.random() * 40,
-                        opacity: 1
-                    });
-                }
-            }
-        });
-
-        // Удаление пуль
-        if (bullet.x < 0 || bullet.x > canvas.width) {
-            bullets.splice(index, 1);
-        }
-    });
-
-    // Кровь (исчезает)
-    bloodParticles.forEach((particle, index) => {
-        particle.opacity -= 0.01;
-        if (particle.opacity <= 0) bloodParticles.splice(index, 1);
-    });
-
-    // Анимации
-    Object.keys(states).forEach(state => {
-        if (states[state].frame < states[state].maxFrames) {
-            states[state].frame += 0.1;
-        } else {
-            states[state].frame = 0;
-        }
+    blood.forEach((b, i) => {
+        ctx.fillStyle = `rgba(255, 0, 0, ${b.alpha})`;
+        ctx.fillRect(b.x, b.y, 5, 5);
+        b.alpha -= 0.02;
+        if (b.alpha <= 0) blood.splice(i, 1);
     });
 }
 
 // Игровой цикл
 function gameLoop() {
-    update();
+    updateAI();
     draw();
+    frameCount++;
     requestAnimationFrame(gameLoop);
 }
 
