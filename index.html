@@ -1,1550 +1,260 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>STICKMAN SHOWDOWN: BLOODSPORT</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Реалистичная вращающаяся черная дыра</title>
     <style>
-        body { 
-            margin: 0; 
-            overflow: hidden; 
-            background: #111; 
-            font-family: 'Courier New', monospace;
-            color: white;
-        }
-        canvas { 
-            display: block; 
-            width: 100vw; 
-            height: 100vh; 
-        }
-        #ui {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-        .health-container {
-            position: absolute;
-            top: 20px;
-            width: 300px;
-            height: 30px;
-            background: rgba(0,0,0,0.7);
-            border: 2px solid rgba(255,255,255,0.2);
-        }
-        #p1-health { left: 20px; }
-        #p2-health { right: 20px; }
-        .health-bar {
-            height: 100%;
-            position: relative;
+        body {
+            margin: 0;
             overflow: hidden;
-            transition: width 0.3s;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
-        #p1-health .health-bar { 
-            background: linear-gradient(to right, #00f7ff, #00b4ff);
-            width: 100%;
-            float: left;
+        
+        .black-hole-container {
+            position: relative;
+            width: 600px;
+            height: 600px;
         }
-        #p2-health .health-bar { 
-            background: linear-gradient(to right, #ff2a6d, #ff6a00);
-            width: 100%;
-            float: right;
-        }
-        .health-damage {
+        
+        .black-hole {
             position: absolute;
-            top: 0;
-            height: 100%;
-            background: rgba(255,255,255,0.3);
-            transition: width 0.5s;
-        }
-        #p1-health .health-damage { right: 0; }
-        #p2-health .health-damage { left: 0; }
-        .health-text {
-            position: absolute;
-            top: 0;
-            width: 100%;
-            text-align: center;
-            line-height: 30px;
-            font-weight: bold;
-            text-shadow: 0 0 5px black;
-        }
-        #combo-display {
-            position: absolute;
-            top: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
-            font-weight: bold;
-            color: #ffcc00;
-            text-shadow: 0 0 10px #ff6600;
-            opacity: 0;
-            transition: all 0.3s;
-        }
-        #game-over {
-            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, #000 0%, #000 70%, transparent 100%);
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.9);
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9);
-            padding: 30px;
-            border: 3px solid #ff2a6d;
-            border-radius: 5px;
-            text-align: center;
-            display: none;
-            width: 400px;
-            max-width: 90%;
-        }
-        #game-over h1 {
-            color: #ff2a6d;
-            margin-top: 0;
-            font-size: 42px;
-            text-shadow: 0 0 10px #ff0066;
-        }
-        #winner-text {
-            font-size: 24px;
-            margin: 20px 0;
-        }
-        #restart-btn {
-            background: linear-gradient(to bottom, #00f7ff, #0088ff);
-            border: none;
-            padding: 12px 30px;
-            border-radius: 5px;
-            font-weight: bold;
-            font-family: 'Courier New', monospace;
-            font-size: 18px;
-            cursor: pointer;
-            pointer-events: auto;
-            transition: all 0.3s;
-            box-shadow: 0 0 15px rgba(0, 200, 255, 0.5);
-        }
-        #restart-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(0, 200, 255, 0.8);
-        }
-        #fps-counter {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            font-size: 12px;
-            color: rgba(255,255,255,0.5);
-        }
-        .limb {
-            position: absolute;
-            pointer-events: none;
             z-index: 10;
+        }
+        
+        .event-horizon {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.1) 70%, rgba(0, 0, 0, 0.5) 100%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            filter: blur(2px);
+        }
+        
+        .accretion-disk {
+            position: absolute;
+            width: 500px;
+            height: 100px;
+            background: linear-gradient(90deg, 
+                rgba(0,0,0,0) 0%, 
+                rgba(255,100,0,0.8) 20%, 
+                rgba(255,255,100,0.9) 50%, 
+                rgba(255,100,0,0.8) 80%, 
+                rgba(0,0,0,0) 100%);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateX(75deg);
+            z-index: 3;
+            animation: rotate-disk 20s linear infinite;
+            filter: blur(1px);
+        }
+        
+        .accretion-disk-inner {
+            position: absolute;
+            width: 400px;
+            height: 80px;
+            background: linear-gradient(90deg, 
+                rgba(0,0,0,0) 0%, 
+                rgba(255,50,0,0.9) 20%, 
+                rgba(255,255,50,1) 50%, 
+                rgba(255,50,0,0.9) 80%, 
+                rgba(0,0,0,0) 100%);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateX(75deg);
+            z-index: 4;
+            animation: rotate-disk 15s linear infinite;
+            filter: blur(0.5px);
+        }
+        
+        .accretion-disk-innermost {
+            position: absolute;
+            width: 300px;
+            height: 60px;
+            background: linear-gradient(90deg, 
+                rgba(0,0,0,0) 0%, 
+                rgba(255,0,0,1) 20%, 
+                rgba(255,255,0,1) 50%, 
+                rgba(255,0,0,1) 80%, 
+                rgba(0,0,0,0) 100%);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateX(75deg);
+            z-index: 5;
+            animation: rotate-disk 10s linear infinite;
+        }
+        
+        .jet-top, .jet-bottom {
+            position: absolute;
+            width: 30px;
+            height: 300px;
+            background: linear-gradient(to top, 
+                rgba(0,0,0,0) 0%, 
+                rgba(100,100,255,0.3) 30%, 
+                rgba(150,150,255,0.6) 70%, 
+                rgba(200,200,255,0.3) 90%, 
+                rgba(255,255,255,0) 100%);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            filter: blur(5px);
+        }
+        
+        .jet-top {
+            top: -250px;
+            animation: jet-pulse-top 4s infinite;
+        }
+        
+        .jet-bottom {
+            bottom: -250px;
+            transform: translateX(-50%) rotate(180deg);
+            animation: jet-pulse-bottom 4s infinite 2s;
+        }
+        
+        .gravitational-lensing {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            background: radial-gradient(circle at center, 
+                rgba(0,0,0,0) 0%, 
+                rgba(50,50,100,0.05) 30%, 
+                rgba(100,100,150,0.1) 50%, 
+                rgba(50,50,100,0.05) 70%, 
+                rgba(0,0,0,0) 100%);
+            animation: lensing-pulse 8s infinite;
+        }
+        
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: white;
+            border-radius: 50%;
+            z-index: 0;
+        }
+        
+        @keyframes rotate-disk {
+            from { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(0deg); }
+            to { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(360deg); }
+        }
+        
+        @keyframes jet-pulse-top {
+            0%, 100% { height: 300px; opacity: 0.7; }
+            50% { height: 400px; opacity: 1; }
+        }
+        
+        @keyframes jet-pulse-bottom {
+            0%, 100% { height: 300px; opacity: 0.7; }
+            50% { height: 400px; opacity: 1; }
+        }
+        
+        @keyframes lensing-pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
+            50% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <canvas id="game"></canvas>
-    
-    <div id="ui">
-        <div id="p1-health" class="health-container">
-            <div class="health-bar">
-                <div class="health-damage"></div>
-                <div class="health-text">100%</div>
-            </div>
-        </div>
-        <div id="p2-health" class="health-container">
-            <div class="health-bar">
-                <div class="health-damage"></div>
-                <div class="health-text">100%</div>
-            </div>
-        </div>
-        
-        <div id="combo-display"></div>
-        
-        <div id="game-over">
-            <h1>FATALITY</h1>
-            <p id="winner-text"></p>
-            <button id="restart-btn">BLOODSPORT CONTINUES</button>
-        </div>
-        
-        <div id="fps-counter"></div>
+    <div class="black-hole-container">
+        <div class="gravitational-lensing"></div>
+        <div class="jet-top"></div>
+        <div class="jet-bottom"></div>
+        <div class="accretion-disk"></div>
+        <div class="accretion-disk-inner"></div>
+        <div class="accretion-disk-innermost"></div>
+        <div class="event-horizon"></div>
+        <div class="black-hole"></div>
     </div>
 
     <script>
-        // Game Constants
-        const GRAVITY = 0.5;
-        const FRICTION = 0.85;
-        const AIR_RESISTANCE = 0.95;
-        const MAX_SPEED = 10;
-        const JUMP_FORCE = 14;
-        const ATTACK_RANGE = 90;
-        const ATTACK_DAMAGE = 8;
-        const HEAVY_DAMAGE = 18;
-        const KICK_DAMAGE = 12;
-        const SPECIAL_COOLDOWN = 240;
-        const AI_UPDATE_INTERVAL = 20;
-        const COMBO_TIMEOUT = 90;
-        const WALL_SLIDE_FRICTION = 0.7;
-        
-        // Game State
-        const game = {
-            running: true,
-            frameCount: 0,
-            particles: [],
-            limbs: [],
-            backgrounds: [],
-            camera: { x: 0, y: 0, targetX: 0, targetY: 0, zoom: 1 },
-            lastFrameTime: 0,
-            fps: 60,
-            combo: 0,
-            comboText: "",
-            comboTimeout: 0,
-            slowMo: 0
-        };
-        
-        // Initialize canvas
-        const canvas = document.getElementById('game');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        
-        // Resize handler
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
-        
-        // Sound effects
-        const sounds = {
-            punch: [
-                new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...'),
-                new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...')
-            ],
-            kick: [
-                new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...'),
-                new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...')
-            ],
-            sword: [
-                new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...'),
-                new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...')
-            ],
-            hit: [
-                new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...'),
-                new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...')
-            ],
-            special: new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...'),
-            death: new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...')
-        };
-        
-        // Stickman class
-        class Stickman {
-            constructor(x, y, color, isAI = true) {
-                this.x = x;
-                this.y = y;
-                this.vx = 0;
-                this.vy = 0;
-                this.width = 24;
-                this.height = 60;
-                this.color = color;
-                this.health = 100;
-                this.maxHealth = 100;
-                this.dir = isAI ? -1 : 1;
-                this.state = 'idle';
-                this.animationFrame = 0;
-                this.attackCooldown = 0;
-                this.jumpCooldown = 0;
-                this.specialCooldown = 0;
-                this.stamina = 100;
-                this.isAI = isAI;
-                this.aiState = 'evaluate';
-                this.aiTimer = 0;
-                this.strategy = 'balanced';
-                this.personality = {
-                    aggression: isAI ? Math.random() * 0.6 + 0.2 : 0,
-                    caution: isAI ? Math.random() * 0.6 + 0.1 : 0,
-                    reactionTime: isAI ? Math.floor(Math.random() * 40 + 20) : 0,
-                    attackPattern: isAI ? Math.floor(Math.random() * 3) : 0 // 0=balanced, 1=aggressive, 2=defensive
-                };
-                this.comboCount = 0;
-                this.lastHitTime = 0;
-                this.invulnerable = 0;
-                this.blocking = false;
-                this.blockCooldown = 0;
-                this.wallSliding = false;
-                this.hasSword = true;
-                this.headAttached = true;
-                this.leftArmAttached = true;
-                this.rightArmAttached = true;
-                this.leftLegAttached = true;
-                this.rightLegAttached = true;
-                this.hitPoints = {
-                    head: { x: 0, y: -25 },
-                    leftArm: { x: -20, y: 10 },
-                    rightArm: { x: 20, y: 10 },
-                    leftLeg: { x: -12, y: 50 },
-                    rightLeg: { x: 12, y: 50 }
-                };
-                this.damageTaken = 0;
-                this.lastDamageType = '';
-                this.attackType = 'punch';
-                this.attackChain = 0;
-                this.attackChainTimer = 0;
-            }
+        // Create background stars
+        const container = document.querySelector('.black-hole-container');
+        for (let i = 0; i < 200; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.opacity = Math.random();
+            star.style.width = `${Math.random() * 3}px`;
+            star.style.height = star.style.width;
             
-            update(enemy, environment) {
-                // Apply gravity if not wall sliding
-                if (!this.wallSliding) {
-                    this.vy += GRAVITY;
-                } else {
-                    this.vy = Math.min(this.vy + GRAVITY * 0.3, 2);
-                }
-                
-                // Apply friction
-                if (this.onGround(environment)) {
-                    this.vx *= FRICTION;
-                } else {
-                    this.vx *= AIR_RESISTANCE;
-                }
-                
-                // Wall slide friction
-                if (this.wallSliding) {
-                    this.vx *= WALL_SLIDE_FRICTION;
-                }
-                
-                // Limit speed
-                this.vx = Math.max(-MAX_SPEED, Math.min(MAX_SPEED, this.vx));
-                this.vy = Math.max(-JUMP_FORCE * 2, Math.min(JUMP_FORCE * 3, this.vy));
-                
-                // Update position
-                this.x += this.vx;
-                this.y += this.vy;
-                
-                // Platform collisions
-                this.handlePlatformCollisions(environment);
-                
-                // Boundary checks
-                const margin = 100;
-                if (this.x < margin) {
-                    this.x = margin;
-                    this.checkWallSlide(environment);
-                }
-                if (this.x > canvas.width - margin) {
-                    this.x = canvas.width - margin;
-                    this.checkWallSlide(environment);
-                }
-                
-                // Update cooldowns
-                if (this.attackCooldown > 0) this.attackCooldown--;
-                if (this.jumpCooldown > 0) this.jumpCooldown--;
-                if (this.specialCooldown > 0) this.specialCooldown--;
-                if (this.invulnerable > 0) this.invulnerable--;
-                if (this.blockCooldown > 0) this.blockCooldown--;
-                if (this.attackChainTimer > 0) this.attackChainTimer--;
-                
-                // Reset blocking if cooldown is over
-                if (this.blockCooldown <= 0) {
-                    this.blocking = false;
-                }
-                
-                // Regenerate stamina
-                if (this.state !== 'run' && this.state !== 'attack' && this.state !== 'special' && this.state !== 'block') {
-                    this.stamina = Math.min(100, this.stamina + 0.2);
-                }
-                
-                // State transitions
-                if (this.state === 'ko') {
-                    // No state changes when KO'd
-                    this.vx *= 0.9;
-                    return;
-                }
-                
-                if (Math.abs(this.vx) > 0.5 && this.onGround(environment) && 
-                    this.state !== 'jump' && this.state !== 'attack' && this.state !== 'special' && this.state !== 'block') {
-                    this.state = 'run';
-                } else if (Math.abs(this.vx) <= 0.5 && this.state === 'run' && this.state !== 'jump') {
-                    this.state = 'idle';
-                }
-                
-                // Reset to idle after attacks
-                if ((this.state === 'attack' || this.state === 'special') && this.attackCooldown <= 0) {
-                    this.state = 'idle';
-                }
-                
-                // Animation frame
-                this.animationFrame++;
-                
-                // AI behavior
-                if (this.isAI && game.frameCount % AI_UPDATE_INTERVAL === 0) {
-                    this.aiBehavior(enemy, environment);
-                }
-                
-                // Update hit points positions
-                this.updateHitPoints();
-            }
+            // Add animation to stars for gravitational lensing effect
+            star.style.animation = `star-twinkle ${5 + Math.random() * 10}s infinite`;
             
-            updateHitPoints() {
-                this.hitPoints.head.x = this.x;
-                this.hitPoints.head.y = this.y - 25;
-                
-                const armOffset = this.state === 'attack' ? 
-                    Math.min(10, Math.floor(this.animationFrame * 0.3)) * this.dir : 0;
-                
-                this.hitPoints.leftArm.x = this.x - 20 * this.dir - armOffset;
-                this.hitPoints.leftArm.y = this.y + 10;
-                this.hitPoints.rightArm.x = this.x + 20 * this.dir;
-                this.hitPoints.rightArm.y = this.y + 10;
-                
-                const legOffset = Math.sin(this.animationFrame * 0.1) * 10 * (this.state === 'run' ? 1 : 0.3);
-                this.hitPoints.leftLeg.x = this.x - 12 * this.dir;
-                this.hitPoints.leftLeg.y = this.y + 50;
-                this.hitPoints.rightLeg.x = this.x + 12 * this.dir;
-                this.hitPoints.rightLeg.y = this.y + 50 + (this.state === 'run' ? legOffset : 0);
-            }
-            
-            handlePlatformCollisions(environment) {
-                let onGround = false;
-                this.wallSliding = false;
-                
-                for (const plat of environment.platforms) {
-                    // Check if landing on platform
-                    if (this.y + this.height > plat.y && 
-                        this.y + this.height < plat.y + 20 &&
-                        this.x + this.width/2 > plat.x && 
-                        this.x - this.width/2 < plat.x + plat.width &&
-                        this.vy >= 0) {
-                        
-                        this.y = plat.y - this.height;
-                        this.vy = 0;
-                        onGround = true;
-                        
-                        if (this.state === 'jump') {
-                            this.state = 'idle';
-                            spawnDust(this.x, this.y + this.height);
-                        }
-                    }
-                    
-                    // Check wall collisions for wall sliding
-                    if (this.y + this.height > plat.y && 
-                        this.y < plat.y + plat.height) {
-                        
-                        // Left side collision
-                        if (this.x - this.width/2 < plat.x + plat.width && 
-                            this.x - this.width/2 > plat.x + plat.width - 10 &&
-                            this.vx < 0) {
-                            
-                            this.x = plat.x + plat.width + this.width/2;
-                            this.wallSliding = true;
-                        }
-                        
-                        // Right side collision
-                        if (this.x + this.width/2 > plat.x && 
-                            this.x + this.width/2 < plat.x + 10 &&
-                            this.vx > 0) {
-                            
-                            this.x = plat.x - this.width/2;
-                            this.wallSliding = true;
-                        }
+            container.appendChild(star);
+        }
+
+        // Add dynamic gravitational lensing effect on stars
+        document.head.insertAdjacentHTML('beforeend', `
+            <style>
+                @keyframes star-twinkle {
+                    0%, 100% { transform: translate(0, 0); opacity: ${Math.random()}; }
+                    50% { 
+                        transform: translate(
+                            ${(Math.random() - 0.5) * 20}px, 
+                            ${(Math.random() - 0.5) * 20}px
+                        ); 
+                        opacity: ${Math.random() + 0.3}; 
                     }
                 }
-                
-                // Ground collision
-                if (this.y + this.height > environment.groundLevel) {
-                    this.y = environment.groundLevel - this.height;
-                    this.vy = 0;
-                    onGround = true;
-                    
-                    if (this.state === 'jump') {
-                        this.state = 'idle';
-                        spawnDust(this.x, this.y + this.height);
-                    }
-                }
-                
-                return onGround;
-            }
-            
-            onGround(environment) {
-                if (this.y + this.height >= environment.groundLevel) return true;
-                
-                for (const plat of environment.platforms) {
-                    if (this.y + this.height >= plat.y && 
-                        this.y + this.height <= plat.y + 5 &&
-                        this.x + this.width/2 > plat.x && 
-                        this.x - this.width/2 < plat.x + plat.width) {
-                        return true;
-                    }
-                }
-                
-                return false;
-            }
-            
-            checkWallSlide(environment) {
-                this.wallSliding = !this.onGround(environment) && 
-                                 ((this.x <= 100 && this.vx < 0) || 
-                                  (this.x >= canvas.width - 100 && this.vx > 0));
-                
-                if (this.wallSliding && this.vy > 0) {
-                    this.vy *= 0.5;
-                }
-            }
-            
-            aiBehavior(enemy, environment) {
-                if (this.state === 'ko') return;
-                
-                const distance = Math.abs(this.x - enemy.x);
-                const heightDiff = this.y - enemy.y;
-                const healthRatio = this.health / this.maxHealth;
-                const enemyHealthRatio = enemy.health / enemy.maxHealth;
-                const rng = Math.random();
-                const reactionFrame = this.personality.reactionTime;
-                
-                // Update AI state machine
-                switch(this.aiState) {
-                    case 'evaluate':
-                        // Evaluate situation and choose strategy
-                        if (healthRatio < 0.3) {
-                            this.strategy = (rng > 0.7) ? 'defensive' : 'aggressive';
-                        } else if (enemyHealthRatio < 0.3) {
-                            this.strategy = (rng > 0.3) ? 'aggressive' : 'balanced';
-                        } else {
-                            // Use personality-based strategy
-                            if (this.personality.attackPattern === 1) {
-                                this.strategy = 'aggressive';
-                            } else if (this.personality.attackPattern === 2) {
-                                this.strategy = 'defensive';
-                            } else {
-                                this.strategy = 'balanced';
-                            }
-                        }
-                        
-                        // Choose next state based on strategy
-                        if (this.strategy === 'defensive' && distance < 200 && rng > 0.6) {
-                            this.aiState = 'evade';
-                            this.aiTimer = 20 + rng * 40;
-                        } else if (distance < ATTACK_RANGE * 1.5 && this.attackCooldown <= reactionFrame && 
-                                 rng > this.personality.caution * (healthRatio < 0.4 ? 0.5 : 1)) {
-                            this.aiState = 'attack';
-                            this.aiTimer = 10;
-                        } else if (distance > ATTACK_RANGE * 1.8 || (this.strategy === 'defensive' && distance < ATTACK_RANGE * 1.2)) {
-                            this.aiState = 'move';
-                            this.aiTimer = 30 + rng * 60;
-                        } else if (distance < ATTACK_RANGE * 2 && enemy.attackCooldown > 0 && rng > 0.5) {
-                            this.aiState = 'block';
-                            this.aiTimer = 15 + rng * 30;
-                        } else {
-                            this.aiState = 'idle';
-                            this.aiTimer = 15 + rng * 30;
-                        }
-                        break;
-                        
-                    case 'move':
-                        // Movement logic
-                        let moveDir;
-                        
-                        if (this.strategy === 'defensive' && distance < ATTACK_RANGE * 1.5) {
-                            moveDir = (this.x < enemy.x ? -1 : 1);
-                        } else {
-                            moveDir = (this.x < enemy.x ? 1 : -1);
-                            
-                            // Add some randomness to movement
-                            if (rng > 0.8) {
-                                moveDir *= -1;
-                                this.aiTimer = 15 + rng * 15;
-                            }
-                        }
-                        
-                        this.vx = moveDir * (this.speed * (0.7 + rng * 0.6));
-                        this.dir = moveDir;
-                        
-                        // Jump occasionally
-                        if (this.jumpCooldown === 0 && rng > 0.85 && 
-                            (distance < ATTACK_RANGE * 1.2 || this.strategy === 'aggressive')) {
-                            this.jump();
-                        }
-                        
-                        if (this.aiTimer-- <= 0 || (distance < ATTACK_RANGE && this.strategy === 'aggressive')) {
-                            this.aiState = 'evaluate';
-                        }
-                        break;
-                        
-                    case 'attack':
-                        // Choose attack type based on distance and strategy
-                        if (distance < ATTACK_RANGE * 0.8 && this.hasSword && rng > 0.7) {
-                            this.attackType = 'sword';
-                        } else if (distance < ATTACK_RANGE * 0.6 && rng > 0.6) {
-                            this.attackType = 'kick';
-                        } else {
-                            this.attackType = 'punch';
-                        }
-                        
-                        // Attack logic
-                        if (this.attackCooldown === 0) {
-                            this.state = 'attack';
-                            this.attackCooldown = 25;
-                            this.dir = (this.x < enemy.x) ? 1 : -1;
-                            
-                            // Check if attack hits
-                            if (distance < ATTACK_RANGE && Math.abs(heightDiff) < 40) {
-                                let damage = ATTACK_DAMAGE;
-                                let knockbackX = this.dir * 6;
-                                let knockbackY = -3;
-                                
-                                if (this.attackType === 'sword') {
-                                    damage = HEAVY_DAMAGE;
-                                    knockbackX = this.dir * 8;
-                                    knockbackY = -4;
-                                    this.swingSword();
-                                } else if (this.attackType === 'kick') {
-                                    damage = KICK_DAMAGE;
-                                    knockbackX = this.dir * 7;
-                                    knockbackY = -5;
-                                }
-                                
-                                // Apply combo multiplier
-                                damage *= (1 + this.comboCount * 0.15);
-                                
-                                // Check if enemy is blocking
-                                if (enemy.blocking && enemy.dir === -this.dir) {
-                                    damage *= 0.3;
-                                    knockbackX *= 0.5;
-                                    knockbackY *= 0.5;
-                                    enemy.stamina = Math.max(0, enemy.stamina - 15);
-                                    spawnBlockEffect(enemy);
-                                } else {
-                                    enemy.takeDamage(damage, knockbackX, knockbackY, this.attackType);
-                                    this.comboCount = Math.min(8, this.comboCount + 1);
-                                    this.lastHitTime = game.frameCount;
-                                    
-                                    // Special attack chance
-                                    if (this.specialCooldown === 0 && rng > 0.85) {
-                                        this.aiState = 'special';
-                                        this.aiTimer = 10;
-                                        break;
-                                    }
-                                }
-                            }
-                            
-                            // Chain attacks
-                            if (this.attackChainTimer > 0 && this.comboCount > 0 && rng > 0.5) {
-                                this.attackChain++;
-                                if (this.attackChain > 2) this.attackChain = 0;
-                                this.attackChainTimer = 15;
-                            } else {
-                                this.attackChain = 0;
-                                this.attackChainTimer = 20;
-                            }
-                        }
-                        
-                        if (this.aiTimer-- <= 0) {
-                            this.aiState = 'evaluate';
-                        }
-                        break;
-                        
-                    case 'special':
-                        // Special attack
-                        if (this.specialCooldown === 0) {
-                            this.state = 'special';
-                            this.specialCooldown = SPECIAL_COOLDOWN;
-                            this.dir = (this.x < enemy.x) ? 1 : -1;
-                            
-                            if (distance < ATTACK_RANGE * 1.8 && Math.abs(heightDiff) < 50) {
-                                const damage = HEAVY_DAMAGE * 1.5;
-                                enemy.takeDamage(damage, this.dir * 12, -8, 'special');
-                                spawnBlood(enemy, 30);
-                                this.comboCount = Math.min(10, this.comboCount + 2);
-                                this.lastHitTime = game.frameCount;
-                                this.specialAttackEffect();
-                            }
-                        }
-                        this.aiState = 'evaluate';
-                        break;
-                        
-                    case 'block':
-                        // Blocking logic
-                        if (!this.blocking && this.blockCooldown === 0) {
-                            this.blocking = true;
-                            this.blockCooldown = 45;
-                            this.state = 'block';
-                            this.dir = (this.x < enemy.x) ? 1 : -1;
-                        }
-                        
-                        if (this.aiTimer-- <= 0 || distance > ATTACK_RANGE * 1.5) {
-                            this.aiState = 'evaluate';
-                        }
-                        break;
-                        
-                    case 'evade':
-                        // Evasive maneuvers
-                        if (this.jumpCooldown === 0 && rng > 0.6) {
-                            this.jump();
-                        }
-                        
-                        // Move away
-                        const evadeDir = (this.x < enemy.x) ? -1 : 1;
-                        this.vx = evadeDir * this.speed * (0.7 + rng * 0.4);
-                        this.dir = evadeDir;
-                        
-                        if (this.aiTimer-- <= 0) {
-                            this.aiState = 'evaluate';
-                        }
-                        break;
-                        
-                    case 'idle':
-                        // Wait and evaluate
-                        if (this.aiTimer-- <= 0) {
-                            this.aiState = 'evaluate';
-                        }
-                        break;
-                }
-                
-                // Reset combo if too much time passed
-                if (game.frameCount - this.lastHitTime > COMBO_TIMEOUT) {
-                    this.comboCount = 0;
-                }
-            }
-            
-            jump() {
-                if (this.jumpCooldown === 0 && (this.onGround(environment) || this.wallSliding)) {
-                    this.vy = -JUMP_FORCE * (this.wallSliding ? 0.8 : 1);
-                    this.jumpCooldown = 20;
-                    this.state = 'jump';
-                    
-                    if (this.wallSliding) {
-                        this.vx = this.dir * 6; // Wall jump
-                        this.wallSliding = false;
-                    }
-                    
-                    spawnDust(this.x, this.y + this.height);
-                }
-            }
-            
-            takeDamage(amount, knockbackX, knockbackY, damageType = 'normal') {
-                if (this.invulnerable > 0 || this.state === 'ko') return;
-                
-                // Blocking reduces damage
-                if (this.blocking && this.blockCooldown > 0) {
-                    amount *= 0.3;
-                    knockbackX *= 0.5;
-                    knockbackY *= 0.5;
-                    this.stamina = Math.max(0, this.stamina - 15);
-                    spawnBlockEffect(this);
-                } else {
-                    // Normal hit
-                    this.health -= amount;
-                    this.damageTaken += amount;
-                    this.lastDamageType = damageType;
-                    this.vx += knockbackX;
-                    this.vy += knockbackY;
-                    this.invulnerable = 10;
-                    this.stamina = Math.max(0, this.stamina - 10);
-                    
-                    // Blood effect
-                    const bloodAmount = 5 + amount * 0.5;
-                    spawnBlood(this, bloodAmount);
-                    
-                    // Check for limb loss
-                    this.checkLimbLoss();
-                    
-                    // Screen shake for big hits
-                    if (amount > 15) {
-                        game.slowMo = 5;
-                    }
-                }
-                
-                // Update health UI immediately
-                updateHealthUI();
-                
-                // Check if health is below 0
-                if (this.health <= 0) {
-                    this.health = 0;
-                    this.state = 'ko';
-                    this.die();
-                }
-            }
-            
-            checkLimbLoss() {
-                const lossThreshold = 50 + Math.random() * 30;
-                
-                if (this.damageTaken > lossThreshold) {
-                    this.damageTaken = 0;
-                    const rng = Math.random();
-                    
-                    if (rng > 0.7 && this.headAttached) {
-                        this.loseLimb('head');
-                    } else if (rng > 0.5 && (this.leftArmAttached || this.rightArmAttached)) {
-                        const arm = this.leftArmAttached ? 'leftArm' : 'rightArm';
-                        this.loseLimb(arm);
-                    } else if (rng > 0.3 && (this.leftLegAttached || this.rightLegAttached)) {
-                        const leg = this.leftLegAttached ? 'leftLeg' : 'rightLeg';
-                        this.loseLimb(leg);
-                    }
-                }
-            }
-            
-            loseLimb(limb) {
-                // Create flying limb
-                const limbElement = document.createElement('div');
-                limbElement.className = 'limb';
-                limbElement.style.backgroundColor = this.color;
-                
-                // Position the limb
-                const limbX = this.hitPoints[limb].x;
-                const limbY = this.hitPoints[limb].y;
-                
-                // Different shapes for different limbs
-                if (limb === 'head') {
-                    limbElement.style.width = '30px';
-                    limbElement.style.height = '30px';
-                    limbElement.style.borderRadius = '15px';
-                    this.headAttached = false;
-                } else if (limb.includes('Arm')) {
-                    limbElement.style.width = '30px';
-                    limbElement.style.height = '10px';
-                    if (limb === 'leftArm') this.leftArmAttached = false;
-                    if (limb === 'rightArm') this.rightArmAttached = false;
-                } else {
-                    limbElement.style.width = '24px';
-                    limbElement.style.height = '10px';
-                    if (limb === 'leftLeg') this.leftLegAttached = false;
-                    if (limb === 'rightLeg') this.rightLegAttached = false;
-                }
-                
-                // Add to DOM
-                document.body.appendChild(limbElement);
-                
-                // Add to game state
-                game.limbs.push({
-                    element: limbElement,
-                    x: limbX,
-                    y: limbY,
-                    vx: (Math.random() - 0.5) * 10,
-                    vy: Math.random() * -10 - 5,
-                    rotation: 0,
-                    rotationSpeed: (Math.random() - 0.5) * 20,
-                    gravity: 0.5,
-                    type: limb,
-                    color: this.color,
-                    decay: 120 + Math.random() * 60
-                });
-                
-                // Extra blood for limb loss
-                spawnBlood(this, 15);
-                
-                // Play sound
-                playSound(sounds.hit[Math.floor(Math.random() * sounds.hit.length)]);
-            }
-            
-            die() {
-                game.running = false;
-                
-                // Create flying limbs for death
-                if (this.headAttached) this.loseLimb('head');
-                if (this.leftArmAttached) this.loseLimb('leftArm');
-                if (this.rightArmAttached) this.loseLimb('rightArm');
-                if (this.leftLegAttached) this.loseLimb('leftLeg');
-                if (this.rightLegAttached) this.loseLimb('rightLeg');
-                
-                // Big blood explosion
-                spawnBlood(this, 50);
-                
-                // Play death sound
-                playSound(sounds.death);
-                
-                // Show game over
-                setTimeout(() => {
-                    showGameOver(this === p1 ? p2 : p1);
-                }, 1000);
-            }
-            
-            swingSword() {
-                if (!this.hasSword) return;
-                
-                // Sword swing effect
-                for (let i = 0; i < 5; i++) {
-                    game.particles.push({
-                        type: 'sword',
-                        x: this.x + (Math.random() * 40 + 20) * this.dir,
-                        y: this.y + Math.random() * 30 - 15,
-                        vx: this.dir * (Math.random() * 3 + 2),
-                        vy: (Math.random() - 0.5) * 3,
-                        size: Math.random() * 2 + 1,
-                        alpha: 1,
-                        decay: 0.02 + Math.random() * 0.03,
-                        color: `rgba(200, 230, 255, ${Math.random() * 0.5 + 0.5})`
-                    });
-                }
-                
-                playSound(sounds.sword[Math.floor(Math.random() * sounds.sword.length)]);
-            }
-            
-            specialAttackEffect() {
-                // Special attack visual effect
-                for (let i = 0; i < 20; i++) {
-                    const angle = Math.random() * Math.PI * 2;
-                    const speed = Math.random() * 5 + 2;
-                    
-                    game.particles.push({
-                        type: 'special',
-                        x: this.x,
-                        y: this.y,
-                        vx: Math.cos(angle) * speed,
-                        vy: Math.sin(angle) * speed,
-                        size: Math.random() * 4 + 2,
-                        alpha: 1,
-                        decay: 0.01 + Math.random() * 0.02,
-                        color: `rgba(255, ${Math.floor(Math.random() * 100 + 50)}, 0, 0.8)`
-                    });
-                }
-                
-                playSound(sounds.special);
-                game.slowMo = 10;
-            }
-            
-            get speed() {
-                // Speed is reduced when limbs are missing
-                let speedMultiplier = 1;
-                if (!this.leftLegAttached || !this.rightLegAttached) speedMultiplier *= 0.7;
-                if (!this.leftLegAttached && !this.rightLegAttached) speedMultiplier *= 0.5;
-                
-                return MAX_SPEED * (0.7 + this.stamina / 250) * speedMultiplier;
-            }
-        }
+            </style>
+        `);
+
+        // Add Doppler effect to accretion disk (redshift/blueshift)
+        const disk = document.querySelector('.accretion-disk');
+        const diskInner = document.querySelector('.accretion-disk-inner');
+        const diskInnermost = document.querySelector('.accretion-disk-innermost');
         
-        // Game objects
-        const environment = {
-            groundLevel: canvas.height - 100,
-            platforms: [
-                { x: 300, y: canvas.height - 200, width: 200, height: 20 },
-                { x: canvas.width - 500, y: canvas.height - 250, width: 200, height: 20 },
-                { x: canvas.width/2 - 100, y: canvas.height - 300, width: 200, height: 20 }
-            ]
-        };
-        
-        let p1 = new Stickman(300, environment.groundLevel - 60, '#00f7ff', false);
-        let p2 = new Stickman(canvas.width - 300, environment.groundLevel - 60, '#ff2a6d', true);
-        
-        // Effects
-        function spawnBlood(target, count = 10) {
-            for (let i = 0; i < count; i++) {
-                const size = Math.random() * 4 + 2;
-                const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 5 + 2;
+        setInterval(() => {
+            const time = Date.now() / 1000;
+            const blueshift = 0.5 + 0.5 * Math.sin(time * 2);
+            const redshift = 0.5 + 0.5 * Math.sin(time * 2 + Math.PI);
+            
+            disk.style.background = `linear-gradient(90deg, 
+                rgba(0,0,0,0) 0%, 
+                rgba(255,${100 * redshift},${50 * redshift},0.8) 20%, 
+                rgba(255,255,${100 * blueshift},0.9) 50%, 
+                rgba(255,${100 * redshift},${50 * redshift},0.8) 80%, 
+                rgba(0,0,0,0) 100%)`;
                 
-                game.particles.push({
-                    type: 'blood',
-                    x: target.x + Math.random() * 40 - 20,
-                    y: target.y + Math.random() * 30 - 10,
-                    vx: Math.cos(angle) * speed * 0.3,
-                    vy: Math.sin(angle) * speed * 0.3,
-                    size: size,
-                    alpha: 1,
-                    decay: 0.01 + Math.random() * 0.03,
-                    color: `rgba(200, 0, 0, ${Math.random() * 0.5 + 0.5})`,
-                    gravity: 0.3 + Math.random() * 0.2
-                });
-            }
-        }
-        
-        function spawnBlockEffect(target) {
-            for (let i = 0; i < 8; i++) {
-                game.particles.push({
-                    type: 'block',
-                    x: target.x + (Math.random() * 30 - 15) * target.dir,
-                    y: target.y + Math.random() * 20,
-                    vx: -target.dir * (Math.random() * 2 + 1),
-                    vy: (Math.random() - 0.5) * 3,
-                    size: Math.random() * 3 + 2,
-                    alpha: 1,
-                    decay: 0.02 + Math.random() * 0.03,
-                    color: 'rgba(255, 255, 255, 0.8)'
-                });
-            }
-            
-            playSound(sounds.hit[Math.floor(Math.random() * sounds.hit.length)]);
-        }
-        
-        function spawnHitEffect(x, y, dir) {
-            for (let i = 0; i < 8; i++) {
-                game.particles.push({
-                    type: 'hit',
-                    x: x,
-                    y: y,
-                    vx: dir * (Math.random() * 3 + 2),
-                    vy: (Math.random() - 0.5) * 4,
-                    size: Math.random() * 2 + 1,
-                    alpha: 1,
-                    decay: 0.02 + Math.random() * 0.03,
-                    color: 'rgba(255, 255, 100, 0.9)'
-                });
-            }
-            
-            const sound = Math.random() > 0.5 ? sounds.punch : sounds.kick;
-            playSound(sound[Math.floor(Math.random() * sound.length)]);
-        }
-        
-        function spawnDust(x, y) {
-            for (let i = 0; i < 5; i++) {
-                game.particles.push({
-                    type: 'dust',
-                    x: x,
-                    y: y,
-                    vx: (Math.random() - 0.5) * 2,
-                    vy: Math.random() * -1,
-                    size: Math.random() * 3 + 2,
-                    alpha: 0.8,
-                    decay: 0.01 + Math.random() * 0.02,
-                    color: 'rgba(150, 150, 150, 0.8)'
-                });
-            }
-        }
-        
-        function playSound(sound) {
-            sound.currentTime = 0;
-            sound.volume = 0.3;
-            sound.play().catch(e => console.log("Sound play failed:", e));
-        }
-        
-        // Background generation
-        function generateBackground() {
-            game.backgrounds = [];
-            const starCount = 300;
-            
-            for (let i = 0; i < starCount; i++) {
-                game.backgrounds.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    size: Math.random() * 2 + 0.5,
-                    brightness: Math.random() * 0.7 + 0.3,
-                    parallax: Math.random() * 0.7 + 0.3,
-                    twinkleSpeed: Math.random() * 0.02 + 0.01,
-                    twinklePhase: Math.random() * Math.PI * 2
-                });
-            }
-        }
-        
-        // Drawing functions
-        function drawStickman(p) {
-            ctx.save();
-            ctx.translate(p.x, p.y);
-            ctx.scale(p.dir, 1);
-            
-            // Apply hit flash
-            if (p.invulnerable > 0 && p.invulnerable % 4 < 2) {
-                ctx.fillStyle = 'white';
-            } else {
-                ctx.fillStyle = p.color;
-            }
-            
-            // Animation offsets
-            const animOffset = Math.sin(p.animationFrame * 0.1) * 10 * (p.state === 'run' ? 1 : 0.3);
-            const jumpOffset = p.state === 'jump' ? Math.max(0, 20 - p.vy) : 0;
-            const attackFrame = p.state === 'attack' ? Math.min(8, Math.floor(p.animationFrame * 0.4)) : 0;
-            const specialFrame = p.state === 'special' ? Math.min(12, Math.floor(p.animationFrame * 0.3)) : 0;
-            const blockFrame = p.state === 'block' ? Math.min(5, Math.floor(p.animationFrame * 0.2)) : 0;
-            
-            // Head (if attached)
-            if (p.headAttached) {
-                ctx.beginPath();
-                ctx.arc(0, -25, 15, 0, Math.PI * 2);
-                ctx.fill();
+            diskInner.style.background = `linear-gradient(90deg, 
+                rgba(0,0,0,0) 0%, 
+                rgba(255,${50 * redshift},${30 * redshift},0.9) 20%, 
+                rgba(255,255,${80 * blueshift},1) 50%, 
+                rgba(255,${50 * redshift},${30 * redshift},0.9) 80%, 
+                rgba(0,0,0,0) 100%)`;
                 
-                // Eyes (only when not attacking)
-                if (p.state !== 'attack' && p.state !== 'special') {
-                    ctx.fillStyle = 'white';
-                    ctx.beginPath();
-                    ctx.arc(5 * p.dir, -30, 3, 0, Math.PI * 2);
-                    ctx.arc(-5 * p.dir, -30, 3, 0, Math.PI * 2);
-                    ctx.fill();
-                    
-                    ctx.fillStyle = 'black';
-                    ctx.beginPath();
-                    ctx.arc(5 * p.dir, -30, 1, 0, Math.PI * 2);
-                    ctx.arc(-5 * p.dir, -30, 1, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-            
-            // Body
-            ctx.fillStyle = p.color;
-            ctx.fillRect(-12, 0, 24, 50);
-            
-            // Arms (if attached)
-            if (p.leftArmAttached) {
-                if (p.state === 'attack' && p.attackType === 'punch') {
-                    ctx.fillRect(-30 - attackFrame * 4, 10, 15 + attackFrame * 4, 8);
-                } else if (p.state === 'block') {
-                    ctx.fillRect(-30 - blockFrame * 3, 10, 15 + blockFrame * 3, 8);
-                } else {
-                    ctx.fillRect(-30, 10, 15, 8);
-                }
-            }
-            
-            if (p.rightArmAttached) {
-                if (p.state === 'attack' && (p.attackType === 'sword' || p.attackType === 'punch')) {
-                    ctx.fillRect(15 + attackFrame * 4, 10, 15 + attackFrame * 2, 8);
-                    
-                    // Draw sword if available
-                    if (p.hasSword && p.attackType === 'sword') {
-                        ctx.fillStyle = '#ddd';
-                        ctx.fillRect(25 + attackFrame * 6, 5, 30 + attackFrame * 4, 5);
-                        ctx.fillStyle = '#aaa';
-                        ctx.fillRect(25 + attackFrame * 6, 5, 10, 5);
-                    }
-                } else if (p.state === 'special') {
-                    ctx.fillRect(15 + specialFrame * 3, 10, 15 + specialFrame * 2, 8);
-                } else {
-                    ctx.fillRect(15, 10, 15, 8);
-                }
-            }
-            
-            // Legs (if attached)
-            if (p.leftLegAttached) {
-                if (p.state === 'attack' && p.attackType === 'kick') {
-                    ctx.fillRect(-20 - attackFrame * 2, 50, 12, 8);
-                    ctx.fillRect(-20 - attackFrame * 6, 50 + attackFrame * 2, 12, 8);
-                } else if (p.state === 'jump') {
-                    ctx.fillRect(-20, 50, 12, 8);
-                } else {
-                    ctx.fillRect(-20, 50, 12, 8);
-                }
-            }
-            
-            if (p.rightLegAttached) {
-                if (p.state === 'jump') {
-                    ctx.fillRect(8, 50, 12, 8);
-                } else {
-                    ctx.fillRect(8, 50 + animOffset, 12, 8);
-                }
-            }
-            
-            // Stamina bar
-            if (p.stamina < 100) {
-                ctx.fillStyle = 'rgba(255, 255, 0, 0.7)';
-                ctx.fillRect(-15, -35, 30 * (p.stamina / 100), 3);
-            }
-            
-            // Special cooldown indicator
-            if (p.specialCooldown > 0) {
-                const cooldownPercent = 1 - (p.specialCooldown / SPECIAL_COOLDOWN);
-                ctx.fillStyle = 'rgba(255, 100, 0, 0.5)';
-                ctx.beginPath();
-                ctx.arc(0, -25, 18, -Math.PI/2, -Math.PI/2 + Math.PI * 2 * cooldownPercent, false);
-                ctx.lineTo(0, -25);
-                ctx.fill();
-            }
-            
-            ctx.restore();
-        }
-        
-        function drawPlatforms() {
-            ctx.fillStyle = '#444';
-            ctx.strokeStyle = '#666';
-            ctx.lineWidth = 2;
-            
-            environment.platforms.forEach(plat => {
-                ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
-                ctx.strokeRect(plat.x, plat.y, plat.width, plat.height);
-            });
-        }
-        
-        function drawParticles() {
-            game.particles.forEach((p, i) => {
-                if (p.alpha <= 0) {
-                    game.particles.splice(i, 1);
-                    return;
-                }
-                
-                p.x += p.vx;
-                p.y += p.vy;
-                p.vy += (p.gravity || 0.1);
-                p.alpha -= p.decay;
-                
-                ctx.fillStyle = p.color || getParticleColor(p.type, p.alpha);
-                
-                switch(p.type) {
-                    case 'blood':
-                        ctx.beginPath();
-                        ctx.ellipse(p.x, p.y, p.size, p.size * 0.7, 0, 0, Math.PI * 2);
-                        ctx.fill();
-                        break;
-                    case 'sword':
-                        ctx.fillRect(p.x, p.y, p.size * 2, p.size);
-                        break;
-                    default:
-                        ctx.fillRect(p.x, p.y, p.size, p.size);
-                }
-            });
-        }
-        
-        function getParticleColor(type, alpha) {
-            switch(type) {
-                case 'blood':
-                    return `rgba(200, 0, 0, ${alpha})`;
-                case 'hit':
-                    return `rgba(255, 255, 100, ${alpha})`;
-                case 'dust':
-                    return `rgba(150, 150, 150, ${alpha})`;
-                case 'block':
-                    return `rgba(255, 255, 255, ${alpha})`;
-                case 'special':
-                    return `rgba(255, ${Math.floor(Math.random() * 100 + 50)}, 0, ${alpha * 0.8})`;
-                default:
-                    return `rgba(255, 255, 255, ${alpha})`;
-            }
-        }
-        
-        function drawBackground() {
-            // Dark gradient background
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, '#111133');
-            gradient.addColorStop(1, '#000022');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Moon
-            ctx.fillStyle = 'rgba(200, 220, 255, 0.1)';
-            ctx.beginPath();
-            ctx.arc(canvas.width - 100, 100, 50, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Stars
-            game.backgrounds.forEach(star => {
-                const brightness = star.brightness * (0.7 + Math.sin(game.frameCount * star.twinkleSpeed + star.twinklePhase) * 0.3);
-                const x = (star.x - game.camera.x * star.parallax * 0.1) % canvas.width;
-                const y = (star.y - game.camera.y * star.parallax * 0.1) % canvas.height;
-                
-                ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
-                ctx.fillRect(x, y, star.size, star.size);
-            });
-        }
-        
-        function updateCamera() {
-            const centerX = (p1.x + p2.x) / 2;
-            const centerY = (p1.y + p2.y) / 2;
-            
-            game.camera.targetX = centerX - canvas.width / 2;
-            game.camera.targetY = centerY - canvas.height / 2;
-            
-            // Add screen shake if needed
-            const shakeIntensity = Math.min(10, Math.max(Math.abs(p1.vx), Math.abs(p2.vx), Math.abs(p1.vy), Math.abs(p2.vy)) * 0.5;
-            const shakeX = Math.sin(game.frameCount * 0.5) * shakeIntensity;
-            const shakeY = Math.cos(game.frameCount * 0.3) * shakeIntensity;
-            
-            // Smooth camera movement
-            game.camera.x += (game.camera.targetX - game.camera.x) * 0.1;
-            game.camera.y += (game.camera.targetY - game.camera.y) * 0.1;
-            
-            // Apply camera transform with shake
-            ctx.setTransform(1, 0, 0, 1, -game.camera.x + shakeX, -game.camera.y + shakeY);
-        }
-        
-        function resetCamera() {
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
-        }
-        
-        function updateLimbs() {
-            game.limbs.forEach((limb, i) => {
-                limb.x += limb.vx;
-                limb.y += limb.vy;
-                limb.vy += limb.gravity;
-                limb.rotation += limb.rotationSpeed;
-                limb.decay--;
-                
-                // Update DOM element
-                limb.element.style.transform = `translate(${limb.x}px, ${limb.y}px) rotate(${limb.rotation}deg)`;
-                limb.element.style.opacity = limb.decay / 120;
-                
-                // Remove when decayed
-                if (limb.decay <= 0) {
-                    limb.element.remove();
-                    game.limbs.splice(i, 1);
-                }
-            });
-        }
-        
-        // UI functions
-        function updateHealthUI() {
-            updatePlayerHealthUI(p1, 'p1-health');
-            updatePlayerHealthUI(p2, 'p2-health');
-        }
-        
-        function updatePlayerHealthUI(player, elementId) {
-            const healthBar = document.getElementById(elementId).querySelector('.health-bar');
-            const damageIndicator = document.getElementById(elementId).querySelector('.health-damage');
-            const healthText = document.getElementById(elementId).querySelector('.health-text');
-            
-            // Immediate update to damage indicator
-            damageIndicator.style.width = `${100 - (player.health / player.maxHealth) * 100}%`;
-            
-            // Animated health bar
-            healthBar.style.width = `${(player.health / player.maxHealth) * 100}%`;
-            
-            // Update text
-            healthText.textContent = `${Math.max(0, Math.floor(player.health))}%`;
-        }
-        
-        function updateComboDisplay() {
-            if (game.combo > 0) {
-                game.comboTimeout--;
-                
-                if (game.comboTimeout <= 0) {
-                    game.combo = 0;
-                    document.getElementById('combo-display').style.opacity = 0;
-                } else {
-                    document.getElementById('combo-display').textContent = `${game.combo} HIT ${game.comboText}`;
-                    document.getElementById('combo-display').style.opacity = 1;
-                    
-                    // Pulse effect
-                    const scale = 1 + Math.sin(game.frameCount * 0.1) * 0.1;
-                    document.getElementById('combo-display').style.transform = `translateX(-50%) scale(${scale})`;
-                }
-            }
-        }
-        
-        function showGameOver(winner) {
-            document.getElementById('winner-text').textContent = `${winner === p1 ? 'BLUE' : 'RED'} WARRIOR PREVAILS!`;
-            document.getElementById('game-over').style.display = 'block';
-            
-            // Special victory text for high combos
-            if (game.combo >= 5) {
-                document.getElementById('winner-text').textContent += ` WITH A BRUTAL ${game.combo}-HIT COMBO!`;
-            }
-        }
-        
-        function resetGame() {
-            // Remove all limbs from DOM
-            game.limbs.forEach(limb => limb.element.remove());
-            game.limbs = [];
-            
-            // Reset players
-            p1 = new Stickman(300, environment.groundLevel - 60, '#00f7ff', false);
-            p2 = new Stickman(canvas.width - 300, environment.groundLevel - 60, '#ff2a6d', true);
-            
-            // Reset game state
-            game.particles = [];
-            game.running = true;
-            game.combo = 0;
-            game.comboTimeout = 0;
-            game.slowMo = 0;
-            document.getElementById('game-over').style.display = 'none';
-            document.getElementById('combo-display').style.opacity = 0;
-        }
-        
-        // Event listeners
-        document.getElementById('restart-btn').addEventListener('click', resetGame);
-        
-        // Keyboard controls
-        const keys = {};
-        document.addEventListener('keydown', (e) => {
-            keys[e.key] = true;
-            
-            if (!game.running && e.key === ' ') {
-                resetGame();
-            }
-        });
-        
-        document.addEventListener('keyup', (e) => {
-            keys[e.key] = false;
-        });
-        
-        function handleInput() {
-            if (p1.state === 'ko') return;
-            
-            // Movement
-            if (keys['ArrowLeft']) {
-                p1.vx = -p1.speed;
-                p1.dir = -1;
-                if (p1.state !== 'jump' && p1.state !== 'attack' && p1.state !== 'special') {
-                    p1.state = 'run';
-                }
-            } else if (keys['ArrowRight']) {
-                p1.vx = p1.speed;
-                p1.dir = 1;
-                if (p1.state !== 'jump' && p1.state !== 'attack' && p1.state !== 'special') {
-                    p1.state = 'run';
-                }
-            }
-            
-            // Jump
-            if (keys['ArrowUp'] && p1.jumpCooldown === 0 && (p1.onGround(environment) || p1.wallSliding)) {
-                p1.jump();
-            }
-            
-            // Attacks
-            if (keys['z'] && p1.attackCooldown === 0) {
-                p1.state = 'attack';
-                p1.attackCooldown = 25;
-                p1.attackType = 'punch';
-                
-                // Check if attack hits
-                const distance = Math.abs(p1.x - p2.x);
-                const heightDiff = p1.y - p2.y;
-                
-                if (distance < ATTACK_RANGE && Math.abs(heightDiff) < 40) {
-                    let damage = ATTACK_DAMAGE;
-                    let knockbackX = p1.dir * 6;
-                    let knockbackY = -3;
-                    
-                    // Check if enemy is blocking
-                    if (p2.blocking && p2.dir === -p1.dir) {
-                        damage *= 0.3;
-                        knockbackX *= 0.5;
-                        knockbackY *= 0.5;
-                        p2.stamina = Math.max(0, p2.stamina - 15);
-                        spawnBlockEffect(p2);
-                    } else {
-                        p2.takeDamage(damage, knockbackX, knockbackY, 'punch');
-                        updateCombo(1, 'PUNCH');
-                        spawnHitEffect(p2.x, p2.y - 20, p1.dir);
-                    }
-                }
-            }
-            
-            // Kick
-            if (keys['x'] && p1.attackCooldown === 0) {
-                p1.state = 'attack';
-                p1.attackCooldown = 30;
-                p1.attackType = 'kick';
-                
-                // Check if attack hits
-                const distance = Math.abs(p1.x - p2.x);
-                const heightDiff = p1.y - p2.y;
-                
-                if (distance < ATTACK_RANGE * 0.8 && Math.abs(heightDiff) < 40) {
-                    let damage = KICK_DAMAGE;
-                    let knockbackX = p1.dir * 7;
-                    let knockbackY = -5;
-                    
-                    if (p2.blocking && p2.dir === -p1.dir) {
-                        damage *= 0.3;
-                        knockbackX *= 0.5;
-                        knockbackY *= 0.5;
-                        p2.stamina = Math.max(0, p2.stamina - 20);
-                        spawnBlockEffect(p2);
-                    } else {
-                        p2.takeDamage(damage, knockbackX, knockbackY, 'kick');
-                        updateCombo(1, 'KICK');
-                        spawnHitEffect(p2.x, p2.y, p1.dir);
-                    }
-                }
-            }
-            
-            // Sword attack
-            if (keys['c'] && p1.attackCooldown === 0 && p1.hasSword) {
-                p1.state = 'attack';
-                p1.attackCooldown = 35;
-                p1.attackType = 'sword';
-                
-                // Check if attack hits
-                const distance = Math.abs(p1.x - p2.x);
-                const heightDiff = p1.y - p2.y;
-                
-                if (distance < ATTACK_RANGE * 1.2 && Math.abs(heightDiff) < 50) {
-                    let damage = HEAVY_DAMAGE;
-                    let knockbackX = p1.dir * 8;
-                    let knockbackY = -4;
-                    
-                    if (p2.blocking && p2.dir === -p1.dir) {
-                        damage *= 0.3;
-                        knockbackX *= 0.5;
-                        knockbackY *= 0.5;
-                        p2.stamina = Math.max(0, p2.stamina - 25);
-                        spawnBlockEffect(p2);
-                    } else {
-                        p2.takeDamage(damage, knockbackX, knockbackY, 'sword');
-                        updateCombo(1, 'SLASH');
-                        p1.swingSword();
-                    }
-                } else {
-                    p1.swingSword();
-                }
-            }
-            
-            // Special attack
-            if (keys['v'] && p1.specialCooldown === 0) {
-                p1.state = 'special';
-                p1.specialCooldown = SPECIAL_COOLDOWN;
-                
-                // Check if attack hits
-                const distance = Math.abs(p1.x - p2.x);
-                const heightDiff = p1.y - p2.y;
-                
-                if (distance < ATTACK_RANGE * 1.8 && Math.abs(heightDiff) < 60) {
-                    const damage = HEAVY_DAMAGE * 1.5;
-                    p2.takeDamage(damage, p1.dir * 12, -8, 'special');
-                    updateCombo(2, 'COMBO');
-                    p1.specialAttackEffect();
-                } else {
-                    p1.specialAttackEffect();
-                }
-            }
-            
-            // Block
-            if (keys[' '] && p1.blockCooldown === 0) {
-                p1.blocking = true;
-                p1.blockCooldown = 45;
-                p1.state = 'block';
-            }
-        }
-        
-        function updateCombo(hits, text) {
-            game.combo += hits;
-            game.comboText = text;
-            game.comboTimeout = COMBO_TIMEOUT;
-            
-            // Bigger effect for higher combos
-            if (game.combo >= 5) {
-                game.slowMo = 3;
-                document.getElementById('combo-display').style.color = '#ff6600';
-                document.getElementById('combo-display').style.textShadow = '0 0 15px #ff0000';
-            } else {
-                document.getElementById('combo-display').style.color = '#ffcc00';
-                document.getElementById('combo-display').style.textShadow = '0 0 10px #ff6600';
-            }
-        }
-        
-        // Game loop
-        function gameLoop(timestamp) {
-            // Calculate FPS
-            if (game.lastFrameTime) {
-                game.fps = 1000 / (timestamp - game.lastFrameTime);
-            }
-            game.lastFrameTime = timestamp;
-            
-            if (game.running) {
-                // Handle slow motion
-                if (game.slowMo > 0) {
-                    game.slowMo--;
-                    if (game.slowMo % 2 === 0) return requestAnimationFrame(gameLoop);
-                }
-                
-                // Handle input
-                handleInput();
-                
-                // Update game state
-                p1.update(p2, environment);
-                p2.update(p1, environment);
-                game.frameCount++;
-                
-                // Update camera
-                updateCamera();
-                
-                // Draw everything
-                drawBackground();
-                drawPlatforms();
-                drawStickman(p1);
-                drawStickman(p2);
-                drawParticles();
-                
-                // Reset camera for UI
-                resetCamera();
-                
-                // Update UI
-                updateHealthUI();
-                updateComboDisplay();
-                updateLimbs();
-                
-                // Update FPS counter
-                document.getElementById('fps-counter').textContent = `FPS: ${Math.floor(game.fps)}`;
-            }
-            
-            requestAnimationFrame(gameLoop);
-        }
-        
-        // Initialize
-        generateBackground();
-        gameLoop(0);
+            diskInnermost.style.background = `linear-gradient(90deg, 
+                rgba(0,0,0,0) 0%, 
+                rgba(255,${30 * redshift},${10 * redshift},1) 20%, 
+                rgba(255,255,${60 * blueshift},1) 50%, 
+                rgba(255,${30 * redshift},${10 * redshift},1) 80%, 
+                rgba(0,0,0,0) 100%)`;
+        }, 50);
     </script>
 </body>
 </html>
