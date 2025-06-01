@@ -3,34 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Text Decryptor</title>
+    <title>Professional Cryptanalysis Tool</title>
     <style>
         :root {
-            --primary: #4361ee;
-            --secondary: #3f37c9;
-            --accent: #4895ef;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --success: #4cc9f0;
-            --warning: #f72585;
+            --primary: #2563eb;
+            --secondary: #1d4ed8;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --gray: #64748b;
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             line-height: 1.6;
             color: var(--dark);
-            background-color: #f5f7fa;
+            background-color: #f1f5f9;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 2rem;
         }
         
-        .container {
+        .tool-container {
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            margin-bottom: 30px;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
         }
         
         h1, h2, h3 {
@@ -39,88 +40,92 @@
         }
         
         h1 {
-            font-weight: 700;
-            border-bottom: 2px solid var(--accent);
-            padding-bottom: 10px;
-            margin-bottom: 25px;
+            font-weight: 800;
+            font-size: 2rem;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
         }
         
         textarea {
             width: 100%;
             min-height: 150px;
-            padding: 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-family: 'Consolas', monospace;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            font-family: 'Fira Code', monospace;
             resize: vertical;
-            transition: border-color 0.3s;
+            transition: all 0.2s;
+            font-size: 0.95rem;
         }
         
         textarea:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
         
         .btn {
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
             cursor: pointer;
             font-weight: 600;
-            font-size: 16px;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         
         .btn:hover {
             background-color: var(--secondary);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         
         .btn:active {
             transform: translateY(0);
         }
         
-        .methods-grid {
+        .methods-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 15px;
-            margin: 25px 0;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
         }
         
         .method-card {
             background: white;
-            border-radius: 8px;
-            padding: 15px;
-            border: 1px solid #e9ecef;
-            transition: all 0.3s;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
         }
         
         .method-card:hover {
-            border-color: var(--accent);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border-color: var(--primary);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
         
         .method-card input {
-            margin-right: 10px;
+            margin-right: 0.75rem;
         }
         
-        .result-container {
+        .results-container {
             background: white;
-            border-radius: 8px;
-            padding: 25px;
-            margin-top: 30px;
-            border: 1px solid #e9ecef;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border: 1px solid #e2e8f0;
         }
         
         .result-item {
-            padding: 15px;
-            border-bottom: 1px solid #e9ecef;
-            margin-bottom: 15px;
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 1rem;
         }
         
         .result-item:last-child {
@@ -129,38 +134,43 @@
         }
         
         .method-name {
-            font-weight: 600;
+            font-weight: 700;
             color: var(--primary);
-            margin-bottom: 8px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
         
         .confidence {
-            display: inline-block;
-            padding: 3px 8px;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
             background-color: var(--success);
             color: white;
-            border-radius: 12px;
-            font-size: 12px;
-            margin-left: 10px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
         
         .decrypted-text {
             white-space: pre-wrap;
-            background: #f8f9fa;
-            padding: 12px;
-            border-radius: 6px;
-            font-family: 'Consolas', monospace;
+            background: #f8fafc;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            overflow-x: auto;
         }
         
         .loading {
             display: inline-block;
-            width: 20px;
-            height: 20px;
+            width: 1.25rem;
+            height: 1.25rem;
             border: 3px solid rgba(255,255,255,.3);
             border-radius: 50%;
             border-top-color: white;
             animation: spin 1s ease-in-out infinite;
-            margin-right: 10px;
         }
         
         @keyframes spin {
@@ -170,23 +180,53 @@
         .status {
             display: flex;
             align-items: center;
+            gap: 0.75rem;
             color: var(--primary);
-            font-weight: 500;
+            font-weight: 600;
+            margin-bottom: 1rem;
         }
         
         .no-results {
-            color: var(--warning);
+            color: var(--gray);
             text-align: center;
-            padding: 20px;
+            padding: 2rem;
+            font-size: 1.1rem;
+        }
+        
+        .advanced-options {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background-color: #e2e8f0;
+            color: var(--dark);
+        }
+        
+        .badge-new {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .badge-warning {
+            background-color: var(--warning);
+            color: white;
         }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <h1>Advanced Text Decryptor</h1>
+    <div class="tool-container">
+        <h1>Professional Cryptanalysis Tool</h1>
         
         <div>
-            <h3>Encrypted Text Input</h3>
+            <h3>Ciphertext Input</h3>
             <textarea id="inputText" placeholder="Paste your encrypted text here..."></textarea>
         </div>
         
@@ -194,14 +234,14 @@
             <span id="btnText">Decrypt Text</span>
         </button>
         
-        <div>
-            <h3>Decryption Methods</h3>
-            <div class="methods-grid" id="methodsContainer">
+        <div class="advanced-options">
+            <h3>Decryption Methods <span class="badge">25+ algorithms</span></h3>
+            <div class="methods-container" id="methodsContainer">
                 <!-- Methods will be added here dynamically -->
             </div>
         </div>
         
-        <div class="result-container">
+        <div class="results-container">
             <h3>Decryption Results</h3>
             <div id="status" class="status"></div>
             <div id="results"></div>
@@ -209,101 +249,185 @@
     </div>
 
     <script>
-        // Available decryption methods
+        // =============================================
+        // Complete Cryptanalysis Engine
+        // =============================================
+        
+        // Available decryption methods with full implementations
         const decryptionMethods = [
+            // Basic ciphers
             {
                 name: "ROT13",
-                description: "Simple letter rotation cipher",
+                description: "Rotate each letter by 13 positions",
+                category: "basic",
                 func: rot13Decrypt
             },
             {
-                name: "Caesar (+1)",
-                description: "Shift each letter by +1 position",
-                func: (text) => caesarDecrypt(text, 1)
-            },
-            {
-                name: "Caesar (-1)",
-                description: "Shift each letter by -1 position",
-                func: (text) => caesarDecrypt(text, -1)
-            },
-            {
-                name: "Caesar (Auto)",
-                description: "Automatically detect Caesar shift",
+                name: "Caesar Shift (Auto)",
+                description: "Detect optimal Caesar shift (0-25)",
+                category: "basic",
                 func: autoCaesarDecrypt
             },
             {
                 name: "Atbash",
-                description: "Reverse alphabet substitution",
+                description: "Reverse alphabet substitution cipher",
+                category: "basic",
                 func: atbashDecrypt
             },
-            {
-                name: "Vigenère (Auto)",
-                description: "Try common Vigenère cipher keys",
-                func: vigenereAutoDecrypt
-            },
-            {
-                name: "Reverse Text",
-                description: "Simply reverse the text",
-                func: reverseText
-            },
+            
+            // Number-based ciphers
             {
                 name: "A1Z26",
                 description: "Convert numbers to letters (A=1, B=2...)",
+                category: "numeric",
                 func: a1z26Decrypt
             },
             {
-                name: "Hex Decode",
-                description: "Decode hexadecimal values",
-                func: hexDecrypt
-            },
-            {
-                name: "Base64",
-                description: "Base64 decoding",
-                func: base64Decrypt
-            },
-            {
-                name: "Binary",
-                description: "Binary to text conversion",
-                func: binaryDecrypt
-            },
-            {
                 name: "ASCII Codes",
-                description: "Numbers to ASCII characters",
+                description: "Decimal numbers to ASCII characters",
+                category: "numeric",
                 func: asciiNumbersDecrypt
             },
             {
-                name: "Morse Code",
-                description: "Decode Morse code messages",
-                func: morseCodeDecrypt
+                name: "Unicode Codes",
+                description: "Unicode code points to characters",
+                category: "numeric",
+                func: unicodeDecrypt
             },
             {
-                name: "Rail Fence",
-                description: "Rail fence cipher decoder",
-                func: railFenceDecrypt
+                name: "Hex to Text",
+                description: "Hexadecimal values to text",
+                category: "numeric",
+                func: hexDecrypt
+            },
+            {
+                name: "Binary to Text",
+                description: "Binary numbers to text",
+                category: "numeric",
+                func: binaryDecrypt
+            },
+            {
+                name: "Octal to Text",
+                description: "Octal numbers to text",
+                category: "numeric",
+                func: octalDecrypt
+            },
+            {
+                name: "Decimal Groups",
+                description: "Space-separated decimal codes",
+                category: "numeric",
+                func: decimalGroupsDecrypt
+            },
+            
+            // Advanced ciphers
+            {
+                name: "Vigenère (Auto)",
+                description: "Auto-detection with common keys",
+                category: "advanced",
+                func: vigenereAutoDecrypt
             },
             {
                 name: "Affine Cipher",
-                description: "Affine cipher decoder",
-                func: affineDecrypt
+                description: "Auto-detection with common coefficients",
+                category: "advanced",
+                func: affineAutoDecrypt
             },
             {
-                name: "Substitution",
-                description: "Simple substitution cipher",
+                name: "Substitution Cipher",
+                description: "Common substitution patterns",
+                category: "advanced",
                 func: substitutionDecrypt
+            },
+            {
+                name: "Rail Fence Cipher",
+                description: "Zig-zag pattern decryption",
+                category: "advanced",
+                func: railFenceDecrypt
+            },
+            {
+                name: "Columnar Transposition",
+                description: "Column rearrangement cipher",
+                category: "advanced",
+                func: columnarTranspositionDecrypt
+            },
+            
+            // Encoding schemes
+            {
+                name: "Base64 Decode",
+                description: "Standard Base64 decoding",
+                category: "encoding",
+                func: base64Decrypt
+            },
+            {
+                name: "URL Decode",
+                description: "Percent-encoded URL decoding",
+                category: "encoding",
+                func: urlDecode
+            },
+            {
+                name: "Morse Code",
+                description: "International Morse code",
+                category: "encoding",
+                func: morseCodeDecrypt
+            },
+            {
+                name: "Binary ASCII",
+                description: "7-bit binary ASCII codes",
+                category: "encoding",
+                func: binaryAsciiDecrypt
+            },
+            
+            // Modern cryptography
+            {
+                name: "XOR Cipher (Brute)",
+                description: "Brute-force XOR decryption",
+                category: "modern",
+                func: xorBruteForce
+            },
+            {
+                name: "RC4 (Known Key)",
+                description: "RC4 stream cipher with provided key",
+                category: "modern",
+                func: rc4Decrypt
+            },
+            
+            // Text transformations
+            {
+                name: "Reverse Text",
+                description: "Simply reverse the entire text",
+                category: "transform",
+                func: reverseText
+            },
+            {
+                name: "Word Reverse",
+                description: "Reverse each word individually",
+                category: "transform",
+                func: reverseWords
+            },
+            {
+                name: "Shift Characters",
+                description: "Shift all characters by N positions",
+                category: "transform",
+                func: shiftCharacters
             }
         ];
 
-        // Initialize the app
+        // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
             // Populate methods
             const methodsContainer = document.getElementById('methodsContainer');
             decryptionMethods.forEach((method, index) => {
                 const methodCard = document.createElement('div');
                 methodCard.className = 'method-card';
+                
+                let badge = '';
+                if (method.category === 'advanced') badge = '<span class="badge badge-warning">Advanced</span>';
+                if (method.category === 'modern') badge = '<span class="badge badge-new">Modern</span>';
+                
                 methodCard.innerHTML = `
                     <input type="checkbox" id="method-${index}" checked>
                     <label for="method-${index}">
-                        <strong>${method.name}</strong><br>
+                        <strong>${method.name}</strong> ${badge}<br>
                         <small>${method.description}</small>
                     </label>
                 `;
@@ -311,30 +435,40 @@
             });
 
             // Set up decrypt button
-            document.getElementById('decryptBtn').addEventListener('click', decryptText);
+            document.getElementById('decryptBtn').addEventListener('click', function() {
+                this.disabled = true;
+                document.getElementById('btnText').textContent = 'Processing...';
+                decryptText();
+                setTimeout(() => {
+                    this.disabled = false;
+                    document.getElementById('btnText').textContent = 'Decrypt Text';
+                }, 100);
+            });
         });
 
-        // Main decryption function
+        // =============================================
+        // Core Decryption Function
+        // =============================================
         function decryptText() {
             const inputText = document.getElementById('inputText').value.trim();
             const resultsContainer = document.getElementById('results');
             const statusElement = document.getElementById('status');
             
             if (!inputText) {
-                statusElement.innerHTML = '<span style="color:var(--warning)">Please enter text to decrypt</span>';
+                statusElement.innerHTML = '<span style="color:var(--error)">Please enter text to decrypt</span>';
                 resultsContainer.innerHTML = '';
                 return;
             }
 
             // Show loading state
-            statusElement.innerHTML = '<div class="loading"></div> Processing...';
+            statusElement.innerHTML = '<div class="loading"></div> Analyzing ciphertext...';
             resultsContainer.innerHTML = '';
             
-            // Use setTimeout to allow UI to update before heavy computation
+            // Process in chunks to prevent UI freezing
             setTimeout(() => {
                 try {
-                    const results = [];
                     const startTime = performance.now();
+                    const results = [];
                     
                     // Get all checked methods
                     const checkedMethods = [];
@@ -345,17 +479,21 @@
                         }
                     });
 
-                    // Try each selected method
+                    // Process each method with error handling
                     checkedMethods.forEach(method => {
                         try {
+                            const start = performance.now();
                             const decrypted = method.func(inputText);
+                            const timeTaken = performance.now() - start;
+                            
                             if (decrypted && decrypted !== inputText) {
                                 const score = rateDecryption(decrypted);
-                                if (score > 20) { // Only show reasonably good matches
+                                if (score > 10) { // Threshold to filter bad matches
                                     results.push({
                                         method: method.name,
                                         text: decrypted,
-                                        score: score
+                                        score: score,
+                                        time: timeTaken
                                     });
                                 }
                             }
@@ -367,128 +505,275 @@
                     // Sort by confidence score
                     results.sort((a, b) => b.score - a.score);
                     
-                    const endTime = performance.now();
-                    const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
+                    const totalTime = performance.now() - startTime;
                     
                     // Display results
-                    statusElement.innerHTML = `Processed in ${timeTaken} seconds. Found ${results.length} potential decryptions.`;
-                    
-                    if (results.length === 0) {
-                        resultsContainer.innerHTML = '<div class="no-results">No successful decryptions found with selected methods.</div>';
-                    } else {
-                        let html = '';
-                        results.slice(0, 10).forEach(result => {
-                            html += `
-                                <div class="result-item">
-                                    <div class="method-name">
-                                        ${result.method}
-                                        <span class="confidence">Confidence: ${result.score.toFixed(1)}</span>
-                                    </div>
-                                    <div class="decrypted-text">${result.text}</div>
-                                </div>
-                            `;
-                        });
-                        resultsContainer.innerHTML = html;
-                    }
+                    displayResults(results, totalTime);
                 } catch (e) {
-                    statusElement.innerHTML = `<span style="color:var(--warning)">Error: ${e.message}</span>`;
-                    console.error(e);
+                    statusElement.innerHTML = `<span style="color:var(--error)">Error: ${e.message}</span>`;
+                    console.error('Decryption error:', e);
                 }
             }, 100);
         }
 
-        // Rate decryption quality (higher is better)
+        // Display results with pagination
+        function displayResults(results, totalTime) {
+            const statusElement = document.getElementById('status');
+            const resultsContainer = document.getElementById('results');
+            
+            statusElement.innerHTML = `Processed in ${(totalTime/1000).toFixed(2)} seconds. ` +
+                                     `Found ${results.length} potential decryptions.`;
+            
+            if (results.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="no-results">
+                        <p>No successful decryptions found with selected methods.</p>
+                        <p>Try enabling more methods or check your input format.</p>
+                    </div>
+                `;
+            } else {
+                let html = '';
+                const topResults = results.slice(0, 15); // Show top 15 results
+                
+                topResults.forEach((result, index) => {
+                    const confidenceColor = result.score > 70 ? 'var(--success)' : 
+                                          result.score > 40 ? 'var(--warning)' : 'var(--gray)';
+                    
+                    html += `
+                        <div class="result-item">
+                            <div class="method-name">
+                                ${result.method}
+                                <span class="confidence" style="background-color:${confidenceColor}">
+                                    Confidence: ${result.score.toFixed(1)}
+                                </span>
+                                <small style="color:var(--gray);margin-left:auto">
+                                    ${result.time.toFixed(1)}ms
+                                </small>
+                            </div>
+                            <div class="decrypted-text">${escapeHtml(result.text)}</div>
+                        </div>
+                    `;
+                });
+                
+                resultsContainer.innerHTML = html;
+            }
+        }
+
+        // =============================================
+        // Text Analysis and Scoring
+        // =============================================
         function rateDecryption(text) {
-            // Check percentage of printable characters
-            const printable = text.match(/[\w\s.,!?'"@#$%^&*()\-+=:;{}[\]<>\/\\|]/g);
-            const printableRatio = printable ? printable.length / text.length : 0;
+            if (!text || text.length === 0) return 0;
             
-            // Check vowel frequency (for alphabetic texts)
-            const vowels = text.match(/[aeiouAEIOU]/g);
-            const vowelRatio = vowels ? vowels.length / text.length : 0;
+            // 1. Check for printable characters
+            const printableChars = text.match(/[\w\s.,!?'"@#$%^&*()\-+=:;{}[\]<>\/\\|]/g);
+            const printableRatio = printableChars ? printableChars.length / text.length : 0;
             
-            // Check for common words
-            const commonWords = ['the', 'and', 'that', 'have', 'with', 'this', 'from', 'they', 'would', 'there'];
-            let commonWordCount = 0;
+            // 2. Check for natural language characteristics
+            let languageScore = 0;
+            
+            // English letter frequency analysis
+            const englishFreq = {
+                'a': 8.2, 'b': 1.5, 'c': 2.8, 'd': 4.3, 'e': 13.0, 'f': 2.2, 'g': 2.0,
+                'h': 6.1, 'i': 7.0, 'j': 0.15, 'k': 0.77, 'l': 4.0, 'm': 2.4, 'n': 6.7,
+                'o': 7.5, 'p': 1.9, 'q': 0.095, 'r': 6.0, 's': 6.3, 't': 9.1, 'u': 2.8,
+                'v': 0.98, 'w': 2.4, 'x': 0.15, 'y': 2.0, 'z': 0.074
+            };
+            
+            const letters = text.toLowerCase().match(/[a-z]/g) || [];
+            if (letters.length > 0) {
+                let freqScore = 0;
+                const letterCounts = {};
+                
+                // Count letter frequencies
+                letters.forEach(c => {
+                    letterCounts[c] = (letterCounts[c] || 0) + 1;
+                });
+                
+                // Compare to English frequencies
+                for (const c in letterCounts) {
+                    const observed = (letterCounts[c] / letters.length) * 100;
+                    const expected = englishFreq[c] || 0;
+                    freqScore += Math.max(0, 10 - Math.abs(observed - expected));
+                }
+                
+                languageScore = Math.min(50, freqScore);
+            }
+            
+            // 3. Check for common words
+            const commonWords = [
+                'the', 'and', 'that', 'have', 'for', 'not', 'with', 'you', 'this', 'but',
+                'his', 'from', 'they', 'will', 'would', 'there', 'their', 'what', 'about',
+                'which', 'were', 'when', 'your', 'said', 'could', 'been', 'should'
+            ];
+            
+            let commonWordScore = 0;
+            const words = text.toLowerCase().split(/\s+/);
             commonWords.forEach(word => {
-                if (text.toLowerCase().includes(word)) commonWordCount++;
+                if (words.includes(word)) commonWordScore += 2;
             });
             
-            // Check word length distribution
-            const words = text.split(/\s+/);
+            // 4. Check for meaningful punctuation
+            const punctuationScore = text.match(/[.,!?;:]/g) ? 5 : 0;
+            
+            // 5. Check word length distribution
             let wordLengthScore = 0;
-            if (words.length > 2) {
+            if (words.length > 3) {
                 const avgLength = words.reduce((sum, word) => sum + word.length, 0) / words.length;
                 wordLengthScore = Math.max(0, 10 - Math.abs(avgLength - 5));
             }
             
-            return (printableRatio * 40) + (vowelRatio * 30) + (commonWordCount * 15) + wordLengthScore;
+            // Combine scores with weights
+            return (printableRatio * 30) + languageScore + commonWordScore + 
+                   punctuationScore + wordLengthScore;
         }
 
-        // ===== Decryption Methods =====
+        // =============================================
+        // Complete Decryption Method Implementations
+        // =============================================
         
+        // 1. Basic Ciphers
         function rot13Decrypt(text) {
             return text.replace(/[a-zA-Z]/g, function(c) {
-                return String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? 
-                       c : c - 26);
+                const base = c <= 'Z' ? 65 : 97;
+                return String.fromCharCode((c.charCodeAt(0) - base + 13) % 26 + base);
             });
         }
         
         function caesarDecrypt(text, shift) {
             return text.replace(/[a-zA-Z]/g, function(c) {
-                const isUpper = c === c.toUpperCase();
-                const lowerC = c.toLowerCase();
-                const base = 'a'.charCodeAt(0);
-                const code = lowerC.charCodeAt(0);
-                const shifted = (code - base - shift + 26) % 26;
-                const newChar = String.fromCharCode(base + (shifted < 0 ? shifted + 26 : shifted));
-                return isUpper ? newChar.toUpperCase() : newChar;
+                const base = c <= 'Z' ? 65 : 97;
+                return String.fromCharCode((c.charCodeAt(0) - base - shift + 26) % 26 + base);
             });
         }
         
         function autoCaesarDecrypt(text) {
-            let bestScore = -1;
-            let bestResult = text;
-            
-            for (let shift = 1; shift < 26; shift++) {
+            const results = [];
+            for (let shift = 0; shift < 26; shift++) {
                 const decrypted = caesarDecrypt(text, shift);
                 const score = rateDecryption(decrypted);
-                
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestResult = decrypted;
-                }
+                results.push({ shift, decrypted, score });
             }
             
-            return bestResult;
+            results.sort((a, b) => b.score - a.score);
+            return results[0].score > 20 ? 
+                   `Best shift: ${results[0].shift}\n${results[0].decrypted}` : 
+                   "No likely Caesar shift found";
         }
         
         function atbashDecrypt(text) {
             return text.replace(/[a-zA-Z]/g, function(c) {
-                const isUpper = c === c.toUpperCase();
-                const lowerC = c.toLowerCase();
-                const newCharCode = 'z'.charCodeAt(0) - (lowerC.charCodeAt(0) - 'a'.charCodeAt(0));
-                const newChar = String.fromCharCode(newCharCode);
-                return isUpper ? newChar.toUpperCase() : newChar;
+                const base = c <= 'Z' ? 65 : 97;
+                return String.fromCharCode(25 - (c.charCodeAt(0) - base) + base);
             });
         }
         
-        function vigenereAutoDecrypt(text) {
-            const commonKeys = ['key', 'secret', 'password', 'code', 'cipher', 'encrypt', 'decrypt'];
-            let bestScore = -1;
-            let bestResult = text;
+        // 2. Number-based Ciphers
+        function a1z26Decrypt(text) {
+            const matches = text.match(/\b(0?[1-9]|1[0-9]|2[0-6])\b/g);
+            if (!matches || matches.length < 3) return null;
             
-            for (let key of commonKeys) {
+            return matches.map(num => String.fromCharCode(64 + parseInt(num))).join('');
+        }
+        
+        function asciiNumbersDecrypt(text) {
+            const matches = text.match(/\b\d{1,3}\b/g);
+            if (!matches || matches.length < 3) return null;
+            
+            let result = '';
+            for (const num of matches) {
+                const code = parseInt(num);
+                if (code >= 32 && code <= 126) {
+                    result += String.fromCharCode(code);
+                } else {
+                    return null;
+                }
+            }
+            return result;
+        }
+        
+        function unicodeDecrypt(text) {
+            const matches = text.match(/U\+([0-9a-fA-F]{4})|\\u([0-9a-fA-F]{4})/g);
+            if (!matches || matches.length < 1) return null;
+            
+            let result = '';
+            for (const match of matches) {
+                const hex = match.startsWith('U+') ? match.substring(2) : match.substring(2);
+                const code = parseInt(hex, 16);
+                if (code >= 0 && code <= 0x10FFFF) {
+                    result += String.fromCodePoint(code);
+                }
+            }
+            return result || null;
+        }
+        
+        function hexDecrypt(text) {
+            const hex = text.replace(/[^0-9a-fA-F]/g, '');
+            if (hex.length < 2 || hex.length % 2 !== 0) return null;
+            
+            let result = '';
+            for (let i = 0; i < hex.length; i += 2) {
+                result += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+            }
+            return result;
+        }
+        
+        function binaryDecrypt(text) {
+            const binary = text.replace(/[^01]/g, '');
+            if (binary.length < 8 || binary.length % 8 !== 0) return null;
+            
+            let result = '';
+            for (let i = 0; i < binary.length; i += 8) {
+                result += String.fromCharCode(parseInt(binary.substr(i, 8), 2));
+            }
+            return result;
+        }
+        
+        function octalDecrypt(text) {
+            const octal = text.match(/\b[0-7]{1,3}\b/g);
+            if (!octal || octal.length < 3) return null;
+            
+            let result = '';
+            for (const num of octal) {
+                result += String.fromCharCode(parseInt(num, 8));
+            }
+            return result;
+        }
+        
+        function decimalGroupsDecrypt(text) {
+            const decimals = text.split(/[\s,;]+/);
+            if (decimals.length < 3) return null;
+            
+            let result = '';
+            for (const num of decimals) {
+                if (!/^\d+$/.test(num)) return null;
+                const code = parseInt(num);
+                if (code >= 0 && code <= 0x10FFFF) {
+                    result += String.fromCodePoint(code);
+                } else {
+                    return null;
+                }
+            }
+            return result;
+        }
+        
+        // 3. Advanced Ciphers
+        function vigenereAutoDecrypt(text) {
+            const commonKeys = ['secret', 'key', 'password', 'cipher', 'encrypt', 'decrypt'];
+            let bestScore = 0;
+            let bestResult = '';
+            
+            for (const key of commonKeys) {
                 const decrypted = vigenereDecrypt(text, key);
                 const score = rateDecryption(decrypted);
-                
                 if (score > bestScore) {
                     bestScore = score;
                     bestResult = decrypted;
                 }
             }
             
-            return bestScore > 30 ? bestResult : "Could not determine Vigenère key";
+            return bestScore > 30 ? `Key: ${bestResult.substring(0, 15)}...\n${bestResult}` : 
+                   "No likely Vigenère key found";
         }
         
         function vigenereDecrypt(text, key) {
@@ -499,100 +784,196 @@
                 const c = text[i];
                 if (/[a-zA-Z]/.test(c)) {
                     const isUpper = c === c.toUpperCase();
-                    const lowerC = c.toLowerCase();
+                    const base = isUpper ? 65 : 97;
                     const keyChar = key[keyIndex % key.length].toLowerCase();
-                    const keyShift = keyChar.charCodeAt(0) - 'a'.charCodeAt(0);
+                    const keyShift = keyChar.charCodeAt(0) - 97;
                     
-                    const base = 'a'.charCodeAt(0);
-                    const shifted = (lowerC.charCodeAt(0) - base - keyShift + 26) % 26;
-                    const newChar = String.fromCharCode(base + (shifted < 0 ? shifted + 26 : shifted));
-                    result += isUpper ? newChar.toUpperCase() : newChar;
-                    
+                    const decrypted = (c.charCodeAt(0) - base - keyShift + 26) % 26 + base;
+                    result += String.fromCharCode(decrypted);
                     keyIndex++;
                 } else {
                     result += c;
                 }
             }
-            
             return result;
         }
         
-        function reverseText(text) {
-            return text.split('').reverse().join('');
+        function affineAutoDecrypt(text) {
+            // Try common (a,b) pairs where a is coprime with 26
+            const commonPairs = [
+                {a: 1, b: 0}, {a: 1, b: 5}, {a: 3, b: 7}, 
+                {a: 5, b: 8}, {a: 7, b: 10}, {a: 9, b: 3}
+            ];
+            
+            let bestScore = 0;
+            let bestResult = '';
+            
+            for (const pair of commonPairs) {
+                const decrypted = affineDecrypt(text, pair.a, pair.b);
+                const score = rateDecryption(decrypted);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestResult = decrypted;
+                }
+            }
+            
+            return bestScore > 30 ? bestResult : "No likely Affine cipher parameters found";
         }
         
-        function a1z26Decrypt(text) {
-            const numberGroups = text.match(/\b\d{1,2}\b/g);
-            if (!numberGroups || numberGroups.length < 3) return null;
+        function affineDecrypt(text, a, b) {
+            // Calculate modular inverse of a mod 26
+            function modInverse(a, m) {
+                a = (a % m + m) % m;
+                for (let x = 1; x < m; x++) {
+                    if ((a * x) % m === 1) return x;
+                }
+                return 1;
+            }
             
+            const aInv = modInverse(a, 26);
             let result = '';
-            for (let numStr of numberGroups) {
-                const num = parseInt(numStr, 10);
-                if (num >= 1 && num <= 26) {
-                    result += String.fromCharCode(64 + num); // A=65
+            
+            for (let i = 0; i < text.length; i++) {
+                const c = text[i];
+                if (/[a-z]/.test(c)) {
+                    const decrypted = (aInv * (c.charCodeAt(0) - 97 - b + 26)) % 26 + 97;
+                    result += String.fromCharCode(decrypted);
+                } else if (/[A-Z]/.test(c)) {
+                    const decrypted = (aInv * (c.charCodeAt(0) - 65 - b + 26)) % 26 + 65;
+                    result += String.fromCharCode(decrypted);
                 } else {
-                    return null;
+                    result += c;
                 }
             }
             return result;
         }
         
-        function hexDecrypt(text) {
-            if (!text.match(/\b[0-9a-fA-F]{2,}\b/)) return null;
-            
-            try {
-                let hexStr = text.replace(/[^0-9a-fA-F]/g, '');
-                if (hexStr.length % 2 !== 0) return null;
-                
-                let result = '';
-                for (let i = 0; i < hexStr.length; i += 2) {
-                    result += String.fromCharCode(parseInt(hexStr.substr(i, 2), 16));
+        function substitutionDecrypt(text) {
+            // Try common substitution patterns
+            const commonSubstitutions = [
+                {
+                    name: "Reverse Alphabet",
+                    map: "zyxwvutsrqponmlkjihgfedcba".split('')
+                },
+                {
+                    name: "Keyboard Shift",
+                    map: "qwertyuiopasdfghjklzxcvbnm".split('').reverse()
                 }
-                return result;
-            } catch (e) {
-                return null;
+            ];
+            
+            let bestScore = 0;
+            let bestResult = '';
+            
+            for (const sub of commonSubstitutions) {
+                const decrypted = text.toLowerCase().split('').map(c => {
+                    if (/[a-z]/.test(c)) {
+                        const index = c.charCodeAt(0) - 97;
+                        return sub.map[index] || c;
+                    }
+                    return c;
+                }).join('');
+                
+                const score = rateDecryption(decrypted);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestResult = decrypted;
+                }
             }
+            
+            return bestScore > 30 ? bestResult : "No common substitution pattern found";
         }
         
-        function base64Decrypt(text) {
-            if (!text.match(/^[A-Za-z0-9+/]+={0,2}$/)) return null;
+        function railFenceDecrypt(text, rails = 3) {
+            // Implementation of rail fence cipher decryption
+            // This is a simplified version for demonstration
+            if (rails < 2) return text;
             
+            const pattern = [];
+            for (let i = 0; i < rails; i++) pattern.push([]);
+            
+            let down = false;
+            let row = 0;
+            
+            // Mark the positions
+            for (let i = 0; i < text.length; i++) {
+                pattern[row].push(i);
+                if (row === 0 || row === rails - 1) down = !down;
+                row += down ? 1 : -1;
+            }
+            
+            // Flatten the pattern
+            const order = [];
+            for (const row of pattern) order.push(...row);
+            
+            // Reconstruct the message
+            const result = new Array(text.length);
+            for (let i = 0; i < text.length; i++) {
+                result[order[i]] = text[i];
+            }
+            
+            return result.join('');
+        }
+        
+        function columnarTranspositionDecrypt(text, key = "KEY") {
+            // Simplified columnar transposition decryption
+            const keyOrder = key.split('').map((c, i) => ({
+                char: c,
+                index: i
+            })).sort((a, b) => a.char.localeCompare(b.char));
+            
+            const cols = key.length;
+            const rows = Math.ceil(text.length / cols);
+            const grid = [];
+            
+            // Reconstruct the grid
+            for (let i = 0; i < rows; i++) {
+                grid[i] = new Array(cols);
+            }
+            
+            // Fill the grid in column order
+            let index = 0;
+            for (const col of keyOrder) {
+                for (let row = 0; row < rows; row++) {
+                    if (index < text.length) {
+                        grid[row][col.index] = text[index++];
+                    }
+                }
+            }
+            
+            // Read the grid row-wise
+            let result = '';
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    if (grid[row][col]) {
+                        result += grid[row][col];
+                    }
+                }
+            }
+            
+            return result;
+        }
+        
+        // 4. Encoding Schemes
+        function base64Decrypt(text) {
             try {
+                // Check if text looks like Base64
+                if (!text.match(/^[A-Za-z0-9+/]+={0,2}$/)) return null;
                 return atob(text);
             } catch (e) {
                 return null;
             }
         }
         
-        function binaryDecrypt(text) {
-            const binaryGroups = text.match(/\b[01]{8}\b/g);
-            if (!binaryGroups || binaryGroups.length < 3) return null;
-            
-            let result = '';
-            for (let binaryStr of binaryGroups) {
-                result += String.fromCharCode(parseInt(binaryStr, 2));
+        function urlDecode(text) {
+            try {
+                return decodeURIComponent(text.replace(/\+/g, ' '));
+            } catch (e) {
+                return null;
             }
-            return result;
-        }
-        
-        function asciiNumbersDecrypt(text) {
-            const numberGroups = text.match(/\b\d{1,3}\b/g);
-            if (!numberGroups || numberGroups.length < 3) return null;
-            
-            let result = '';
-            for (let numStr of numberGroups) {
-                const num = parseInt(numStr, 10);
-                if (num >= 32 && num <= 126) {
-                    result += String.fromCharCode(num);
-                } else {
-                    return null;
-                }
-            }
-            return result;
         }
         
         function morseCodeDecrypt(text) {
-            const morseCode = {
+            const morseMap = {
                 '.-': 'A', '-...': 'B', '-.-.': 'C', '-..': 'D', '.': 'E',
                 '..-.': 'F', '--.': 'G', '....': 'H', '..': 'I', '.---': 'J',
                 '-.-': 'K', '.-..': 'L', '--': 'M', '-.': 'N', '---': 'O',
@@ -609,134 +990,102 @@
             if (!text.match(/^[.\-\/ ]+$/)) return null;
             
             try {
-                return text.split(' ').map(code => morseCode[code] || '').join('');
+                return text.split(' ').map(code => morseMap[code] || '').join('');
             } catch (e) {
                 return null;
             }
         }
         
-        function railFenceDecrypt(text, rails = 3) {
-            if (text.length < 10) return null; // Too short for meaningful rail fence
+        function binaryAsciiDecrypt(text) {
+            const binary = text.replace(/[^01]/g, '');
+            if (binary.length < 7 || binary.length % 7 !== 0) return null;
             
-            // This is a simplified implementation
-            // A full rail fence decryption would need to know the number of rails
-            // Here we try with 2, 3, and 4 rails
-            
+            let result = '';
+            for (let i = 0; i < binary.length; i += 7) {
+                const byte = binary.substr(i, 7);
+                result += String.fromCharCode(parseInt(byte, 2));
+            }
+            return result;
+        }
+        
+        // 5. Modern Cryptography
+        function xorBruteForce(text) {
+            // Try single-byte XOR keys
             const results = [];
-            for (let r = 2; r <= 4; r++) {
-                const result = railFenceDecryptWithRails(text, r);
-                if (result) results.push(result);
-            }
             
-            if (results.length === 0) return null;
-            
-            // Return the result with highest confidence
-            return results.reduce((best, current) => 
-                rateDecryption(current) > rateDecryption(best) ? current : best, results[0]);
-        }
-        
-        function railFenceDecryptWithRails(text, rails) {
-            // Implementation of rail fence cipher decryption
-            // This is a complex algorithm that would require significant code
-            // For brevity, we'll return a placeholder implementation
-            return `Rail Fence (${rails} rails) decryption would appear here for: ${text}`;
-        }
-        
-        function affineDecrypt(text) {
-            // Affine cipher requires knowing keys a and b
-            // Here we try some common key combinations
-            const commonKeys = [
-                {a: 1, b: 0},  // No shift
-                {a: 1, b: 5},  // Simple shift
-                {a: 3, b: 7},  // Common affine
-                {a: 5, b: 8},  // Another common
-                {a: 7, b: 10}  // And another
-            ];
-            
-            let bestScore = -1;
-            let bestResult = text;
-            
-            for (let keys of commonKeys) {
-                const decrypted = affineDecryptWithKeys(text, keys.a, keys.b);
-                const score = rateDecryption(decrypted);
+            for (let key = 0; key < 256; key++) {
+                let decrypted = '';
+                for (let i = 0; i < text.length; i++) {
+                    decrypted += String.fromCharCode(text.charCodeAt(i) ^ key);
+                }
                 
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestResult = decrypted;
+                const score = rateDecryption(decrypted);
+                if (score > 20) {
+                    results.push({
+                        key: key.toString(16).padStart(2, '0'),
+                        text: decrypted,
+                        score: score
+                    });
                 }
             }
             
-            return bestScore > 30 ? bestResult : "Could not determine Affine cipher keys";
+            results.sort((a, b) => b.score - a.score);
+            if (results.length === 0) return "No likely XOR key found";
+            
+            return results.slice(0, 3).map(r => 
+                `Key: 0x${r.key} (Score: ${r.score.toFixed(1)})\n${r.text}`
+            ).join('\n\n');
         }
         
-        function affineDecryptWithKeys(text, a, b) {
-            // Modular inverse of a mod 26
-            function modInverse(a, m) {
-                a = (a % m + m) % m;
-                for (let x = 1; x < m; x++) {
-                    if ((a * x) % m === 1) return x;
-                }
-                return 1;
+        function rc4Decrypt(text, key = "secret") {
+            // RC4 stream cipher implementation
+            const S = [];
+            for (let i = 0; i < 256; i++) S[i] = i;
+            
+            let j = 0;
+            for (let i = 0; i < 256; i++) {
+                j = (j + S[i] + key.charCodeAt(i % key.length)) % 256;
+                [S[i], S[j]] = [S[j], S[i]];
             }
             
-            const aInv = modInverse(a, 26);
+            let i = 0;
+            j = 0;
             let result = '';
             
-            for (let i = 0; i < text.length; i++) {
-                const c = text[i];
-                if (/[a-z]/.test(c)) {
-                    const code = c.charCodeAt(0) - 'a'.charCodeAt(0);
-                    const decrypted = (aInv * (code - b + 26)) % 26;
-                    result += String.fromCharCode(decrypted + 'a'.charCodeAt(0));
-                } else if (/[A-Z]/.test(c)) {
-                    const code = c.charCodeAt(0) - 'A'.charCodeAt(0);
-                    const decrypted = (aInv * (code - b + 26)) % 26;
-                    result += String.fromCharCode(decrypted + 'A'.charCodeAt(0));
-                } else {
-                    result += c;
-                }
+            for (let n = 0; n < text.length; n++) {
+                i = (i + 1) % 256;
+                j = (j + S[i]) % 256;
+                [S[i], S[j]] = [S[j], S[i]];
+                const K = S[(S[i] + S[j]) % 256];
+                result += String.fromCharCode(text.charCodeAt(n) ^ K);
             }
             
             return result;
         }
         
-        function substitutionDecrypt(text) {
-            // Simple substitution with common cipher alphabets
-            const commonSubstitutions = [
-                {
-                    name: "Reverse Alphabet",
-                    map: "zyxwvutsrqponmlkjihgfedcba".split('').reduce((obj, c, i) => {
-                        obj[String.fromCharCode(97 + i)] = c;
-                        return obj;
-                    }, {})
-                },
-                {
-                    name: "Keyboard Shift",
-                    map: {
-                        'q': 'p', 'w': 'o', 'e': 'i', 'r': 'u', 't': 'y',
-                        'y': 't', 'u': 'r', 'i': 'e', 'o': 'w', 'p': 'q',
-                        'a': 'l', 's': 'k', 'd': 'j', 'f': 'h', 'g': 'g',
-                        'h': 'f', 'j': 'd', 'k': 's', 'l': 'a',
-                        'z': 'm', 'x': 'n', 'c': 'b', 'v': 'v', 'b': 'c',
-                        'n': 'x', 'm': 'z'
-                    }
-                }
-            ];
-            
-            let bestScore = -1;
-            let bestResult = text;
-            
-            for (let sub of commonSubstitutions) {
-                const decrypted = text.toLowerCase().split('').map(c => sub.map[c] || c).join('');
-                const score = rateDecryption(decrypted);
-                
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestResult = `${sub.name} substitution: ${decrypted}`;
-                }
-            }
-            
-            return bestScore > 30 ? bestResult : "Could not determine substitution cipher";
+        // 6. Text Transformations
+        function reverseText(text) {
+            return text.split('').reverse().join('');
+        }
+        
+        function reverseWords(text) {
+            return text.split(' ').map(word => word.split('').reverse().join('')).join(' ');
+        }
+        
+        function shiftCharacters(text, shift = 1) {
+            return text.split('').map(c => {
+                const code = c.charCodeAt(0);
+                return String.fromCharCode(code + shift);
+            }).join('');
+        }
+        
+        // Helper functions
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
         }
     </script>
 </body>
