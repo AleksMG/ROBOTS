@@ -1,260 +1,565 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Реалистичная вращающаяся черная дыра</title>
+    <title>Автоматическая расшифровка текста (с числовыми методами)</title>
     <style>
         body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
         }
-        
-        .black-hole-container {
-            position: relative;
-            width: 600px;
-            height: 600px;
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 10px;
         }
-        
-        .black-hole {
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            background: radial-gradient(circle at center, #000 0%, #000 70%, transparent 100%);
-            box-shadow: 0 0 60px rgba(0, 0, 0, 0.9);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 10;
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
         }
-        
-        .event-horizon {
-            position: absolute;
-            width: 220px;
-            height: 220px;
-            border-radius: 50%;
-            background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.1) 70%, rgba(0, 0, 0, 0.5) 100%);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 5;
-            filter: blur(2px);
+        button:hover {
+            background-color: #45a049;
         }
-        
-        .accretion-disk {
-            position: absolute;
-            width: 500px;
-            height: 100px;
-            background: linear-gradient(90deg, 
-                rgba(0,0,0,0) 0%, 
-                rgba(255,100,0,0.8) 20%, 
-                rgba(255,255,100,0.9) 50%, 
-                rgba(255,100,0,0.8) 80%, 
-                rgba(0,0,0,0) 100%);
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotateX(75deg);
-            z-index: 3;
-            animation: rotate-disk 20s linear infinite;
-            filter: blur(1px);
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            min-height: 100px;
         }
-        
-        .accretion-disk-inner {
-            position: absolute;
-            width: 400px;
-            height: 80px;
-            background: linear-gradient(90deg, 
-                rgba(0,0,0,0) 0%, 
-                rgba(255,50,0,0.9) 20%, 
-                rgba(255,255,50,1) 50%, 
-                rgba(255,50,0,0.9) 80%, 
-                rgba(0,0,0,0) 100%);
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotateX(75deg);
-            z-index: 4;
-            animation: rotate-disk 15s linear infinite;
-            filter: blur(0.5px);
+        .method {
+            margin: 10px 0;
         }
-        
-        .accretion-disk-innermost {
-            position: absolute;
-            width: 300px;
-            height: 60px;
-            background: linear-gradient(90deg, 
-                rgba(0,0,0,0) 0%, 
-                rgba(255,0,0,1) 20%, 
-                rgba(255,255,0,1) 50%, 
-                rgba(255,0,0,1) 80%, 
-                rgba(0,0,0,0) 100%);
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotateX(75deg);
-            z-index: 5;
-            animation: rotate-disk 10s linear infinite;
-        }
-        
-        .jet-top, .jet-bottom {
-            position: absolute;
-            width: 30px;
-            height: 300px;
-            background: linear-gradient(to top, 
-                rgba(0,0,0,0) 0%, 
-                rgba(100,100,255,0.3) 30%, 
-                rgba(150,150,255,0.6) 70%, 
-                rgba(200,200,255,0.3) 90%, 
-                rgba(255,255,255,0) 100%);
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 2;
-            filter: blur(5px);
-        }
-        
-        .jet-top {
-            top: -250px;
-            animation: jet-pulse-top 4s infinite;
-        }
-        
-        .jet-bottom {
-            bottom: -250px;
-            transform: translateX(-50%) rotate(180deg);
-            animation: jet-pulse-bottom 4s infinite 2s;
-        }
-        
-        .gravitational-lensing {
-            position: absolute;
-            width: 600px;
-            height: 600px;
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1;
-            background: radial-gradient(circle at center, 
-                rgba(0,0,0,0) 0%, 
-                rgba(50,50,100,0.05) 30%, 
-                rgba(100,100,150,0.1) 50%, 
-                rgba(50,50,100,0.05) 70%, 
-                rgba(0,0,0,0) 100%);
-            animation: lensing-pulse 8s infinite;
-        }
-        
-        .star {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background-color: white;
-            border-radius: 50%;
-            z-index: 0;
-        }
-        
-        @keyframes rotate-disk {
-            from { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(0deg); }
-            to { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(360deg); }
-        }
-        
-        @keyframes jet-pulse-top {
-            0%, 100% { height: 300px; opacity: 0.7; }
-            50% { height: 400px; opacity: 1; }
-        }
-        
-        @keyframes jet-pulse-bottom {
-            0%, 100% { height: 300px; opacity: 0.7; }
-            50% { height: 400px; opacity: 1; }
-        }
-        
-        @keyframes lensing-pulse {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
-            50% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
+        .category {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="black-hole-container">
-        <div class="gravitational-lensing"></div>
-        <div class="jet-top"></div>
-        <div class="jet-bottom"></div>
-        <div class="accretion-disk"></div>
-        <div class="accretion-disk-inner"></div>
-        <div class="accretion-disk-innermost"></div>
-        <div class="event-horizon"></div>
-        <div class="black-hole"></div>
+    <h1>Автоматическая расшифровка текста (с числовыми методами)</h1>
+    
+    <textarea id="inputText" placeholder="Введите зашифрованный текст здесь..."></textarea>
+    
+    <button onclick="decryptText()">Расшифровать</button>
+    
+    <div>
+        <h3>Методы расшифровки:</h3>
+        <div class="category">
+            <h4>Буквенные шифры:</h4>
+            <div id="letterMethods"></div>
+        </div>
+        <div class="category">
+            <h4>Числовые шифры:</h4>
+            <div id="numberMethods"></div>
+        </div>
     </div>
-
+    
+    <h2>Результат:</h2>
+    <div id="result" class="result"></div>
+    
     <script>
-        // Create background stars
-        const container = document.querySelector('.black-hole-container');
-        for (let i = 0; i < 200; i++) {
-            const star = document.createElement('div');
-            star.className = 'star';
-            star.style.left = `${Math.random() * 100}%`;
-            star.style.top = `${Math.random() * 100}%`;
-            star.style.opacity = Math.random();
-            star.style.width = `${Math.random() * 3}px`;
-            star.style.height = star.style.width;
-            
-            // Add animation to stars for gravitational lensing effect
-            star.style.animation = `star-twinkle ${5 + Math.random() * 10}s infinite`;
-            
-            container.appendChild(star);
-        }
-
-        // Add dynamic gravitational lensing effect on stars
-        document.head.insertAdjacentHTML('beforeend', `
-            <style>
-                @keyframes star-twinkle {
-                    0%, 100% { transform: translate(0, 0); opacity: ${Math.random()}; }
-                    50% { 
-                        transform: translate(
-                            ${(Math.random() - 0.5) * 20}px, 
-                            ${(Math.random() - 0.5) * 20}px
-                        ); 
-                        opacity: ${Math.random() + 0.3}; 
-                    }
-                }
-            </style>
-        `);
-
-        // Add Doppler effect to accretion disk (redshift/blueshift)
-        const disk = document.querySelector('.accretion-disk');
-        const diskInner = document.querySelector('.accretion-disk-inner');
-        const diskInnermost = document.querySelector('.accretion-disk-innermost');
+        // Список методов расшифровки (буквенные)
+        const letterMethods = [
+            { name: "ROT13", func: rot13Decrypt },
+            { name: "Цезарь (сдвиг +1)", func: (text) => caesarDecrypt(text, 1) },
+            { name: "Цезарь (сдвиг -1)", func: (text) => caesarDecrypt(text, -1) },
+            { name: "Цезарь (автоподбор сдвига)", func: autoCaesarDecrypt },
+            { name: "Атбаш", func: atbashDecrypt },
+            { name: "Шифр Виженера (пробуем ключи)", func: vigenereAutoDecrypt },
+            { name: "Перевернутый текст", func: reverseText },
+            { name: "Подстановка A↔Z, B↔Y...", func: reverseAlphabetDecrypt }
+        ];
         
-        setInterval(() => {
-            const time = Date.now() / 1000;
-            const blueshift = 0.5 + 0.5 * Math.sin(time * 2);
-            const redshift = 0.5 + 0.5 * Math.sin(time * 2 + Math.PI);
+        // Список методов расшифровки (числовые)
+        const numberMethods = [
+            { name: "ASCII коды (числа)", func: asciiNumbersDecrypt },
+            { name: "ASCII коды (hex)", func: asciiHexDecrypt },
+            { name: "Unicode коды", func: unicodeDecrypt },
+            { name: "Двоичный код", func: binaryDecrypt },
+            { name: "Восьмеричный код", func: octalDecrypt },
+            { name: "Шестнадцатеричный код", func: hexDecrypt },
+            { name: "Base64", func: base64Decrypt },
+            { name: "Десятичные коды (разделенные)", func: decimalCodesDecrypt },
+            { name: "A1Z26 (A=1,B=2,...)", func: a1z26Decrypt }
+        ];
+        
+        // Инициализация списка методов
+        document.addEventListener('DOMContentLoaded', function() {
+            const letterMethodsDiv = document.getElementById('letterMethods');
+            const numberMethodsDiv = document.getElementById('numberMethods');
             
-            disk.style.background = `linear-gradient(90deg, 
-                rgba(0,0,0,0) 0%, 
-                rgba(255,${100 * redshift},${50 * redshift},0.8) 20%, 
-                rgba(255,255,${100 * blueshift},0.9) 50%, 
-                rgba(255,${100 * redshift},${50 * redshift},0.8) 80%, 
-                rgba(0,0,0,0) 100%)`;
+            letterMethods.forEach(method => {
+                const div = document.createElement('div');
+                div.className = 'method';
+                div.innerHTML = `<input type="checkbox" id="${method.name}" checked>
+                                <label for="${method.name}">${method.name}</label>`;
+                letterMethodsDiv.appendChild(div);
+            });
+            
+            numberMethods.forEach(method => {
+                const div = document.createElement('div');
+                div.className = 'method';
+                div.innerHTML = `<input type="checkbox" id="${method.name}" checked>
+                                <label for="${method.name}">${method.name}</label>`;
+                numberMethodsDiv.appendChild(div);
+            });
+        });
+        
+        // Основная функция расшифровки
+        function decryptText() {
+            const inputText = document.getElementById('inputText').value.trim();
+            if (!inputText) {
+                alert('Пожалуйста, введите текст для расшифровки');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Пытаемся расшифровать...</p>';
+            
+            // Даем браузеру обновиться перед тяжелыми вычислениями
+            setTimeout(() => {
+                let results = [];
+                const startTime = performance.now();
                 
-            diskInner.style.background = `linear-gradient(90deg, 
-                rgba(0,0,0,0) 0%, 
-                rgba(255,${50 * redshift},${30 * redshift},0.9) 20%, 
-                rgba(255,255,${80 * blueshift},1) 50%, 
-                rgba(255,${50 * redshift},${30 * redshift},0.9) 80%, 
-                rgba(0,0,0,0) 100%)`;
+                // Применяем все выбранные методы (буквенные)
+                letterMethods.forEach(method => {
+                    if (document.getElementById(method.name).checked) {
+                        try {
+                            const decrypted = method.func(inputText);
+                            if (decrypted && decrypted !== inputText) {
+                                results.push({
+                                    method: method.name,
+                                    text: decrypted,
+                                    score: rateDecryption(decrypted)
+                                });
+                            }
+                        } catch (e) {
+                            console.error(`Ошибка в методе ${method.name}:`, e);
+                        }
+                    }
+                });
                 
-            diskInnermost.style.background = `linear-gradient(90deg, 
-                rgba(0,0,0,0) 0%, 
-                rgba(255,${30 * redshift},${10 * redshift},1) 20%, 
-                rgba(255,255,${60 * blueshift},1) 50%, 
-                rgba(255,${30 * redshift},${10 * redshift},1) 80%, 
-                rgba(0,0,0,0) 100%)`;
-        }, 50);
+                // Применяем все выбранные методы (числовые)
+                numberMethods.forEach(method => {
+                    if (document.getElementById(method.name).checked) {
+                        try {
+                            const decrypted = method.func(inputText);
+                            if (decrypted && decrypted !== inputText) {
+                                results.push({
+                                    method: method.name,
+                                    text: decrypted,
+                                    score: rateDecryption(decrypted)
+                                });
+                            }
+                        } catch (e) {
+                            console.error(`Ошибка в методе ${method.name}:`, e);
+                        }
+                    }
+                });
+                
+                // Сортируем результаты по "качеству" расшифровки
+                results.sort((a, b) => b.score - a.score);
+                
+                const endTime = performance.now();
+                const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
+                
+                // Выводим результаты
+                if (results.length === 0) {
+                    resultDiv.innerHTML = '<p>Не удалось расшифровать текст ни одним из методов.</p>';
+                } else {
+                    let html = `<p>Потрачено времени: ${timeTaken} сек. Найдено ${results.length} возможных расшифровок:</p>`;
+                    
+                    // Показываем топ-5 результатов или все, если их меньше 5
+                    const topResults = results.slice(0, 5);
+                    
+                    topResults.forEach((res, index) => {
+                        html += `<div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;">
+                                <h3>Метод: ${res.method} (оценка: ${res.score.toFixed(1)})</h3>
+                                <p style="white-space: pre-wrap;">${res.text}</p>
+                                </div>`;
+                    });
+                    
+                    // Если есть еще результаты, показываем кнопку для отображения всех
+                    if (results.length > 5) {
+                        html += `<button onclick="showAllResults()" style="margin-top: 20px;">Показать все результаты (${results.length})</button>`;
+                        window.tempAllResults = results; // Сохраняем для кнопки
+                    }
+                    
+                    resultDiv.innerHTML = html;
+                }
+            }, 50);
+        }
+        
+        // Функция для показа всех результатов (вызывается кнопкой)
+        function showAllResults() {
+            if (!window.tempAllResults) return;
+            
+            const resultDiv = document.getElementById('result');
+            let html = '<p>Все результаты:</p>';
+            
+            window.tempAllResults.forEach((res, index) => {
+                html += `<div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;">
+                        <h3>Метод: ${res.method} (оценка: ${res.score.toFixed(1)})</h3>
+                        <p style="white-space: pre-wrap;">${res.text}</p>
+                        </div>`;
+            });
+            
+            resultDiv.innerHTML = html;
+            window.tempAllResults = null;
+        }
+        
+        // Функция оценки качества расшифровки (чем выше, тем лучше)
+        function rateDecryption(text) {
+            // Проверяем процент печатных символов
+            const printableChars = text.match(/[\w\s.,!?а-яА-ЯёЁ]/g);
+            const printableRatio = printableChars ? printableChars.length / text.length : 0;
+            
+            // Проверяем наличие гласных (для буквенных текстов)
+            const vowels = text.match(/[aeiouаеёиоуыэюяAEIOUАЕЁИОУЫЭЮЯ]/gi);
+            const vowelRatio = vowels ? vowels.length / text.length : 0;
+            
+            // Проверяем наличие распространенных слов
+            const commonWords = ['the', 'and', 'that', 'have', 'для', 'что', 'это', 'быть'];
+            let commonWordCount = 0;
+            commonWords.forEach(word => {
+                if (text.toLowerCase().includes(word)) commonWordCount++;
+            });
+            
+            // Проверяем длину слов (слишком длинные или короткие слова снижают оценку)
+            const words = text.split(/\s+/);
+            let wordLengthScore = 0;
+            if (words.length > 0) {
+                const avgLength = words.reduce((sum, word) => sum + word.length, 0) / words.length;
+                wordLengthScore = Math.max(0, 10 - Math.abs(avgLength - 5));
+            }
+            
+            return (printableRatio * 40) + (vowelRatio * 30) + (commonWordCount * 10) + wordLengthScore;
+        }
+        
+        // ===== Буквенные методы расшифровки =====
+        
+        function rot13Decrypt(text) {
+            return text.replace(/[a-zA-Z]/g, function(c) {
+                return String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? 
+                       c : c - 26);
+            });
+        }
+        
+        function caesarDecrypt(text, shift) {
+            return text.replace(/[a-zA-Zа-яА-ЯёЁ]/g, function(c) {
+                let isUpper = c === c.toUpperCase();
+                let lowerC = c.toLowerCase();
+                let code = lowerC.charCodeAt(0);
+                
+                // Для русского алфавита
+                if (lowerC >= 'а' && lowerC <= 'я') {
+                    let base = 'а'.charCodeAt(0);
+                    let length = 33; // количество букв в русском алфавите (включая ё)
+                    if (lowerC === 'ё') code = 'е'.charCodeAt(0) + 1;
+                    let shifted = (code - base - shift + length) % length;
+                    if (shifted < 0) shifted += length;
+                    let newChar = String.fromCharCode(base + shifted);
+                    if (lowerC === 'ё' && shifted === 6) newChar = 'ё';
+                    return isUpper ? newChar.toUpperCase() : newChar;
+                }
+                // Для английского алфавита
+                else if (lowerC >= 'a' && lowerC <= 'z') {
+                    let base = 'a'.charCodeAt(0);
+                    let shifted = (code - base - shift + 26) % 26;
+                    if (shifted < 0) shifted += 26;
+                    let newChar = String.fromCharCode(base + shifted);
+                    return isUpper ? newChar.toUpperCase() : newChar;
+                }
+                return c;
+            });
+        }
+        
+        function autoCaesarDecrypt(text) {
+            // Пробуем все возможные сдвиги и выбираем лучший
+            let bestScore = -1;
+            let bestResult = text;
+            
+            for (let shift = 1; shift < 33; shift++) {
+                const decrypted = caesarDecrypt(text, shift);
+                const score = rateDecryption(decrypted);
+                
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestResult = decrypted;
+                }
+            }
+            
+            return bestResult;
+        }
+        
+        function atbashDecrypt(text) {
+            return text.replace(/[a-zA-Zа-яА-ЯёЁ]/g, function(c) {
+                let isUpper = c === c.toUpperCase();
+                let lowerC = c.toLowerCase();
+                
+                // Для английского алфавита
+                if (lowerC >= 'a' && lowerC <= 'z') {
+                    let newCharCode = 'z'.charCodeAt(0) - (lowerC.charCodeAt(0) - 'a'.charCodeAt(0));
+                    let newChar = String.fromCharCode(newCharCode);
+                    return isUpper ? newChar.toUpperCase() : newChar;
+                }
+                // Для русского алфавита (упрощенно)
+                else if (lowerC >= 'а' && lowerC <= 'я') {
+                    let base = 'а'.charCodeAt(0);
+                    let length = 32; // без ё
+                    let pos = lowerC.charCodeAt(0) - base;
+                    if (lowerC === 'ё') pos = 6; // ё после е
+                    let newPos = length - 1 - pos;
+                    if (newPos === 6) return isUpper ? 'Ё' : 'ё'; // ё
+                    let newChar = String.fromCharCode(base + newPos);
+                    return isUpper ? newChar.toUpperCase() : newChar;
+                }
+                return c;
+            });
+        }
+        
+        function vigenereAutoDecrypt(text) {
+            // Упрощенная версия - пробуем несколько возможных ключей
+            const commonKeys = ['key', 'secret', 'password', 'шифр', 'пароль', 'код'];
+            let bestScore = -1;
+            let bestResult = text;
+            
+            for (let key of commonKeys) {
+                const decrypted = vigenereDecrypt(text, key);
+                const score = rateDecryption(decrypted);
+                
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestResult = decrypted;
+                }
+            }
+            
+            return bestScore > 20 ? bestResult : "Не удалось подобрать ключ";
+        }
+        
+        function vigenereDecrypt(text, key) {
+            let result = '';
+            let keyIndex = 0;
+            
+            for (let i = 0; i < text.length; i++) {
+                let c = text[i];
+                let isUpper = c === c.toUpperCase();
+                let lowerC = c.toLowerCase();
+                
+                if ((lowerC >= 'a' && lowerC <= 'z') || (lowerC >= 'а' && lowerC <= 'я') || lowerC === 'ё') {
+                    let keyChar = key[keyIndex % key.length].toLowerCase();
+                    let keyShift;
+                    
+                    // Определяем сдвиг для ключевого символа
+                    if (keyChar >= 'a' && keyChar <= 'z') {
+                        keyShift = keyChar.charCodeAt(0) - 'a'.charCodeAt(0);
+                    } else if (keyChar >= 'а' && keyChar <= 'я') {
+                        keyShift = keyChar.charCodeAt(0) - 'а'.charCodeAt(0);
+                    } else if (keyChar === 'ё') {
+                        keyShift = 6; // позиция ё в алфавите
+                    }
+                    
+                    // Дешифруем символ
+                    if (lowerC >= 'a' && lowerC <= 'z') {
+                        let base = 'a'.charCodeAt(0);
+                        let shifted = (lowerC.charCodeAt(0) - base - keyShift + 26) % 26;
+                        if (shifted < 0) shifted += 26;
+                        let newChar = String.fromCharCode(base + shifted);
+                        result += isUpper ? newChar.toUpperCase() : newChar;
+                    } else {
+                        let base = 'а'.charCodeAt(0);
+                        let pos = lowerC.charCodeAt(0) - base;
+                        if (lowerC === 'ё') pos = 6;
+                        let shifted = (pos - keyShift + 32) % 32;
+                        if (shifted < 0) shifted += 32;
+                        let newChar = shifted === 6 ? 'ё' : String.fromCharCode(base + shifted);
+                        result += isUpper ? newChar.toUpperCase() : newChar;
+                    }
+                    
+                    keyIndex++;
+                } else {
+                    result += c;
+                }
+            }
+            
+            return result;
+        }
+        
+        function reverseText(text) {
+            return text.split('').reverse().join('');
+        }
+        
+        function reverseAlphabetDecrypt(text) {
+            return text.replace(/[a-zA-Z]/g, function(c) {
+                let isUpper = c === c.toUpperCase();
+                let lowerC = c.toLowerCase();
+                let newCharCode = 'z'.charCodeAt(0) - (lowerC.charCodeAt(0) - 'a'.charCodeAt(0));
+                let newChar = String.fromCharCode(newCharCode);
+                return isUpper ? newChar.toUpperCase() : newChar;
+            });
+        }
+        
+        // ===== Числовые методы расшифровки =====
+        
+        function asciiNumbersDecrypt(text) {
+            // Пробуем распознать последовательности чисел как ASCII коды (например: 72 101 108 108 111)
+            const numberGroups = text.match(/\b\d{1,3}\b/g);
+            if (!numberGroups || numberGroups.length < 3) return null;
+            
+            let result = '';
+            for (let numStr of numberGroups) {
+                const num = parseInt(numStr, 10);
+                if (num >= 32 && num <= 126) {
+                    result += String.fromCharCode(num);
+                } else {
+                    return null; // Если есть не-ASCII числа, вероятно это не ASCII код
+                }
+            }
+            
+            return result;
+        }
+        
+        function asciiHexDecrypt(text) {
+            // Пробуем распознать шестнадцатеричные ASCII коды (например: 48 65 6C 6C 6F)
+            const hexGroups = text.match(/\b[0-9a-fA-F]{2}\b/g);
+            if (!hexGroups || hexGroups.length < 3) return null;
+            
+            let result = '';
+            for (let hexStr of hexGroups) {
+                const num = parseInt(hexStr, 16);
+                if (num >= 32 && num <= 126) {
+                    result += String.fromCharCode(num);
+                } else {
+                    return null;
+                }
+            }
+            
+            return result;
+        }
+        
+        function unicodeDecrypt(text) {
+            // Пробуем распознать Unicode коды (например: U+0048 U+0065 U+006C U+006C U+006F)
+            const unicodePattern = /U\+([0-9a-fA-F]{4})/g;
+            let matches;
+            let result = '';
+            
+            while ((matches = unicodePattern.exec(text)) !== null) {
+                const codePoint = parseInt(matches[1], 16);
+                result += String.fromCodePoint(codePoint);
+            }
+            
+            return result || null;
+        }
+        
+        function binaryDecrypt(text) {
+            // Пробуем распознать двоичный код (например: 01001000 01100101 01101100 01101100 01101111)
+            const binaryGroups = text.match(/\b[01]{8}\b/g);
+            if (!binaryGroups || binaryGroups.length < 3) return null;
+            
+            let result = '';
+            for (let binaryStr of binaryGroups) {
+                const num = parseInt(binaryStr, 2);
+                if (num >= 32 && num <= 126) {
+                    result += String.fromCharCode(num);
+                } else {
+                    return null;
+                }
+            }
+            
+            return result;
+        }
+        
+        function octalDecrypt(text) {
+            // Пробуем распознать восьмеричный код (например: 110 145 154 154 157)
+            const octalGroups = text.match(/\b[0-7]{1,3}\b/g);
+            if (!octalGroups || octalGroups.length < 3) return null;
+            
+            let result = '';
+            for (let octalStr of octalGroups) {
+                const num = parseInt(octalStr, 8);
+                if (num >= 32 && num <= 126) {
+                    result += String.fromCharCode(num);
+                } else {
+                    return null;
+                }
+            }
+            
+            return result;
+        }
+        
+        function hexDecrypt(text) {
+            // Пробуем декодировать шестнадцатеричные последовательности
+            if (!text.match(/\b[0-9a-fA-F]{2,}\b/)) return null;
+            
+            try {
+                let hexStr = text.replace(/[^0-9a-fA-F]/g, '');
+                if (hexStr.length % 2 !== 0) return null;
+                
+                let result = '';
+                for (let i = 0; i < hexStr.length; i += 2) {
+                    result += String.fromCharCode(parseInt(hexStr.substr(i, 2), 16);
+                }
+                return result;
+            } catch (e) {
+                return null;
+            }
+        }
+        
+        function base64Decrypt(text) {
+            // Пробуем декодировать Base64
+            if (!text.match(/^[A-Za-z0-9+/]+={0,2}$/)) return null;
+            
+            try {
+                return atob(text);
+            } catch (e) {
+                return null;
+            }
+        }
+        
+        function decimalCodesDecrypt(text) {
+            // Пробуем распознать десятичные коды, разделенные пробелами/запятыми (например: 72,101,108,108,111)
+            const decimalGroups = text.split(/[\s,;]+/);
+            if (decimalGroups.length < 3) return null;
+            
+            let result = '';
+            for (let numStr of decimalGroups) {
+                if (!numStr.match(/^\d+$/)) return null;
+                const num = parseInt(numStr, 10);
+                if (num >= 0 && num <= 0x10FFFF) {
+                    result += String.fromCodePoint(num);
+                } else {
+                    return null;
+                }
+            }
+            
+            return result;
+        }
+        
+        function a1z26Decrypt(text) {
+            // Пробуем распознать шифр A1Z26 (A=1,B=2,...,Z=26)
+            const numberGroups = text.match(/\b\d{1,2}\b/g);
+            if (!numberGroups || numberGroups.length < 3) return null;
+            
+            let result = '';
+            for (let numStr of numberGroups) {
+                const num = parseInt(numStr, 10);
+                if (num >= 1 && num <= 26) {
+                    result += String.fromCharCode(64 + num); // A=65
+                } else {
+                    return null;
+                }
+            }
+            
+            return result;
+        }
     </script>
 </body>
 </html>
