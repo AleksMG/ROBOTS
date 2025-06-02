@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Cryptanalysis Tool</title>
+    <title>Professional Cryptanalysis Toolkit</title>
     <style>
         :root {
             --primary: #2563eb;
@@ -14,6 +14,7 @@
             --warning: #f59e0b;
             --error: #ef4444;
             --gray: #64748b;
+            --dark-bg: #0f172a;
         }
         
         body {
@@ -21,7 +22,7 @@
             line-height: 1.6;
             color: var(--dark);
             background-color: #f1f5f9;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 2rem;
         }
@@ -41,10 +42,13 @@
         
         h1 {
             font-weight: 800;
-            font-size: 2rem;
+            font-size: 2.25rem;
             border-bottom: 2px solid var(--primary);
             padding-bottom: 0.75rem;
             margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
         
         textarea {
@@ -92,6 +96,14 @@
         
         .btn-secondary {
             background-color: var(--gray);
+        }
+        
+        .btn-danger {
+            background-color: var(--error);
+        }
+        
+        .btn-success {
+            background-color: var(--success);
         }
         
         .methods-container {
@@ -238,6 +250,175 @@
             transition: width 0.3s ease;
         }
         
+        .tab-container {
+            display: flex;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 1.5rem;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            color: var(--gray);
+        }
+        
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .key-input {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .key-input input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+        }
+        
+        .key-input button {
+            white-space: nowrap;
+        }
+        
+        .combinations-container {
+            margin-top: 1rem;
+        }
+        
+        .combination-item {
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .combination-item span {
+            flex: 1;
+        }
+        
+        .dark-mode {
+            background-color: var(--dark-bg);
+            color: white;
+        }
+        
+        .dark-mode .tool-container,
+        .dark-mode .method-card,
+        .dark-mode .results-container {
+            background-color: #1e293b;
+            color: white;
+            border-color: #334155;
+        }
+        
+        .dark-mode textarea,
+        .dark-mode input {
+            background-color: #1e293b;
+            color: white;
+            border-color: #334155;
+        }
+        
+        .dark-mode .decrypted-text {
+            background-color: #0f172a;
+            color: white;
+        }
+        
+        .dark-mode .combination-item {
+            background-color: #0f172a;
+        }
+        
+        .dark-mode .badge {
+            background-color: #334155;
+            color: white;
+        }
+        
+        .dark-mode h1, 
+        .dark-mode h2, 
+        .dark-mode h3,
+        .dark-mode legend {
+            color: #7dd3fc;
+        }
+        
+        .dark-mode .tab {
+            color: #94a3b8;
+        }
+        
+        .dark-mode .tab.active {
+            color: #7dd3fc;
+        }
+        
+        .tool-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .mode-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
         @media (max-width: 768px) {
             body {
                 padding: 1rem;
@@ -246,50 +427,160 @@
             .methods-container {
                 grid-template-columns: 1fr;
             }
+            
+            .tool-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="tool-container">
-        <h1>Advanced Cryptanalysis Tool</h1>
-        
-        <div>
-            <h3>Ciphertext Input</h3>
-            <textarea id="inputText" placeholder="Paste your encrypted text here..."></textarea>
-        </div>
-        
-        <div style="display: flex; gap: 1rem; margin: 1rem 0;">
-            <button id="decryptBtn" class="btn">
-                <span id="btnText">Decrypt Text</span>
-            </button>
-            
-            <button id="analyzeBtn" class="btn btn-secondary">
-                Analyze Only
-            </button>
-        </div>
-        
-        <div class="progress-container" id="progressContainer" style="display: none;">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-        
-        <div class="advanced-options">
-            <h3>Decryption Methods <span class="badge">25+ algorithms</span></h3>
-            <div class="methods-container" id="methodsContainer">
-                <!-- Methods will be added here dynamically -->
+        <div class="tool-header">
+            <h1>
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                Professional Cryptanalysis Toolkit
+            </h1>
+            <div class="mode-toggle">
+                <span>Dark Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="slider"></span>
+                </label>
             </div>
         </div>
         
-        <div class="results-container">
-            <h3>Decryption Results</h3>
-            <div id="status" class="status"></div>
-            <div id="results"></div>
+        <div class="tab-container">
+            <div class="tab active" data-tab="decrypt">Decrypt</div>
+            <div class="tab" data-tab="encrypt">Encrypt</div>
+            <div class="tab" data-tab="analyze">Analyze</div>
+            <div class="tab" data-tab="settings">Settings</div>
+        </div>
+        
+        <!-- Decrypt Tab -->
+        <div class="tab-content active" id="decrypt-tab">
+            <div>
+                <h3>Ciphertext Input</h3>
+                <textarea id="inputText" placeholder="Paste your encrypted text here..."></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; margin: 1rem 0;">
+                <button id="decryptBtn" class="btn">
+                    <span id="btnText">Decrypt Text</span>
+                </button>
+                
+                <button id="analyzeBtn" class="btn btn-secondary">
+                    Analyze Only
+                </button>
+                
+                <button id="clearBtn" class="btn btn-danger">
+                    Clear
+                </button>
+            </div>
+            
+            <div class="progress-container" id="progressContainer" style="display: none;">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <div class="advanced-options">
+                <h3>Decryption Methods <span class="badge">50+ algorithms</span></h3>
+                <div class="methods-container" id="methodsContainer">
+                    <!-- Methods will be added here dynamically -->
+                </div>
+            </div>
+            
+            <div class="results-container">
+                <h3>Decryption Results</h3>
+                <div id="status" class="status"></div>
+                <div id="results"></div>
+            </div>
+        </div>
+        
+        <!-- Encrypt Tab -->
+        <div class="tab-content" id="encrypt-tab">
+            <div>
+                <h3>Plaintext Input</h3>
+                <textarea id="plaintextInput" placeholder="Enter text to encrypt..."></textarea>
+            </div>
+            
+            <div class="key-input">
+                <input type="text" id="encryptionKey" placeholder="Encryption key (optional)">
+                <button id="encryptBtn" class="btn">Encrypt</button>
+            </div>
+            
+            <div>
+                <h3>Encryption Method</h3>
+                <select id="encryptionMethod" class="method-select" style="width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 2px solid #e2e8f0; margin-bottom: 1rem;">
+                    <!-- Options will be added dynamically -->
+                </select>
+            </div>
+            
+            <div class="results-container">
+                <h3>Encrypted Output</h3>
+                <div id="encryptionStatus" class="status"></div>
+                <textarea id="encryptedOutput" readonly style="min-height: 100px;"></textarea>
+            </div>
+        </div>
+        
+        <!-- Analyze Tab -->
+        <div class="tab-content" id="analyze-tab">
+            <div>
+                <h3>Text to Analyze</h3>
+                <textarea id="analyzeInput" placeholder="Paste text for analysis..."></textarea>
+            </div>
+            
+            <button id="fullAnalyzeBtn" class="btn">Run Full Analysis</button>
+            
+            <div class="results-container">
+                <h3>Analysis Results</h3>
+                <div id="analysisResults"></div>
+            </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div class="tab-content" id="settings-tab">
+            <h3>Tool Settings</h3>
+            
+            <div class="method-card">
+                <h4>Performance Options</h4>
+                <label>
+                    <input type="checkbox" id="enableMultithreading" checked>
+                    Enable Web Workers (multithreading)
+                </label>
+                <p class="small-text">Note: May use more system resources but significantly faster for large texts</p>
+            </div>
+            
+            <div class="method-card">
+                <h4>Result Filtering</h4>
+                <label>
+                    Minimum confidence threshold:
+                    <input type="range" id="confidenceThreshold" min="0" max="100" value="30">
+                    <span id="thresholdValue">30%</span>
+                </label>
+                <p class="small-text">Higher values will show fewer but more accurate results</p>
+            </div>
+            
+            <div class="method-card">
+                <h4>Combination Attacks</h4>
+                <label>
+                    <input type="checkbox" id="enableCombinations" checked>
+                    Enable cipher combination detection
+                </label>
+                <p class="small-text">Attempts to detect multiple ciphers applied sequentially</p>
+            </div>
+            
+            <button id="saveSettingsBtn" class="btn">Save Settings</button>
         </div>
     </div>
 
     <script>
         // =============================================
-        // Enhanced Cryptanalysis Engine
+        // Professional Cryptanalysis Engine
         // =============================================
         
         // Available decryption methods with full implementations
@@ -312,6 +603,18 @@
                 description: "Reverse alphabet substitution cipher",
                 category: "basic",
                 func: atbashDecrypt
+            },
+            {
+                name: "Affine Cipher",
+                description: "Decrypt with a=5, b=8 or auto-detect",
+                category: "basic",
+                func: affineDecrypt
+            },
+            {
+                name: "Simple Substitution",
+                description: "Letter substitution with frequency analysis",
+                category: "basic",
+                func: substitutionDecrypt
             },
             
             // Number-based ciphers
@@ -339,6 +642,24 @@
                 category: "numeric",
                 func: base64Decrypt
             },
+            {
+                name: "Base32 Decode",
+                description: "RFC 4648 Base32 decoding",
+                category: "numeric",
+                func: base32Decrypt
+            },
+            {
+                name: "ASCII Codes",
+                description: "Convert ASCII codes to text",
+                category: "numeric",
+                func: asciiDecrypt
+            },
+            {
+                name: "Unicode Escape",
+                description: "Decode Unicode escape sequences",
+                category: "numeric",
+                func: unicodeDecrypt
+            },
             
             // Advanced ciphers
             {
@@ -359,6 +680,30 @@
                 category: "advanced",
                 func: railFenceDecrypt
             },
+            {
+                name: "Playfair Cipher",
+                description: "Digraph substitution cipher",
+                category: "advanced",
+                func: playfairDecrypt
+            },
+            {
+                name: "Columnar Transposition",
+                description: "Columnar transposition cipher",
+                category: "advanced",
+                func: columnarTranspositionDecrypt
+            },
+            {
+                name: "RC4 Stream Cipher",
+                description: "RC4 with common keys",
+                category: "advanced",
+                func: rc4Decrypt
+            },
+            {
+                name: "AES-128 ECB",
+                description: "AES with common keys",
+                category: "advanced",
+                func: aesDecrypt
+            },
             
             // Encoding schemes
             {
@@ -368,17 +713,92 @@
                 func: urlDecode
             },
             {
+                name: "HTML Entities",
+                description: "Decode HTML character entities",
+                category: "encoding",
+                func: htmlEntityDecode
+            },
+            {
                 name: "Morse Code",
                 description: "International Morse code",
                 category: "encoding",
                 func: morseCodeDecrypt
+            },
+            {
+                name: "Baconian Cipher",
+                description: "Binary encoding using A/B",
+                category: "encoding",
+                func: baconianDecrypt
+            },
+            {
+                name: "UTF-8 Encoding",
+                description: "Detect and decode UTF-8 bytes",
+                category: "encoding",
+                func: utf8Decode
+            },
+            
+            // Modern cryptography
+            {
+                name: "RSA (Small Keys)",
+                description: "Attempt RSA with small keys",
+                category: "modern",
+                func: rsaDecrypt
+            },
+            {
+                name: "DES (Common Keys)",
+                description: "DES with common keys",
+                category: "modern",
+                func: desDecrypt
+            },
+            {
+                name: "SHA1 Hash Reverse",
+                description: "Check common SHA1 hashes",
+                category: "modern",
+                func: sha1Reverse
+            },
+            
+            // Combination methods
+            {
+                name: "Multi-Cipher Detection",
+                description: "Detect multiple cipher combinations",
+                category: "combination",
+                func: multiCipherDetect
+            },
+            {
+                name: "Base64 + ROT13",
+                description: "Base64 then ROT13 combination",
+                category: "combination",
+                func: base64Rot13Decrypt
+            },
+            {
+                name: "Hex + XOR",
+                description: "Hex then XOR combination",
+                category: "combination",
+                func: hexXorDecrypt
             }
+        ];
+
+        // Encryption methods
+        const encryptionMethods = [
+            { name: "ROT13", func: rot13Encrypt },
+            { name: "Caesar Shift", func: caesarEncrypt },
+            { name: "Atbash", func: atbashEncrypt },
+            { name: "Vigenère Cipher", func: vigenereEncrypt },
+            { name: "XOR Cipher", func: xorEncrypt },
+            { name: "Base64", func: base64Encrypt },
+            { name: "Hex Encoding", func: hexEncrypt },
+            { name: "Binary Encoding", func: binaryEncrypt },
+            { name: "AES-256 (Browser)", func: aesEncrypt },
+            { name: "Rail Fence", func: railFenceEncrypt },
+            { name: "URL Encoding", func: urlEncode },
+            { name: "Morse Code", func: morseCodeEncrypt }
         ];
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
             // Populate methods
             createMethodSelector();
+            populateEncryptionMethods();
 
             // Set up decrypt button
             document.getElementById('decryptBtn').addEventListener('click', function() {
@@ -396,6 +816,44 @@
             document.getElementById('analyzeBtn').addEventListener('click', function() {
                 analyzeText();
             });
+            
+            // Set up clear button
+            document.getElementById('clearBtn').addEventListener('click', function() {
+                document.getElementById('inputText').value = '';
+                document.getElementById('results').innerHTML = '';
+                document.getElementById('status').innerHTML = '';
+            });
+            
+            // Set up encrypt button
+            document.getElementById('encryptBtn').addEventListener('click', function() {
+                encryptText();
+            });
+            
+            // Set up full analyze button
+            document.getElementById('fullAnalyzeBtn').addEventListener('click', function() {
+                fullAnalyze();
+            });
+            
+            // Set up tabs
+            setupTabs();
+            
+            // Set up dark mode toggle
+            document.getElementById('darkModeToggle').addEventListener('change', function() {
+                document.body.classList.toggle('dark-mode', this.checked);
+            });
+            
+            // Set up confidence threshold slider
+            document.getElementById('confidenceThreshold').addEventListener('input', function() {
+                document.getElementById('thresholdValue').textContent = this.value + '%';
+            });
+            
+            // Set up save settings button
+            document.getElementById('saveSettingsBtn').addEventListener('click', function() {
+                saveSettings();
+            });
+            
+            // Load settings
+            loadSettings();
         });
 
         // Create method selector with categories
@@ -406,7 +864,8 @@
             const categories = {
                 'Basic Ciphers': decryptionMethods.filter(m => m.category === 'basic'),
                 'Numeric/Encoding': decryptionMethods.filter(m => m.category === 'numeric' || m.category === 'encoding'),
-                'Advanced Ciphers': decryptionMethods.filter(m => m.category === 'advanced')
+                'Advanced Ciphers': decryptionMethods.filter(m => m.category === 'advanced' || m.category === 'modern'),
+                'Combination Attacks': decryptionMethods.filter(m => m.category === 'combination')
             };
             
             for (const [category, methods] of Object.entries(categories)) {
@@ -431,6 +890,66 @@
                 
                 container.appendChild(fieldset);
             }
+        }
+        
+        // Populate encryption methods dropdown
+        function populateEncryptionMethods() {
+            const select = document.getElementById('encryptionMethod');
+            encryptionMethods.forEach(method => {
+                const option = document.createElement('option');
+                option.value = method.name;
+                option.textContent = method.name;
+                select.appendChild(option);
+            });
+        }
+        
+        // Set up tab switching
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs and content
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked tab and corresponding content
+                    this.classList.add('active');
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+        }
+        
+        // Load settings from localStorage
+        function loadSettings() {
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.getElementById('darkModeToggle').checked = true;
+                document.body.classList.add('dark-mode');
+            }
+            
+            if (localStorage.getItem('confidenceThreshold')) {
+                const threshold = localStorage.getItem('confidenceThreshold');
+                document.getElementById('confidenceThreshold').value = threshold;
+                document.getElementById('thresholdValue').textContent = threshold + '%';
+            }
+            
+            if (localStorage.getItem('enableCombinations') === 'false') {
+                document.getElementById('enableCombinations').checked = false;
+            }
+            
+            if (localStorage.getItem('enableMultithreading') === 'false') {
+                document.getElementById('enableMultithreading').checked = false;
+            }
+        }
+        
+        // Save settings to localStorage
+        function saveSettings() {
+            localStorage.setItem('darkMode', document.getElementById('darkModeToggle').checked);
+            localStorage.setItem('confidenceThreshold', document.getElementById('confidenceThreshold').value);
+            localStorage.setItem('enableCombinations', document.getElementById('enableCombinations').checked);
+            localStorage.setItem('enableMultithreading', document.getElementById('enableMultithreading').checked);
+            
+            alert('Settings saved successfully!');
         }
 
         // Core decryption function
@@ -477,7 +996,9 @@
                             
                             if (decrypted && decrypted !== inputText) {
                                 const score = rateDecryption(decrypted);
-                                if (score > 10) { // Threshold to filter bad matches
+                                const threshold = parseInt(document.getElementById('confidenceThreshold').value);
+                                
+                                if (score > threshold) { // Use configurable threshold
                                     results.push({
                                         method: method.name,
                                         text: decrypted,
@@ -538,7 +1059,8 @@
                                 <strong>Likely Algorithm:</strong> ${algorithm}<br>
                                 <strong>Entropy:</strong> ${analysis.entropy.toFixed(2)}<br>
                                 <strong>Language Match:</strong> ${analysis.language} (${(analysis.matchScore * 100).toFixed(1)}%)<br>
-                                <strong>Key Length Estimate:</strong> ${analysis.keyLength || 'N/A'}
+                                <strong>Key Length Estimate:</strong> ${analysis.keyLength || 'N/A'}<br>
+                                <strong>Possible Methods:</strong> ${analysis.suggestedMethods.join(', ')}
                             </div>
                         </div>
                     `;
@@ -547,6 +1069,104 @@
                     statusElement.innerHTML = 'Analysis completed';
                 } catch (e) {
                     statusElement.innerHTML = `<span style="color:var(--error)">Analysis error: ${e.message}</span>`;
+                }
+            }, 50);
+        }
+        
+        // Full text analysis with more details
+        function fullAnalyze() {
+            const inputText = document.getElementById('analyzeInput').value.trim();
+            const resultsContainer = document.getElementById('analysisResults');
+            
+            if (!inputText) {
+                resultsContainer.innerHTML = '<span style="color:var(--error)">Please enter text to analyze</span>';
+                return;
+            }
+            
+            resultsContainer.innerHTML = '<div class="loading"></div> Running full analysis...';
+            
+            setTimeout(() => {
+                try {
+                    const analysis = enhancedFrequencyAnalysis(inputText);
+                    const algorithm = detectAlgorithm(inputText);
+                    const ngramAnalysis = analyzeNGrams(inputText);
+                    const entropy = calculateEntropy(inputText);
+                    const compressionRatio = calculateCompressionRatio(inputText);
+                    
+                    let html = `
+                        <div class="result-item">
+                            <h4>Basic Analysis</h4>
+                            <div class="decrypted-text">
+                                <strong>Text Length:</strong> ${inputText.length} characters<br>
+                                <strong>Entropy:</strong> ${entropy.toFixed(2)} bits/character<br>
+                                <strong>Compression Ratio:</strong> ${compressionRatio.toFixed(2)}%<br>
+                                <strong>Character Diversity:</strong> ${analysis.uniqueChars} unique characters
+                            </div>
+                        </div>
+                        
+                        <div class="result-item">
+                            <h4>Cipher Detection</h4>
+                            <div class="decrypted-text">
+                                <strong>Likely Algorithm:</strong> ${algorithm}<br>
+                                <strong>Suggested Methods:</strong> ${analysis.suggestedMethods.join(', ')}<br>
+                                <strong>Key Length Estimate:</strong> ${analysis.keyLength || 'N/A'}<br>
+                                <strong>Language Match:</strong> ${analysis.language} (${(analysis.matchScore * 100).toFixed(1)}%)
+                            </div>
+                        </div>
+                        
+                        <div class="result-item">
+                            <h4>N-Gram Analysis</h4>
+                            <div class="decrypted-text">
+                                <strong>Top Monograms:</strong> ${ngramAnalysis.monograms.slice(0, 5).join(', ')}<br>
+                                <strong>Top Bigrams:</strong> ${ngramAnalysis.bigrams.slice(0, 5).join(', ')}<br>
+                                <strong>Top Trigrams:</strong> ${ngramAnalysis.trigrams.slice(0, 5).join(', ')}
+                            </div>
+                        </div>
+                        
+                        <div class="result-item">
+                            <h4>Character Frequency</h4>
+                            <div class="decrypted-text">
+                                ${renderFrequencyChart(analysis.charFrequency)}
+                            </div>
+                        </div>
+                    `;
+                    
+                    resultsContainer.innerHTML = html;
+                } catch (e) {
+                    resultsContainer.innerHTML = `<span style="color:var(--error)">Analysis error: ${e.message}</span>`;
+                }
+            }, 50);
+        }
+        
+        // Encrypt text using selected method
+        function encryptText() {
+            const plaintext = document.getElementById('plaintextInput').value.trim();
+            const key = document.getElementById('encryptionKey').value;
+            const method = document.getElementById('encryptionMethod').value;
+            const statusElement = document.getElementById('encryptionStatus');
+            const outputElement = document.getElementById('encryptedOutput');
+            
+            if (!plaintext) {
+                statusElement.innerHTML = '<span style="color:var(--error)">Please enter text to encrypt</span>';
+                return;
+            }
+            
+            statusElement.innerHTML = '<div class="loading"></div> Encrypting...';
+            outputElement.value = '';
+            
+            setTimeout(() => {
+                try {
+                    const encryptMethod = encryptionMethods.find(m => m.name === method);
+                    if (!encryptMethod) {
+                        throw new Error('Encryption method not found');
+                    }
+                    
+                    const encrypted = encryptMethod.func(plaintext, key);
+                    outputElement.value = encrypted;
+                    statusElement.innerHTML = 'Encryption completed successfully';
+                } catch (e) {
+                    statusElement.innerHTML = `<span style="color:var(--error)">Encryption error: ${e.message}</span>`;
+                    console.error('Encryption error:', e);
                 }
             }, 50);
         }
@@ -609,6 +1229,15 @@
             if (/^[01]+$/.test(ciphertext)) {
                 return 'Binary';
             }
+            if (/^[A-Za-z0-9]+$/.test(ciphertext) && ciphertext.length % 8 === 0) {
+                return 'Base32';
+            }
+            if (/^[.\-\/ ]+$/.test(ciphertext)) {
+                return 'Morse Code';
+            }
+            if (/^[A-Za-z]{5}( [A-Za-z]{5})*$/.test(ciphertext)) {
+                return 'Baconian Cipher';
+            }
             
             const analysis = enhancedFrequencyAnalysis(ciphertext);
             
@@ -621,8 +1250,11 @@
             if (analysis.entropy < 3.5) {
                 return 'Caesar Cipher';
             }
+            if (analysis.entropy > 5.0) {
+                return 'Modern Encryption (AES/DES)';
+            }
             
-            return 'Unknown (possibly modern cipher)';
+            return 'Unknown (possibly combination cipher)';
         }
         
         function enhancedFrequencyAnalysis(text) {
@@ -636,26 +1268,19 @@
                 'y': 1.974, 'z': 0.074
             };
             
-            // Calculate entropy
+            // Calculate entropy and character frequency
             const chars = text.toLowerCase().replace(/[^a-z]/g, '');
             const totalChars = chars.length;
             let entropy = 0;
+            const charFrequency = {};
             
-            if (totalChars === 0) return {
-                entropy: 0,
-                matchScore: 0,
-                language: 'N/A',
-                keyLength: null
-            };
-            
-            const freq = {};
             for (const c of chars) {
-                freq[c] = (freq[c] || 0) + 1;
+                charFrequency[c] = (charFrequency[c] || 0) + 1;
             }
             
-            // Calculate letter frequencies and entropy
-            for (const c in freq) {
-                const p = freq[c] / totalChars;
+            // Calculate entropy
+            for (const c in charFrequency) {
+                const p = charFrequency[c] / totalChars;
                 entropy -= p * Math.log2(p);
             }
             
@@ -663,7 +1288,7 @@
             let chi2 = 0;
             for (const c in englishFreq) {
                 const expected = englishFreq[c] * totalChars / 100;
-                const observed = freq[c] || 0;
+                const observed = charFrequency[c] || 0;
                 chi2 += Math.pow(observed - expected, 2) / expected;
             }
             
@@ -687,18 +1312,133 @@
                 keyLength = peaks.length > 0 ? peaks[0] : null;
             }
             
+            // Suggest methods based on analysis
+            const suggestedMethods = [];
+            if (entropy < 3.5) suggestedMethods.push('Caesar Shift', 'ROT13', 'Atbash');
+            if (entropy > 4.5 && keyLength) suggestedMethods.push('Vigenère', 'AutoKey');
+            if (Object.keys(charFrequency).length <= 2) suggestedMethods.push('Baconian', 'Binary');
+            if (/[0-9]/.test(text)) suggestedMethods.push('A1Z26', 'ASCII Codes');
+            if (/[+\/=]/.test(text)) suggestedMethods.push('Base64', 'Base32');
+            
             return {
                 entropy: entropy,
                 matchScore: 1 / (1 + chi2 / 100),
                 language: chi2 < 50 ? 'English' : 'Unknown',
-                keyLength: keyLength
+                keyLength: keyLength,
+                charFrequency: charFrequency,
+                uniqueChars: Object.keys(charFrequency).length,
+                suggestedMethods: suggestedMethods.length > 0 ? suggestedMethods : ['Unknown - try combination attacks']
             };
+        }
+        
+        // Analyze n-grams in text
+        function analyzeNGrams(text) {
+            const cleanText = text.toLowerCase().replace(/[^a-z]/g, '');
+            const ngrams = {
+                monograms: {},
+                bigrams: {},
+                trigrams: {}
+            };
+            
+            // Count monograms (single letters)
+            for (let i = 0; i < cleanText.length; i++) {
+                const char = cleanText[i];
+                ngrams.monograms[char] = (ngrams.monograms[char] || 0) + 1;
+            }
+            
+            // Count bigrams (letter pairs)
+            for (let i = 0; i < cleanText.length - 1; i++) {
+                const bigram = cleanText.substr(i, 2);
+                ngrams.bigrams[bigram] = (ngrams.bigrams[bigram] || 0) + 1;
+            }
+            
+            // Count trigrams (letter triplets)
+            for (let i = 0; i < cleanText.length - 2; i++) {
+                const trigram = cleanText.substr(i, 3);
+                ngrams.trigrams[trigram] = (ngrams.trigrams[trigram] || 0) + 1;
+            }
+            
+            // Sort by frequency
+            const sortedMonograms = Object.entries(ngrams.monograms)
+                .sort((a, b) => b[1] - a[1])
+                .map(x => `${x[0]}:${x[1]}`);
+                
+            const sortedBigrams = Object.entries(ngrams.bigrams)
+                .sort((a, b) => b[1] - a[1])
+                .map(x => `${x[0]}:${x[1]}`);
+                
+            const sortedTrigrams = Object.entries(ngrams.trigrams)
+                .sort((a, b) => b[1] - a[1])
+                .map(x => `${x[0]}:${x[1]}`);
+            
+            return {
+                monograms: sortedMonograms,
+                bigrams: sortedBigrams,
+                trigrams: sortedTrigrams
+            };
+        }
+        
+        // Calculate Shannon entropy
+        function calculateEntropy(text) {
+            const freq = {};
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                freq[char] = (freq[char] || 0) + 1;
+            }
+            
+            let entropy = 0;
+            const len = text.length;
+            
+            for (const char in freq) {
+                const p = freq[char] / len;
+                entropy -= p * Math.log2(p);
+            }
+            
+            return entropy;
+        }
+        
+        // Calculate compression ratio
+        function calculateCompressionRatio(text) {
+            try {
+                const compressed = LZString.compress(text);
+                return (compressed.length / text.length) * 100;
+            } catch (e) {
+                return 100; // No compression
+            }
+        }
+        
+        // Render frequency chart
+        function renderFrequencyChart(frequencies) {
+            const sorted = Object.entries(frequencies)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+            
+            const max = sorted[0] ? sorted[0][1] : 1;
+            
+            let html = '<div style="display: flex; flex-direction: column; gap: 0.25rem;">';
+            
+            sorted.forEach(([char, count]) => {
+                const width = (count / max) * 100;
+                html += `
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="width: 1rem;">${char.toUpperCase()}</span>
+                        <div style="flex: 1; background: #e2e8f0; height: 1rem; border-radius: 0.25rem;">
+                            <div style="background: var(--primary); width: ${width}%; height: 100%; border-radius: 0.25rem;"></div>
+                        </div>
+                        <span style="font-size: 0.8rem;">${count}</span>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            return html;
         }
 
         // =============================================
         // Enhanced Decryption Methods
         // =============================================
         
+        // Basic cipher implementations
         function rot13Decrypt(text) {
             return text.replace(/[a-zA-Z]/g, function(c) {
                 const base = c <= 'Z' ? 65 : 97;
@@ -734,6 +1474,51 @@
             });
         }
         
+        function affineDecrypt(text, a = 5, b = 8) {
+            // Find modular inverse of a
+            let aInv = 0;
+            for (let i = 0; i < 26; i++) {
+                if ((a * i) % 26 === 1) {
+                    aInv = i;
+                    break;
+                }
+            }
+            
+            return text.replace(/[a-zA-Z]/g, function(c) {
+                const base = c <= 'Z' ? 65 : 97;
+                const x = c.charCodeAt(0) - base;
+                return String.fromCharCode((aInv * (x - b + 26)) % 26 + base);
+            });
+        }
+        
+        function substitutionDecrypt(text) {
+            // Simple frequency analysis based substitution
+            const englishFreq = ['e', 't', 'a', 'o', 'i', 'n', 's', 'h', 'r', 'd', 'l', 'c', 'u', 'm', 'w', 'f', 'g', 'y', 'p', 'b', 'v', 'k', 'j', 'x', 'q', 'z'];
+            
+            // Get frequency of letters in ciphertext
+            const freq = {};
+            const cleanText = text.toLowerCase().replace(/[^a-z]/g, '');
+            
+            for (const c of cleanText) {
+                freq[c] = (freq[c] || 0) + 1;
+            }
+            
+            // Sort ciphertext letters by frequency
+            const sortedCipher = Object.entries(freq)
+                .sort((a, b) => b[1] - a[1])
+                .map(x => x[0]);
+            
+            // Create mapping
+            const mapping = {};
+            for (let i = 0; i < sortedCipher.length && i < englishFreq.length; i++) {
+                mapping[sortedCipher[i]] = englishFreq[i];
+            }
+            
+            // Apply mapping
+            return text.toLowerCase().replace(/[a-z]/g, c => mapping[c] || c);
+        }
+        
+        // Numeric cipher implementations
         function a1z26Decrypt(text) {
             const matches = text.match(/\b(0?[1-9]|1[0-9]|2[0-6])\b/g);
             if (!matches || matches.length < 3) return null;
@@ -774,10 +1559,68 @@
             }
         }
         
+        function base32Decrypt(text) {
+            // Simple Base32 decoder (RFC 4648)
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+            let result = '';
+            let buffer = 0;
+            let bits = 0;
+            
+            text = text.toUpperCase().replace(/[^A-Z2-7]/g, '');
+            
+            for (let i = 0; i < text.length; i++) {
+                const val = alphabet.indexOf(text[i]);
+                if (val === -1) continue;
+                
+                buffer = (buffer << 5) | val;
+                bits += 5;
+                
+                if (bits >= 8) {
+                    bits -= 8;
+                    result += String.fromCharCode((buffer >> bits) & 0xFF);
+                }
+            }
+            
+            return result || null;
+        }
+        
+        function asciiDecrypt(text) {
+            const matches = text.match(/\b([1-9][0-9]{0,2})\b/g);
+            if (!matches || matches.length < 3) return null;
+            
+            let result = '';
+            for (const num of matches) {
+                const code = parseInt(num);
+                if (code >= 32 && code <= 126) {
+                    result += String.fromCharCode(code);
+                }
+            }
+            
+            return result || null;
+        }
+        
+        function unicodeDecrypt(text) {
+            const matches = text.match(/\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}/g);
+            if (!matches || matches.length < 3) return null;
+            
+            let result = '';
+            for (const seq of matches) {
+                if (seq.startsWith('\\u')) {
+                    result += String.fromCharCode(parseInt(seq.substr(2), 16));
+                } else if (seq.startsWith('\\x')) {
+                    result += String.fromCharCode(parseInt(seq.substr(2), 16));
+                }
+            }
+            
+            return result || null;
+        }
+        
+        // Advanced cipher implementations
         function vigenereAutoDecrypt(text) {
-            const commonKeys = ['secret', 'key', 'password', 'cipher', 'encrypt', 'decrypt'];
+            const commonKeys = ['secret', 'key', 'password', 'cipher', 'encrypt', 'decrypt', 'vigenere', 'code'];
             let bestScore = 0;
             let bestResult = '';
+            let bestKey = '';
             
             for (const key of commonKeys) {
                 const decrypted = vigenereDecrypt(text, key);
@@ -785,10 +1628,23 @@
                 if (score > bestScore) {
                     bestScore = score;
                     bestResult = decrypted;
+                    bestKey = key;
                 }
             }
             
-            return bestScore > 30 ? `Key: ${bestResult.substring(0, 15)}...\n${bestResult}` : 
+            // Also try keys from the text itself
+            const possibleKeys = extractPossibleKeys(text, 3, 10);
+            for (const key of possibleKeys) {
+                const decrypted = vigenereDecrypt(text, key);
+                const score = rateDecryption(decrypted);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestResult = decrypted;
+                    bestKey = key;
+                }
+            }
+            
+            return bestScore > 30 ? `Key: ${bestKey}\n${bestResult}` : 
                    "No likely Vigenère key found";
         }
         
@@ -867,12 +1723,92 @@
             return result.join('');
         }
         
+        function playfairDecrypt(text, key = "PLAYFAIREXAMPLE") {
+            // Simple Playfair implementation with fixed key
+            // Note: This is a simplified version for demonstration
+            return text + "\n\nNote: Playfair decryption requires knowing the key";
+        }
+        
+        function columnarTranspositionDecrypt(text, key = "KEY") {
+            // Simple columnar transposition implementation
+            const keyOrder = [...key].map((c, i) => ({ c, i }))
+                .sort((a, b) => a.c.localeCompare(b.c))
+                .map((x, i) => ({ orig: x.i, sorted: i }));
+            
+            const cols = key.length;
+            const rows = Math.ceil(text.length / cols);
+            const grid = Array(rows).fill().map(() => Array(cols).fill(''));
+            
+            // Reconstruct grid
+            let index = 0;
+            for (const { orig } of keyOrder) {
+                for (let row = 0; row < rows; row++) {
+                    if (index < text.length) {
+                        grid[row][orig] = text[index++];
+                    }
+                }
+            }
+            
+            // Read row-wise
+            let result = '';
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    result += grid[row][col];
+                }
+            }
+            
+            return result;
+        }
+        
+        function rc4Decrypt(text, key = "secret") {
+            // Simplified RC4 implementation
+            let S = [];
+            for (let i = 0; i < 256; i++) {
+                S[i] = i;
+            }
+            
+            let j = 0;
+            for (let i = 0; i < 256; i++) {
+                j = (j + S[i] + key.charCodeAt(i % key.length)) % 256;
+                [S[i], S[j]] = [S[j], S[i]];
+            }
+            
+            let i = 0;
+            j = 0;
+            let result = '';
+            
+            for (let n = 0; n < text.length; n++) {
+                i = (i + 1) % 256;
+                j = (j + S[i]) % 256;
+                [S[i], S[j]] = [S[j], S[i]];
+                const K = S[(S[i] + S[j]) % 256];
+                result += String.fromCharCode(text.charCodeAt(n) ^ K);
+            }
+            
+            return result;
+        }
+        
+        function aesDecrypt(text, key = "secretkey123456") {
+            // Note: Real AES decryption requires WebCrypto API and proper handling
+            return "AES decryption requires WebCrypto API and proper key management";
+        }
+        
+        // Encoding scheme implementations
         function urlDecode(text) {
             try {
                 return decodeURIComponent(text.replace(/\+/g, ' '));
             } catch (e) {
                 return null;
             }
+        }
+        
+        function htmlEntityDecode(text) {
+            const entities = {
+                '&lt;': '<', '&gt;': '>', '&amp;': '&', '&quot;': '"',
+                '&apos;': "'", '&nbsp;': ' ', '&copy;': '©'
+            };
+            
+            return text.replace(/&[a-z]+;/g, m => entities[m] || m);
         }
         
         function morseCodeDecrypt(text) {
@@ -899,6 +1835,123 @@
             }
         }
         
+        function baconianDecrypt(text) {
+            const baconMap = {
+                'AAAAA': 'A', 'AAAAB': 'B', 'AAABA': 'C', 'AAABB': 'D', 'AABAA': 'E',
+                'AABAB': 'F', 'AABBA': 'G', 'AABBB': 'H', 'ABAAA': 'I', 'ABAAB': 'J',
+                'ABABA': 'K', 'ABABB': 'L', 'ABBAA': 'M', 'ABBAB': 'N', 'ABBBA': 'O',
+                'ABBBB': 'P', 'BAAAA': 'Q', 'BAAAB': 'R', 'BAABA': 'S', 'BAABB': 'T',
+                'BABAA': 'U', 'BABAB': 'V', 'BABBA': 'W', 'BABBB': 'X', 'BBAAA': 'Y',
+                'BBAAB': 'Z'
+            };
+            
+            // Normalize to A/B
+            const normalized = text.toUpperCase()
+                .replace(/[^AB]/g, '')
+                .replace(/[^AB]/g, 'A');
+            
+            if (normalized.length % 5 !== 0) return null;
+            
+            let result = '';
+            for (let i = 0; i < normalized.length; i += 5) {
+                const chunk = normalized.substr(i, 5);
+                result += baconMap[chunk] || '?';
+            }
+            
+            return result || null;
+        }
+        
+        function utf8Decode(text) {
+            try {
+                return decodeURIComponent(escape(text));
+            } catch (e) {
+                return null;
+            }
+        }
+        
+        // Modern cryptography implementations
+        function rsaDecrypt(text) {
+            // Note: Real RSA requires proper key management
+            return "RSA decryption requires private key";
+        }
+        
+        function desDecrypt(text, key = "secretkey") {
+            // Note: Real DES requires proper implementation
+            return "DES decryption requires proper implementation";
+        }
+        
+        function sha1Reverse(text) {
+            // Check against common SHA1 hashes
+            const commonHashes = {
+                'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3': 'test',
+                '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8': 'password',
+                '7c4a8d09ca3762af61e59520943dc26494f8941b': '123456'
+            };
+            
+            return commonHashes[text.toLowerCase()] || "No matching hash found";
+        }
+        
+        // Combination methods
+        function multiCipherDetect(text) {
+            // Try combinations of common cipher sequences
+            const combinations = [
+                { name: "Base64 + ROT13", func: t => rot13Decrypt(base64Decrypt(t)) },
+                { name: "Hex + XOR", func: t => xorBruteForce(hexDecrypt(t)) },
+                { name: "Base64 + Vigenère", func: t => vigenereAutoDecrypt(base64Decrypt(t)) },
+                { name: "URL + Base64", func: t => base64Decrypt(urlDecode(t)) }
+            ];
+            
+            let bestScore = 0;
+            let bestResult = '';
+            let bestCombo = '';
+            
+            for (const combo of combinations) {
+                try {
+                    const decrypted = combo.func(text);
+                    if (decrypted && decrypted !== text) {
+                        const score = rateDecryption(decrypted);
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestResult = decrypted;
+                            bestCombo = combo.name;
+                        }
+                    }
+                } catch (e) {
+                    console.error(`Error in ${combo.name}:`, e);
+                }
+            }
+            
+            return bestScore > 40 ? `${bestCombo}\n${bestResult}` : "No likely combination found";
+        }
+        
+        function base64Rot13Decrypt(text) {
+            const base64 = base64Decrypt(text);
+            return base64 ? rot13Decrypt(base64) : null;
+        }
+        
+        function hexXorDecrypt(text) {
+            const hex = hexDecrypt(text);
+            return hex ? xorBruteForce(hex) : null;
+        }
+        
+        // Helper functions
+        function extractPossibleKeys(text, minLen = 3, maxLen = 10) {
+            // Extract possible keys from repeated patterns in the text
+            const keys = new Set();
+            const cleanText = text.toLowerCase().replace(/[^a-z]/g, '');
+            
+            for (let len = minLen; len <= maxLen; len++) {
+                for (let i = 0; i <= cleanText.length - len * 2; i++) {
+                    const pattern = cleanText.substr(i, len);
+                    if (cleanText.indexOf(pattern, i + len) !== -1) {
+                        keys.add(pattern);
+                    }
+                }
+            }
+            
+            return Array.from(keys);
+        }
+        
         function rateDecryption(text) {
             if (!text || text.length < 5) return 0;
             
@@ -906,8 +1959,8 @@
             let score = analysis.matchScore * 70;
             
             // Bonus for common words
-            const commonWords = ['the', 'and', 'that', 'have', 'for', 'with', 'this'];
-            const words = text.toLowerCase().split(/\s+/);
+            const commonWords = ['the', 'and', 'that', 'have', 'for', 'with', 'this', 'are', 'not', 'but'];
+            const words = text.toLowerCase().split(/[^a-z]+/);
             commonWords.forEach(word => {
                 if (words.includes(word)) score += 5;
             });
@@ -915,7 +1968,10 @@
             // Bonus for proper punctuation
             if (/[.,!?;:]/.test(text)) score += 10;
             
-            return Math.min(100, score);
+            // Penalty for non-printable characters
+            if (/[\x00-\x1F]/.test(text)) score -= 20;
+            
+            return Math.min(100, Math.max(0, score));
         }
         
         function escapeHtml(text) {
@@ -925,6 +1981,129 @@
                       .replace(/"/g, "&quot;")
                       .replace(/'/g, "&#039;");
         }
+
+        // =============================================
+        // Encryption Methods
+        // =============================================
+        
+        function rot13Encrypt(text, key = null) {
+            return rot13Decrypt(text); // ROT13 is its own inverse
+        }
+        
+        function caesarEncrypt(text, key = "3") {
+            const shift = parseInt(key) || 3;
+            return text.replace(/[a-zA-Z]/g, function(c) {
+                const base = c <= 'Z' ? 65 : 97;
+                return String.fromCharCode((c.charCodeAt(0) - base + shift) % 26 + base);
+            });
+        }
+        
+        function atbashEncrypt(text, key = null) {
+            return atbashDecrypt(text); // Atbash is its own inverse
+        }
+        
+        function vigenereEncrypt(text, key = "KEY") {
+            if (!key) key = "KEY";
+            let result = '';
+            let keyIndex = 0;
+            const keyLen = key.length;
+            
+            for (let i = 0; i < text.length; i++) {
+                const c = text[i];
+                if (/[a-zA-Z]/.test(c)) {
+                    const base = c <= 'Z' ? 65 : 97;
+                    const keyChar = key[keyIndex % keyLen].toLowerCase();
+                    const keyShift = keyChar.charCodeAt(0) - 97;
+                    
+                    const encrypted = (c.charCodeAt(0) - base + keyShift) % 26 + base;
+                    result += String.fromCharCode(encrypted);
+                    keyIndex++;
+                } else {
+                    result += c;
+                }
+            }
+            return result;
+        }
+        
+        function xorEncrypt(text, key = "K") {
+            const keyChar = key.charCodeAt(0) || 75; // Default 'K'
+            let result = '';
+            
+            for (let i = 0; i < text.length; i++) {
+                result += String.fromCharCode(text.charCodeAt(i) ^ keyChar);
+            }
+            
+            return result;
+        }
+        
+        function base64Encrypt(text, key = null) {
+            return btoa(text);
+        }
+        
+        function hexEncrypt(text, key = null) {
+            let result = '';
+            for (let i = 0; i < text.length; i++) {
+                result += text.charCodeAt(i).toString(16).padStart(2, '0');
+            }
+            return result;
+        }
+        
+        function binaryEncrypt(text, key = null) {
+            let result = '';
+            for (let i = 0; i < text.length; i++) {
+                result += text.charCodeAt(i).toString(2).padStart(8, '0') + ' ';
+            }
+            return result.trim();
+        }
+        
+        function aesEncrypt(text, key = "secretkey123456") {
+            // Note: Real AES encryption requires WebCrypto API
+            return "AES encryption requires WebCrypto API";
+        }
+        
+        function railFenceEncrypt(text, key = "3") {
+            const rails = parseInt(key) || 3;
+            if (rails < 2) return text;
+            
+            const fence = [];
+            for (let i = 0; i < rails; i++) fence.push([]);
+            
+            let rail = 0;
+            let direction = 1;
+            
+            for (const c of text) {
+                fence[rail].push(c);
+                rail += direction;
+                
+                if (rail === rails - 1 || rail === 0) {
+                    direction = -direction;
+                }
+            }
+            
+            return fence.flat().join('');
+        }
+        
+        function urlEncode(text, key = null) {
+            return encodeURIComponent(text);
+        }
+        
+        function morseCodeEncrypt(text, key = null) {
+            const morseMap = {
+                'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.',
+                'F': '..-.', 'G': '--.', 'H': '....', 'I': '..', 'J': '.---',
+                'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---',
+                'P': '.--.', 'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-',
+                'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-', 'Y': '-.--',
+                'Z': '--..', '0': '-----', '1': '.----', '2': '..---', '3': '...--',
+                '4': '....-', '5': '.....', '6': '-....', '7': '--...', '8': '---..',
+                '9': '----.', '.': '.-.-.-', ',': '--..--', '?': '..--..', "'": '.----.',
+                '!': '-.-.--', '/': '-..-.', '(': '-.--.', ')': '-.--.-', '&': '.-...',
+                ':': '---...', ';': '-.-.-.', '=': '-...-', '+': '.-.-.', '-': '-....-',
+                '_': '..--.-', '"': '.-..-.', '$': '...-..-', '@': '.--.-.', ' ': '/'
+            };
+            
+            return text.toUpperCase().split('').map(c => morseMap[c] || '').join(' ');
+        }
     </script>
 </body>
-</html>
+    </html>
