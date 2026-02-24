@@ -18,10 +18,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self'; font-src 'self';">
-    <meta name="description" content="AI Arena v4.0.1 Professional — Pure Combat System">
+    <meta name="description" content="AI Arena v4.0.2 Tactical — Directional Combat System">
     <meta name="theme-color" content="#0a0a15">
     <meta name="robots" content="noindex">
-    <title>🎮 AI Arena v4.0.1 PROFESSIONAL — Pure Combat</title>
+    <title>🎮 AI Arena v4.0.2 TACTICAL — Directional Combat</title>
     <style>
         :root {
             --bg: #0a0a15; --bg-gradient-start: #0a0a15; --bg-gradient-end: #1a1a2e;
@@ -206,7 +206,7 @@
     <a href="#gameCanvas" class="skip-link">Перейти к симуляции</a>
     <div class="container">
         <header class="header">
-            <h1>🎮 AI ARENA <span class="version-badge">v4.0.1 COMBAT</span></h1>
+            <h1>🎮 AI ARENA <span class="version-badge">v4.0.2 TACTICAL</span></h1>
             <div class="fps-counter" id="fpsCounter">FPS: 60</div>
         </header>
         <canvas id="gameCanvas"></canvas>
@@ -322,6 +322,7 @@
                 <label class="toggle"><input type="checkbox" id="enableFighting" checked> Бои</label>
                 <label class="toggle"><input type="checkbox" id="enableRanged" checked> Дальний бой</label>
                 <label class="toggle"><input type="checkbox" id="enableWeightInheritance" checked> Наследование весов</label>
+                <label class="toggle"><input type="checkbox" id="enableTactical" checked> Тактическое движение</label>
             </section>
 
             <!-- METRICS -->
@@ -372,6 +373,8 @@
                     <div class="debug-item"><span class="debug-label">Wins</span><span class="debug-value" id="dbgWins">—</span></div>
                     <div class="debug-item"><span class="debug-label">TD-Error</span><span class="debug-value" id="dbgTDErr">—</span></div>
                     <div class="debug-item"><span class="debug-label">Expert</span><span class="debug-value" id="dbgExpert">—</span></div>
+                    <div class="debug-item"><span class="debug-label">Threat</span><span class="debug-value" id="dbgThreat">—</span></div>
+                    <div class="debug-item"><span class="debug-label">Flank</span><span class="debug-value" id="dbgFlank">—</span></div>
                 </div>
             </section>
         </aside>
@@ -380,36 +383,42 @@
 <script>
 /**
  * ============================================================================
- * AI ARENA v4.0.1 — PURE COMBAT (ПОЛНЫЙ ФУНКЦИОНАЛ)
- * ✅ ПОЛНАЯ нейронная архитектура (57→24→48→36→16 + Attention + MoE)
- * ✅ ПОЛНАЯ физика (отброс, оглушение, инерция)
- * ✅ ПОЛНАЯ эволюция (наследование весов, мутации, персистентные победы)
- * ✅ ТОЛЬКО COMBAT режим — агенты ВСЕГДА атакуют
- * ✅ Никакого бегства, никакой пассивности
+ * AI ARENA v4.0.2 — TACTICAL DIRECTIONAL COMBAT
+ * ============================================================================
+ * ✅ ИНТЕГРИРОВАНО: Theory of Mind влияет на output нейросети
+ * ✅ ИСПРАВЛЕНО: Дальний бой только для ranged оружия
  * ============================================================================
  */
 'use strict';
 
 // ============================================================================
-// WEAPONS — 8 ТИПОВ С РАЗНОЙ ФИЗИКОЙ
+// WEAPONS — DIRECTIONAL COMBAT PROPERTIES
 // ============================================================================
 const WEAPONS = Object.freeze({
     hammer:   { name: 'Hammer', icon: '🔨', damage: 1.0, speed: 1.0, range: 45, type: 'melee', 
-                knockback: 8.0, knockbackType: 'impact', color: '#ffaa00', stunTime: 5 },
+                knockback: 8.0, knockbackType: 'impact', color: '#ffaa00', stunTime: 5,
+                arcAngle: Math.PI * 0.9, mountOffset: { x: 18, y: 0 }, recoil: { x: -2, y: 0 } },
     drill:    { name: 'Drill', icon: '🔩', damage: 0.6, speed: 1.8, range: 40, type: 'melee', 
-                knockback: 2.0, knockbackType: 'vibrate', color: '#ff66cc', stunTime: 2 },
+                knockback: 2.0, knockbackType: 'vibrate', color: '#ff66cc', stunTime: 2,
+                arcAngle: Math.PI * 0.6, mountOffset: { x: 16, y: 0 }, recoil: { x: -1, y: 0 } },
     sword:    { name: 'Sword', icon: '⚔️', damage: 1.4, speed: 0.7, range: 50, type: 'melee', 
-                knockback: 12.0, knockbackType: 'slash', color: '#00d4ff', stunTime: 8 },
+                knockback: 12.0, knockbackType: 'slash', color: '#00d4ff', stunTime: 8,
+                arcAngle: Math.PI * 1.2, mountOffset: { x: 20, y: 0 }, recoil: { x: -3, y: 0 } },
     blaster:  { name: 'Blaster', icon: '🔫', damage: 0.5, speed: 1.2, range: 200, type: 'ranged', 
-                knockback: 4.0, knockbackType: 'pulse', color: '#ffdd44', stunTime: 3 },
+                knockback: 4.0, knockbackType: 'pulse', color: '#ffdd44', stunTime: 3,
+                arcAngle: Math.PI * 0.4, mountOffset: { x: 14, y: 0 }, recoil: { x: -4, y: 0 } },
     axe:      { name: 'Axe', icon: '🪓', damage: 1.8, speed: 0.5, range: 45, type: 'melee', 
-                knockback: 20.0, knockbackType: 'heavy', color: '#ff4444', stunTime: 15 },
+                knockback: 20.0, knockbackType: 'heavy', color: '#ff4444', stunTime: 15,
+                arcAngle: Math.PI * 0.7, mountOffset: { x: 19, y: 0 }, recoil: { x: -5, y: 0 } },
     dagger:   { name: 'Dagger', icon: '🗡️', damage: 0.4, speed: 2.5, range: 35, type: 'melee', 
-                knockback: 1.0, knockbackType: 'quick', color: '#aa88ff', stunTime: 1 },
+                knockback: 1.0, knockbackType: 'quick', color: '#aa88ff', stunTime: 1,
+                arcAngle: Math.PI * 1.0, mountOffset: { x: 12, y: 0 }, recoil: { x: -0.5, y: 0 } },
     spear:    { name: 'Spear', icon: '🔱', damage: 1.1, speed: 0.9, range: 65, type: 'melee', 
-                knockback: 10.0, knockbackType: 'thrust', color: '#00ff9d', stunTime: 6 },
+                knockback: 10.0, knockbackType: 'thrust', color: '#00ff9d', stunTime: 6,
+                arcAngle: Math.PI * 0.5, mountOffset: { x: 22, y: 0 }, recoil: { x: -2, y: 0 } },
     chainsaw: { name: 'Chainsaw', icon: '⚙️', damage: 0.8, speed: 1.5, range: 42, type: 'melee', 
-                knockback: 3.0, knockbackType: 'continuous', color: '#ff8800', stunTime: 4 }
+                knockback: 3.0, knockbackType: 'continuous', color: '#ff8800', stunTime: 4,
+                arcAngle: Math.PI * 1.1, mountOffset: { x: 17, y: 0 }, recoil: { x: -1, y: 0 } }
 });
 
 // ============================================================================
@@ -420,10 +429,11 @@ window.arenaConfig = Object.freeze({
     enableEvolution: true, enableSkillEvolution: true, enableMoE: true,
     enableConsolidation: true, enableFighting: true, enableRanged: true,
     enableHebbian: true, compactInputs: false, enableWeightInheritance: true,
+    enableTactical: true,
     learningRate: 0.005, lambda: 0.95, gamma: 0.99, entropyCoeff: 0.01,
     mutationRate: 0.1, skillGrowthRate: 0.04,
-    seed: 'ARENA_V4_COMBAT_' + Date.now().toFixed(0),
-    timestamp: Date.now(), version: '4.0.1',
+    seed: 'ARENA_V4_TACTICAL_' + Date.now().toFixed(0),
+    timestamp: Date.now(), version: '4.0.2',
     ARCH: Object.freeze({
         INPUT_DIM: 57, INPUT_DIM_COMPACT: 25, EMBEDDING_DIM: 24, EMBEDDING_DIM_COMPACT: 16,
         HIDDEN1: 48, HIDDEN2: 36, OUTPUT_DIM: 16, MEMORY_DIM: 16, NUM_HEADS: 4,
@@ -436,13 +446,19 @@ window.arenaConfig = Object.freeze({
         KNOCKBACK_MASS: 1.0, FRICTION_GROUND: 0.92
     }),
     EVOLUTION: Object.freeze({
-        DEATH_PENALTY: -50,
+        DEATH_PENALTY: 0,
         FLEE_PENALTY: -0.5,
-        WIN_BONUS: 100,
+        WIN_BONUS: 50,
         LEARN_FROM_WINNER_RATE: 0.85,
         FORCED_COMBAT_AFTER_DEATH: 30,
         MUTATION_ON_DEATH: 0.2,
         COMBAT_SKILL_GROWTH: 0.15
+    }),
+    TACTICAL: Object.freeze({
+        FLANK_BONUS: 0.30, FRONT_PENALTY: 0.20,
+        MIN_FLANK_COMMIT: 0.4, CIRCLE_STRENGTH: 0.25,
+        RETREAT_HP_THRESHOLD: 0.4, THREAT_BUFFER_ANGLE: Math.PI * 0.1,
+        DAMAGE_FRONT: 0.6, DAMAGE_FLANK: 1.0, DAMAGE_BACK: 1.8
     })
 });
 
@@ -619,6 +635,11 @@ const Utils = Object.freeze({
         if (mean < 1e-10) return 1;
         const variance = usage.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / usage.length;
         return Math.sqrt(variance) / mean;
+    },
+    normalizeAngle: (angle) => {
+        while (angle > Math.PI) angle -= Math.PI * 2;
+        while (angle < -Math.PI) angle += Math.PI * 2;
+        return angle;
     }
 });
 
@@ -669,7 +690,7 @@ class SeededRNG {
 }
 
 // ============================================================================
-// NEURAL NETWORK — ПОЛНАЯ АРХИТЕКТУРА
+// NEURAL NETWORK — БЕЗ ИЗМЕНЕНИЙ
 // ============================================================================
 class NeuralNetwork {
     constructor(config = {}) {
@@ -1230,7 +1251,7 @@ class NeuralNetwork {
 }
 
 // ============================================================================
-// CRITIC NETWORK
+// CRITIC NETWORK (БЕЗ ИЗМЕНЕНИЙ)
 // ============================================================================
 class CriticNetwork {
     constructor(config = {}) {
@@ -1290,7 +1311,7 @@ class CriticNetwork {
 }
 
 // ============================================================================
-// POLICY SELECTOR
+// POLICY SELECTOR (БЕЗ ИЗМЕНЕНИЙ)
 // ============================================================================
 class PolicySelector {
     constructor(config = {}) {
@@ -1356,33 +1377,27 @@ class PolicySelector {
 }
 
 // ============================================================================
-// BEHAVIOR ARBITER — ТОЛЬКО COMBAT
+// BEHAVIOR ARBITER (БЕЗ ИЗМЕНЕНИЙ)
 // ============================================================================
 class BehaviorArbiter {
     constructor() { 
-        // ✅ ТОЛЬКО COMBAT РЕЖИМ
         this.modes = ['combat']; 
     }
     
     select(agent, world) {
-        // ✅ ВСЕГДА COMBAT — никаких других режимов
         return 'combat';
     }
     
     calculateTarget(mode, agent, world) {
         const { enemies, walls } = world || {};
-        
-        // ✅ ВСЕГДА ЦЕЛИМСЯ ВО ВРАГА
         const targets = (enemies || []).filter(e => e && e.id !== agent?.id && e.alive);
         if (!targets.length) return { x: agent?.x || 400, y: agent?.y || 300 };
-        
-        // Ближайший враг
         return targets.reduce((n, e) => Utils.dist(agent, e) < Utils.dist(agent, n) ? e : n);
     }
 }
 
 // ============================================================================
-// PROJECTILE
+// PROJECTILE (БЕЗ ИЗМЕНЕНИЙ)
 // ============================================================================
 class Projectile {
     constructor(x, y, vx, vy, owner, damage = 3, life = 80) {
@@ -1394,7 +1409,7 @@ class Projectile {
 }
 
 // ============================================================================
-// AGENT — PURE COMBAT (ПОЛНЫЙ ФУНКЦИОНАЛ)
+// AGENT — TACTICAL DIRECTIONAL COMBAT
 // ============================================================================
 class Agent {
     static get VISUAL_RADIUS() { return 22; }
@@ -1459,7 +1474,7 @@ class Agent {
         }
         
         this.arbiter = new BehaviorArbiter(); 
-        this.mode = 'combat'; // ✅ ВСЕГДА COMBAT
+        this.mode = 'combat';
         this.target = { x, y }; 
         this.speed = 1;
         this.stuckCounter = 0; 
@@ -1542,11 +1557,23 @@ class Agent {
         this._stunTimer = 0;
         this._weaponEffectTimer = 0;
         
-        // ✅ EVOLUTIONARY STATE
         this._forcedCombatTimer = 0;
         this._learnFromWinner = false;
         this._lastKiller = null;
         this._deathMode = null;
+        
+        // ✅ НОВЫЕ ПОЛЯ ДЛЯ СТАТИСТИКИ
+        this._totalDamageDealt = 0;
+        this._totalAttacks = 0;
+        this._successfulHits = 0;
+        this._tacticalHits = 0;
+        this._frontalHits = 0;
+        
+        // TACTICAL STATE
+        this._lastAttackDir = null;
+        this._recentArcExposure = [];
+        this._inEnemyArc = false;
+        this._lastThreatAssessment = null;
     }
     
     _applyWeaponStats() {
@@ -1566,15 +1593,148 @@ class Agent {
         return false;
     }
     
+    getWeaponFacing() {
+        if (this.target && this.target.x !== undefined && isFinite(this.target.x)) {
+            return Math.atan2(this.target.y - this.y, this.target.x - this.x);
+        }
+        const speed = Math.hypot(this.vx, this.vy);
+        if (speed > 0.5) {
+            return Math.atan2(this.vy, this.vx);
+        }
+        if (this._lastAttackDir !== null && isFinite(this._lastAttackDir)) {
+            return this._lastAttackDir;
+        }
+        return 0;
+    }
+    
+    isPointInWeaponArc(point, extraArc = 0) {
+        if (!point || typeof point.x !== 'number' || !isFinite(point.x)) return false;
+        const facing = this.getWeaponFacing();
+        const toPoint = Math.atan2(point.y - this.y, point.x - this.x);
+        let angleDiff = Utils.normalizeAngle(toPoint - facing);
+        const effectiveArc = (this.weapon.arcAngle || Math.PI) + extraArc;
+        return Math.abs(angleDiff) <= effectiveArc / 2;
+    }
+    
+    calculateDirectionalDamageMultiplier(attacker) {
+        if (!attacker) return 1.0;
+        const toAttacker = Math.atan2(attacker.y - this.y, attacker.x - this.x);
+        const myFacing = this.getWeaponFacing();
+        let angleDiff = Utils.normalizeAngle(toAttacker - myFacing);
+        const absAngle = Math.abs(angleDiff);
+        const weaponArc = (this.weapon.arcAngle || Math.PI) / 2;
+        
+        if (absAngle <= weaponArc * 0.5) {
+            return arenaConfig.TACTICAL.DAMAGE_FRONT;
+        } else if (absAngle <= weaponArc) {
+            return arenaConfig.TACTICAL.DAMAGE_FLANK;
+        } else {
+            return arenaConfig.TACTICAL.DAMAGE_BACK;
+        }
+    }
+    
+    assessThreatFromEnemy(enemy) {
+        if (!enemy?.alive) return { threatLevel: 0, safeApproachAngle: 0, flankVector: {x:0, y:0} };
+        
+        const inArc = enemy.isPointInWeaponArc(this, arenaConfig.TACTICAL.THREAT_BUFFER_ANGLE);
+        const distance = Utils.dist(this, enemy);
+        const inRange = distance <= (enemy.weapon.range || 50);
+        
+        let threatLevel = 0;
+        if (inRange) {
+            threatLevel = inArc ? 0.9 : 0.3;
+        } else {
+            threatLevel = inArc ? 0.4 : 0.1;
+        }
+        
+        const enemyHealthRatio = enemy.health / enemy.stats.maxHealth;
+        threatLevel *= Utils.lerp(0.6, 1.0, enemyHealthRatio);
+        
+        const enemyFacing = enemy.getWeaponFacing();
+        const safeAngle = enemyFacing + Math.PI + Utils.rand(-0.4, 0.4);
+        
+        const toEnemy = Utils.normalize(enemy.x - this.x, enemy.y - this.y);
+        const flankDir = {
+            x: -toEnemy.y * Math.sign(Math.sin(safeAngle - Math.atan2(toEnemy.y, toEnemy.x))),
+            y:  toEnemy.x * Math.sign(Math.sin(safeAngle - Math.atan2(toEnemy.y, toEnemy.x)))
+        };
+        
+        this._lastThreatAssessment = { threatLevel, safeAngle, flankVector: flankDir };
+        return {
+            threatLevel: Utils.clamp(threatLevel, 0, 1),
+            safeApproachAngle: safeAngle,
+            flankVector: Utils.normalize(flankDir.x, flankDir.y)
+        };
+    }
+    
+    // ========================================================================
+    // ✅ ИНТЕРПРЕТАЦИЯ ATTENTION (ИНТЕГРИРОВАНА В ПОВЕДЕНИЕ)
+    // ========================================================================
+    
+    interpretAttention() {
+        const weights = this.net._lastAttentionWeights || [];
+        if (!weights.length) return { threat: '—', flank: '—', distance: '—', prediction: '—' };
+        
+        const threat = weights[0] > 0.4 ? 'HIGH' : weights[0] > 0.2 ? 'MED' : 'LOW';
+        const flank = weights[1] > 0.35 ? 'SEEKING' : weights[1] > 0.15 ? 'NEUTRAL' : 'IGNORE';
+        const distance = weights[2] > 0.4 ? 'CLOSE' : weights[2] > 0.2 ? 'MID' : 'FAR';
+        const prediction = weights[3] > 0.3 ? 'ACTIVE' : 'PASSIVE';
+        
+        return { threat, flank, distance, prediction };
+    }
+    
+    // ========================================================================
+    // ✅ THEORY OF MIND (ИНТЕГРИРОВАНА В ПРИНЯТИЕ РЕШЕНИЙ)
+    // ========================================================================
+    
+    predictEnemyIntent(enemy) {
+        if (!enemy?.alive) return { intent: 'none', confidence: 1.0 };
+        
+        const enemyHealth = enemy.health / enemy.stats.maxHealth;
+        const distance = Utils.dist(this, enemy);
+        const inArc = enemy.isPointInWeaponArc(this);
+        const inRange = distance <= (enemy.weapon.range || 50);
+        const enemyAggression = enemy.lastDecision?.behaviors?.aggression || 0.5;
+        
+        // Правило 1: слабый враг в радиусе → отчаянная атака
+        if (enemyHealth < 0.3 && inRange && enemyAggression > 0.6) {
+            return { intent: 'desperate_attack', confidence: 0.85 };
+        }
+        
+        // Правило 2: враг смотрит на меня + я в радиусе → атака
+        if (inArc && inRange && enemyAggression > 0.4) {
+            return { intent: 'attack', confidence: 0.75 };
+        }
+        
+        // Правило 3: враг слаб + не атакует → отступление
+        if (enemyHealth < 0.4 && enemyAggression < 0.3) {
+            return { intent: 'flee', confidence: 0.8 };
+        }
+        
+        // Правило 4: враг маневрирует → фланговая атака
+        if (distance < 80 && enemyAggression > 0.5 && !inArc) {
+            return { intent: 'flank', confidence: 0.65 };
+        }
+        
+        return { intent: 'unknown', confidence: 0.5 };
+    }
+    
     getInputs(world) {
         const inputs = [], maxDist = Math.sqrt(820 ** 2 + 600 ** 2);
         
-        const enemies = (world?.enemies || []).filter(e => e && e.id !== this.id && e.alive).map(e => ({ ...e, d: Utils.dist(this, e) })).sort((a, b) => a.d - b.d).slice(0, 3);
+        const enemiesWithDist = (world?.enemies || [])
+            .filter(e => e && e.id !== this.id && e.alive)
+            .map(e => ({ agent: e, d: Utils.dist(this, e) }))
+            .sort((a, b) => a.d - b.d);
+        
+        const enemies = enemiesWithDist.slice(0, 3);
+        const primaryEnemy = enemiesWithDist[0]?.agent;
+        
         for (const e of enemies) {
-            inputs.push(Utils.clamp((e.x - this.x) / maxDist, -1, 1));
-            inputs.push(Utils.clamp((e.y - this.y) / maxDist, -1, 1));
+            inputs.push(Utils.clamp((e.agent.x - this.x) / maxDist, -1, 1));
+            inputs.push(Utils.clamp((e.agent.y - this.y) / maxDist, -1, 1));
             inputs.push(Utils.clamp((150 - e.d) / 150, 0, 1));
-            inputs.push(e.health / e.stats.maxHealth);
+            inputs.push(e.agent.health / e.agent.stats.maxHealth);
         }
         while (inputs.length < 12) inputs.push(0, 0, 0, 0);
         
@@ -1602,28 +1762,83 @@ class Agent {
         inputs.push(this.deaths > 0 ? Math.min(1, this.deaths / 10) : 0);
         inputs.push(this._forcedCombatTimer > 0 ? 1 : 0);
         
+        if (primaryEnemy && arenaConfig.enableTactical) {
+            const toEnemy = Math.atan2(primaryEnemy.y - this.y, primaryEnemy.x - this.x);
+            const myFacing = this.getWeaponFacing();
+            let angleToEnemy = Utils.normalizeAngle(toEnemy - myFacing);
+            inputs.push(Utils.clamp(angleToEnemy / Math.PI, -1, 1));
+            
+            inputs.push(primaryEnemy.isPointInWeaponArc(this) ? 1 : 0);
+            
+            const threat = this.assessThreatFromEnemy(primaryEnemy);
+            inputs.push(threat.threatLevel);
+            
+            inputs.push(Utils.clamp(threat.flankVector.x, -1, 1));
+            inputs.push(Utils.clamp(threat.flankVector.y, -1, 1));
+            
+            const enemyFacing = primaryEnemy.getWeaponFacing();
+            let angleFromEnemy = Utils.normalizeAngle(Math.atan2(this.y - primaryEnemy.y, this.x - primaryEnemy.x) - enemyFacing);
+            inputs.push(Utils.clamp(angleFromEnemy / Math.PI, -1, 1));
+            
+            const arcEdgeAngle = enemyFacing + (primaryEnemy.weapon.arcAngle || Math.PI) / 2;
+            const distToArcEdge = Math.abs(angleFromEnemy) - (primaryEnemy.weapon.arcAngle || Math.PI) / 2;
+            inputs.push(Utils.clamp(distToArcEdge / Math.PI, -1, 1));
+            
+            const cautionFactor = 1 - (this.health / this.stats.maxHealth);
+            inputs.push(Utils.clamp(cautionFactor, 0, 1));
+            
+            const predictedEnemyX = primaryEnemy.x + primaryEnemy.vx * 8;
+            const predictedEnemyY = primaryEnemy.y + primaryEnemy.vy * 8;
+            inputs.push(Utils.clamp((predictedEnemyX - this.x) / 820, -1, 1));
+            inputs.push(Utils.clamp((predictedEnemyY - this.y) / 600, -1, 1));
+            
+            const flankTarget = { 
+                x: this.x + threat.flankVector.x * 60, 
+                y: this.y + threat.flankVector.y * 60 
+            };
+            const pathBlocked = (world?.walls || []).some(w => 
+                Utils._pointSegDist(this.x, this.y, flankTarget.x, flankTarget.y, w.x, w.y) < 20
+            );
+            inputs.push(pathBlocked ? 1 : 0);
+            
+            const recentExposure = (this._recentArcExposure || []).filter(t => (world.step || 0) - t < 30).length / 30;
+            inputs.push(Utils.clamp(recentExposure, 0, 1));
+            if (!this._recentArcExposure) this._recentArcExposure = [];
+            if (primaryEnemy.isPointInWeaponArc(this)) {
+                this._recentArcExposure.push(world.step || 0);
+            }
+        } else {
+            for (let i = 0; i < 12; i++) inputs.push(0);
+        }
+        
         while (inputs.length < arenaConfig.ARCH.INPUT_DIM) inputs.push(0);
         if (inputs.length > arenaConfig.ARCH.INPUT_DIM) inputs.length = arenaConfig.ARCH.INPUT_DIM;
         return inputs.map(v => Utils.safeNumber(v, 0));
     }
     
     selectBehavior(world, networkOutput) {
-        // ✅ ВСЕГДА COMBAT — игнорируем выбор нейросети
         return { mode: 'combat', modeProbs: [1, 0, 0, 0, 0] };
     }
     
+    // ========================================================================
+    // ✅ ИНТЕГРИРОВАНО: Theory of Mind влияет на решения
+    // ========================================================================
+    
     decide(world) {
         this._lastWorld = { 
-            enemies: (world?.enemies || []).map(e => e ? { id: e.id, x: e.x, y: e.y, alive: e.alive, health: e.health, stats: { ...e.stats } } : null).filter(e => e), 
+            enemies: (world?.enemies || []).map(e => e ? { 
+                id: e.id, x: e.x, y: e.y, alive: e.alive, 
+                health: e.health, stats: { ...e.stats },
+                agent: e
+            } : null).filter(e => e),
             walls: (world?.walls || []).map(w => w ? { x: w.x, y: w.y } : null).filter(w => w), 
             step: world?.step || 0 
         };
         this.updatePredictiveMemory(world);
         const inputs = this.getInputs(world);
         const gateRes = this.net.forward(inputs);
-        const output = gateRes.output;
+        let output = gateRes.output;
         
-        // ✅ ПРИНУДИТЕЛЬНО COMBAT
         const mode = 'combat';
         this.mode = mode;
         
@@ -1641,7 +1856,34 @@ class Agent {
             health: this.health / this.stats.maxHealth 
         };
         
-        // ✅ ВСЕГДА ЦЕЛИМСЯ ВО ВРАГА
+        // ✅ ИНТЕГРАЦИЯ: Theory of Mind корректирует output нейросети
+        if (enemy) {
+            const enemyIntent = this.predictEnemyIntent(enemy);
+            const attention = this.interpretAttention();
+            
+            // Модифицируем ВЫХОД нейросети (output — это 16 значений)
+            // output[5] = speed, output[7] = aggression, output[9] = lateral bias, output[10] = circular
+            if (enemyIntent.intent === 'desperate_attack' && enemyIntent.confidence > 0.7) {
+                // Враг отчаянно атакует → уменьшаем агрессию, увеличиваем скорость и уклонение
+                output[7] = Utils.clamp(output[7] * 0.5, -1, 1); // Агрессия ↓
+                output[5] = Utils.clamp(output[5] * 1.4, -1, 1); // Скорость ↑
+                output[9] = Utils.clamp(output[9] + 0.3, -1, 1); // Боковое движение ↑
+                Logger.log(`${this.id.toUpperCase()}: ⚠️ Враг отчаянно атакует! Уклоняюсь`, 'warn');
+            } else if (enemyIntent.intent === 'flee' && enemyIntent.confidence > 0.7) {
+                // Враг бежит → увеличиваем агрессию
+                output[7] = Utils.clamp(output[7] * 1.5, -1, 1); // Агрессия ↑
+                output[5] = Utils.clamp(output[5] * 1.2, -1, 1); // Скорость ↑
+                Logger.log(`${this.id.toUpperCase()}: 🏃 Враг бежит! Атакую!`, 'success');
+            }
+            
+            // Коррекция на основе attention
+            if (attention.threat === 'HIGH' && attention.flank === 'IGNORE') {
+                output[9] = Utils.clamp(output[9] + 0.4, -1, 1); // Срочно ищем фланг
+                output[10] = Utils.clamp(output[10] + 0.3, -1, 1); // Циркулярное движение
+                Logger.log(`${this.id.toUpperCase()}: 🔴 Высокая угроза! Маневрирую!`, 'warn');
+            }
+        }
+        
         let target = this.arbiter.calculateTarget(mode, this, { enemies: world?.enemies || [], walls: world?.walls || [] });
         if (!target || typeof target.x !== 'number' || !isFinite(target.x) || typeof target.y !== 'number' || !isFinite(target.y)) { 
             target = { x: Utils.clamp(this.x + Utils.rand(-50, 50), 30, 790), y: Utils.clamp(this.y + Utils.rand(-50, 50), 30, 570) }; 
@@ -1671,7 +1913,6 @@ class Agent {
         const dx = target.x - this.x, dy = target.y - this.y;
         const dist = Math.hypot(dx, dy);
         
-        // Apply knockback velocity
         if (Math.abs(this._knockbackVelocity.x) > 0.1 || Math.abs(this._knockbackVelocity.y) > 0.1) {
             this.vx = this._knockbackVelocity.x;
             this.vy = this._knockbackVelocity.y;
@@ -1681,22 +1922,74 @@ class Agent {
             if (Math.abs(this._knockbackVelocity.y) < 0.05) this._knockbackVelocity.y = 0;
         }
         
-        // Normal movement
         if (this._stunTimer <= 0 && dist > 1) {
-            const dirX = dx / dist, dirY = dy / dist;
+            let dirX = dx / dist, dirY = dy / dist;
             
-            // ✅ АГРЕССИВНОЕ ДВИЖЕНИЕ — всегда к врагу
-            const accelMult = 1.5; // Всегда ускорение в бою
-            
-            const minSpeed = 2.0;
-            const actualSpeed = Math.max(speed, minSpeed) * accelMult;
-            
-            const accel = 0.12 * accelMult;
-            this.vx = Utils.lerp(this.vx, dirX * actualSpeed, accel);
-            this.vy = Utils.lerp(this.vy, dirY * actualSpeed, accel);
-            
-            if (Math.abs(this.vx) < 0.15) this.vx = dirX * minSpeed;
-            if (Math.abs(this.vy) < 0.15) this.vy = dirY * minSpeed;
+            if (arenaConfig.enableTactical && networkOutputs?.length >= 14) {
+                const lateralBias = Utils.clamp(Utils.safeNumber(networkOutputs[9], 0), -1, 1);
+                const circleBias = Utils.clamp(Utils.safeNumber(networkOutputs[10], 0), -1, 1);
+                const retreatUrgency = Utils.clamp(Utils.safeNumber(networkOutputs[11], 0), 0, 1);
+                const flankCommit = Utils.clamp(Utils.safeNumber(networkOutputs[12], 0), 0, 1);
+                const aggressionOverride = Utils.clamp(Utils.safeNumber(networkOutputs[13], 0), -1, 1);
+                
+                if (retreatUrgency > 0.7 && this.health / this.stats.maxHealth < arenaConfig.TACTICAL.RETREAT_HP_THRESHOLD) {
+                    dirX = -dirX * 0.6;
+                    dirY = -dirY * 0.6;
+                } else {
+                    const orthoX = -dirY, orthoY = dirX;
+                    dirX += orthoX * lateralBias * 0.4 * flankCommit;
+                    dirY += orthoY * lateralBias * 0.4 * flankCommit;
+                    
+                    if (Math.abs(circleBias) > 0.3 && dist < 80) {
+                        const circleStrength = Math.abs(circleBias) * arenaConfig.TACTICAL.CIRCLE_STRENGTH;
+                        const circleDir = Math.sign(circleBias);
+                        const tempX = dirX * Math.cos(circleStrength) - dirY * Math.sin(circleStrength * circleDir);
+                        const tempY = dirX * Math.sin(circleStrength * circleDir) + dirY * Math.cos(circleStrength);
+                        dirX = tempX;
+                        dirY = tempY;
+                    }
+                    
+                    const enemiesWithDist = (this._lastWorld?.enemies || [])
+                        .filter(e => e && e.id !== this.id && e.alive)
+                        .map(e => ({ agent: e.agent, d: Utils.dist(this, e.agent) }))
+                        .sort((a, b) => a.d - b.d);
+                    
+                    const primaryEnemy = enemiesWithDist[0]?.agent;
+                    
+                    if (primaryEnemy && typeof primaryEnemy.isPointInWeaponArc === 'function' && flankCommit > arenaConfig.TACTICAL.MIN_FLANK_COMMIT) {
+                        const threat = this.assessThreatFromEnemy(primaryEnemy);
+                        const flankWeight = flankCommit * (1 - threat.threatLevel * 0.3);
+                        dirX = Utils.lerp(dirX, threat.flankVector.x, flankWeight * 0.5);
+                        dirY = Utils.lerp(dirY, threat.flankVector.y, flankWeight * 0.5);
+                    }
+                }
+                
+                const accelMult = 1.2 + aggressionOverride * 0.4;
+                const minSpeed = 2.0;
+                const actualSpeed = Math.max(speed, minSpeed) * accelMult;
+                
+                const finalLen = Math.hypot(dirX, dirY);
+                if (finalLen > 1e-5) {
+                    dirX /= finalLen;
+                    dirY /= finalLen;
+                }
+                
+                const accel = 0.12 * (1.0 + aggressionOverride * 0.3);
+                this.vx = Utils.lerp(this.vx, dirX * actualSpeed, accel);
+                this.vy = Utils.lerp(this.vy, dirY * actualSpeed, accel);
+                
+                if (Math.abs(this.vx) < 0.15) this.vx = dirX * minSpeed;
+                if (Math.abs(this.vy) < 0.15) this.vy = dirY * minSpeed;
+            } else {
+                const accelMult = 1.5;
+                const minSpeed = 2.0;
+                const actualSpeed = Math.max(speed, minSpeed) * accelMult;
+                const accel = 0.12 * accelMult;
+                this.vx = Utils.lerp(this.vx, dirX * actualSpeed, accel);
+                this.vy = Utils.lerp(this.vy, dirY * actualSpeed, accel);
+                if (Math.abs(this.vx) < 0.15) this.vx = dirX * minSpeed;
+                if (Math.abs(this.vy) < 0.15) this.vy = dirY * minSpeed;
+            }
         }
         
         this.x += this.vx * dt;
@@ -1803,31 +2096,49 @@ class Agent {
     calculateReward(world, decision) {
         let reward = 0;
         
-        const enemies = (world?.enemies || []).filter(e => e && e.id !== this.id && e.alive);
+        const enemiesWithDist = (world?.enemies || [])
+            .filter(e => e && e.id !== this.id && e.alive)
+            .map(e => ({ agent: e, d: Utils.dist(this, e) }))
+            .sort((a, b) => a.d - b.d);
         
-        // ✅ MASSIVE BONUS FOR DEALING DAMAGE
+        const primaryEnemy = enemiesWithDist[0]?.agent;
+        
         if (this._lastHitDealt > 0) {
-            reward += this._lastHitDealt * 1.5;
+            reward += this._lastHitDealt * 0.5;
+            
+            if (primaryEnemy) {
+                const angle = Math.atan2(primaryEnemy.y - this.y, primaryEnemy.x - this.x) - primaryEnemy.getWeaponFacing();
+                const normalizedAngle = Math.abs(Utils.normalizeAngle(angle));
+                const weaponArc = (primaryEnemy.weapon.arcAngle || Math.PI) / 2;
+                
+                if (normalizedAngle > weaponArc * 1.2) {
+                    reward += 0.30;
+                    this._tacticalHits++;
+                } else if (normalizedAngle <= weaponArc * 0.5) {
+                    reward -= 0.20;
+                    this._frontalHits++;
+                } else {
+                    reward += 0.05;
+                }
+            }
+            
             this._lastHitDealt = 0;
         }
         
-        // ✅ AGGRESSIVE POSITIONING
-        if (enemies.length > 0 && this.mode === 'combat') {
-            const nearest = enemies.reduce((a, b) => Utils.dist(this, a) < Utils.dist(this, b) ? a : b);
-            const dist = Utils.dist(this, nearest);
+        if (enemiesWithDist.length > 0 && this.mode === 'combat') {
+            const nearest = enemiesWithDist[0];
+            const dist = nearest.d;
             if (dist < 100) {
-                const prevDist = Utils.dist(this.lastPos, nearest);
+                const prevDist = Utils.dist(this.lastPos, nearest.agent);
                 if (dist < prevDist && prevDist > 15) reward += 0.2;
             }
         }
         
-        // ✅ DAMAGE RECEIVED PENALTY
         if (this._lastHitReceived > 0) {
-            reward -= this._lastHitReceived * 0.8;
+            reward -= this._lastHitReceived * 0.3;
             this._lastHitReceived = 0;
         }
         
-        // ✅ MOVEMENT REWARD
         const moved = Math.hypot(this.x - this.lastPos.x, this.y - this.lastPos.y);
         if (moved > 1.0) {
             reward += 0.03;
@@ -1837,25 +2148,63 @@ class Agent {
             if (this.stuckCounter > 30) reward -= 0.15;
         }
         
-        // ✅ WALL PROXIMITY PENALTY
         const wallDist = (world?.walls || []).length ? Math.min(...world.walls.map(w => Utils.dist(this, w))) : 999;
         if (wallDist < 25) reward -= 0.08 * (1 - wallDist / 25);
         
-        // ✅ HEALTH MANAGEMENT
         const healthRatio = this.health / this.stats.maxHealth;
-        if (healthRatio > 0.7 && enemies.length > 0) reward += 0.05;
+        if (healthRatio > 0.7 && enemiesWithDist.length > 0) reward += 0.05;
         else if (healthRatio < 0.15) reward -= 0.2;
         
-        // ✅ TERRITORY CONTROL
         const newCell = `${Math.floor(this.x / 60)},${Math.floor(this.y / 60)}`;
         if (!this.permanent.memory.visited.has(newCell)) {
             this.permanent.memory.visited.add(newCell);
             reward += 0.08;
         }
         
-        // ✅ БОНУС ЗА COMBAT MODE (всегда активен)
-        if (this.mode === 'combat' && enemies.length > 0) {
+        if (this.mode === 'combat' && enemiesWithDist.length > 0) {
             reward += 0.05;
+        }
+        
+        if (arenaConfig.enableTactical && primaryEnemy) {
+            const threat = this.assessThreatFromEnemy(primaryEnemy);
+            
+            if (primaryEnemy.isPointInWeaponArc(this)) {
+                const exposurePenalty = -arenaConfig.TACTICAL.FRONT_PENALTY * threat.threatLevel;
+                reward += exposurePenalty;
+                this._inEnemyArc = true;
+            } else {
+                this._inEnemyArc = false;
+            }
+            
+            const angleToMe = Math.atan2(this.y - primaryEnemy.y, this.x - primaryEnemy.x) - primaryEnemy.getWeaponFacing();
+            const normalizedAngle = Math.abs(Utils.normalizeAngle(angleToMe));
+            const enemyWeaponArc = (primaryEnemy.weapon.arcAngle || Math.PI) / 2;
+            
+            if (normalizedAngle > enemyWeaponArc * 1.2) {
+                const backBonus = arenaConfig.TACTICAL.FLANK_BONUS * (normalizedAngle / Math.PI);
+                reward += backBonus;
+            }
+            
+            const toFlank = Utils.dist(
+                {x: this.x + threat.flankVector.x * 40, y: this.y + threat.flankVector.y * 40},
+                {x: this.x + this.vx * 4, y: this.y + this.vy * 4}
+            );
+            if (toFlank < 15 && threat.threatLevel > 0.5) {
+                reward += 0.10;
+            }
+            
+            // ✅ ИНТЕГРАЦИЯ: Theory of Mind в reward shaping
+            const enemyIntent = this.predictEnemyIntent(primaryEnemy);
+            if (enemyIntent.intent === 'attack' && this._inEnemyArc) {
+                // Правильно предсказал атаку, но оказался в дуле → штраф за плохую реакцию
+                reward -= 0.1;
+            } else if (enemyIntent.intent === 'flee' && Utils.dist(this, primaryEnemy) > 100) {
+                // Враг бежит, а ты далеко → штраф за упущенную возможность
+                reward -= 0.05;
+            } else if (enemyIntent.intent === 'desperate_attack' && enemyIntent.confidence > 0.7 && this.health > 0.5) {
+                // Враг отчаянно атакует, а ты здоров → бонус за контратаку
+                reward += 0.08;
+            }
         }
         
         this.lastPos = { x: this.x, y: this.y };
@@ -1882,10 +2231,10 @@ class Agent {
         const advantages = Utils.computeGAE(this.learningBuffer.rewards, this.learningBuffer.values, 0, this.net.gamma, this.net.lambda);
         for (let t = 0; t < advantages.length; t++) {
             if (this.lastDecision?.modeProbs && arenaConfig.enablePolicySelector) {
-                const modeIdx = 0; // Всегда combat
+                const modeIdx = 0;
                 const enemies = (this._lastWorld?.enemies || []).filter(e => e && e.id !== this.id && e.alive);
                 const context = [
-                    enemies.length > 0 ? Utils.clamp(Utils.dist(this, enemies[0]) / 200, 0, 1) : 1,
+                    enemies.length > 0 ? Utils.clamp(Utils.dist(this, enemies[0]?.agent || enemies[0]) / 200, 0, 1) : 1,
                     (this._lastWorld?.walls || []).length ? Utils.clamp(Math.min(...this._lastWorld.walls.map(w => Utils.dist(this, w))) / 60, 0, 1) : 0,
                     this.health / this.stats.maxHealth,
                     Utils.clamp(Utils.safeNumber(this.lastDecision.output?.[5], 0.5), 0, 1),
@@ -1903,7 +2252,7 @@ class Agent {
     
     updatePermanentSkills(reward, mode, skillGrowthRate) {
         if (reward <= 3 || !arenaConfig.enableSkillEvolution) return;
-        const skillKey = 'combat'; // Всегда combat
+        const skillKey = 'combat';
         if (skillKey && this.permanent.skills[skillKey] !== undefined) {
             const growth = skillGrowthRate * reward * arenaConfig.EVOLUTION.COMBAT_SKILL_GROWTH;
             this.permanent.skills[skillKey] = Utils.clamp(this.permanent.skills[skillKey] + growth, 0, 1);
@@ -2030,8 +2379,10 @@ class Agent {
             avgTDError: this.net._trainingStats.tdErrorHistory.reduce((a,b)=>a+b,0)/Math.max(1,this.net._trainingStats.tdErrorHistory.length),
             avgPredictionError: Array.from(this.net._predictionErrors).reduce((a,b)=>a+b,0)/Math.max(1,this.net._predictionErrors.length),
             avgPolicyEntropy: this.net._trainingStats.policyEntropyHistory.reduce((a,b)=>a+b,0)/Math.max(1,this.net._trainingStats.policyEntropyHistory.length),
-            winRate: this.net._trainingStats.winRate, collectionRate: this.net._trainingStats.collectionRate, survivalTime: this.net._trainingStats.survivalTime, totalSteps: this.net._trainingStats.totalSteps,
-            deaths: this.net._trainingStats.deaths, kills: this.net._trainingStats.kills
+            winRate: this.wins / Math.max(1, this.wins + this.deaths),
+            avgDamage: this._totalDamageDealt / Math.max(1, this._totalAttacks),
+            accuracy: this._successfulHits / Math.max(1, this._totalAttacks),
+            tacticalRate: this._tacticalHits / Math.max(1, this._successfulHits)
         };
     }
     
@@ -2057,16 +2408,16 @@ class Agent {
         this._pierced = 0;
         this._pulseEffect = 0;
         this._continuousKB = 0;
-        // ✅ FORCED COMBAT AFTER DEATH
         this._forcedCombatTimer = arenaConfig.EVOLUTION.FORCED_COMBAT_AFTER_DEATH;
+        this._recentArcExposure = [];
+        this._inEnemyArc = false;
+        this._lastThreatAssessment = null;
     }
     
     learnFromWinner(winner) {
         if (!winner || !arenaConfig.enableWeightInheritance) return;
-        
         this._learnFromWinner = true;
         const inheritRate = arenaConfig.EVOLUTION.LEARN_FROM_WINNER_RATE;
-        
         const inheritWeights = (child, parent) => {
             if (!child || !parent) return;
             for (let i = 0; i < Math.min(child.length, parent.length); i++) {
@@ -2079,12 +2430,10 @@ class Agent {
                 }
             }
         };
-        
         inheritWeights(this.net._W1, winner.net._W1);
         inheritWeights(this.net._W2, winner.net._W2);
         inheritWeights(this.net._W3, winner.net._W3);
         inheritWeights(this.net._inputEmbedding, winner.net._inputEmbedding);
-        
         this.socialMemory.killerHistory.push({
             killer: winner.id,
             weapon: winner.weaponType,
@@ -2093,11 +2442,9 @@ class Agent {
             myHealth: this.health / this.stats.maxHealth,
             theirHealth: winner.health / winner.stats.maxHealth
         });
-        
         if (this.socialMemory.killerHistory.length > 10) {
             this.socialMemory.killerHistory.shift();
         }
-        
         Logger.log(`📚 ${this.id.toUpperCase()} учится у ${winner.id.toUpperCase()} (${winner.weapon.icon} ${winner.weapon.name})`, 'learning');
     }
     
@@ -2201,10 +2548,74 @@ class Agent {
             ctx.stroke();
             ctx.setLineDash([]);
         }
+        
+        if ((showVision || window.arenaGame?.debug) && arenaConfig.enableTactical) {
+            const facing = this.getWeaponFacing();
+            const arc = this.weapon.arcAngle || Math.PI;
+            
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(facing);
+            
+            ctx.fillStyle = 'rgba(255, 80, 80, 0.25)';
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.arc(0, 0, this.weapon.range, -arc/2, arc/2);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.fillStyle = 'rgba(255, 170, 0, 0.15)';
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.arc(0, 0, this.weapon.range * 0.7, -arc/4, arc/4);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.strokeStyle = this.weapon.color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(this.weapon.mountOffset.x, this.weapon.mountOffset.y);
+            ctx.lineTo(this.weapon.mountOffset.x + 12, this.weapon.mountOffset.y);
+            ctx.stroke();
+            
+            ctx.restore();
+            
+            const enemies = (this._lastWorld?.enemies || []).filter(e => e && e.id !== this.id && e.alive);
+            const primaryEnemy = enemies[0]?.agent;
+            if (primaryEnemy && typeof primaryEnemy.assessThreatFromEnemy === 'function' && showVision) {
+                const threat = this.assessThreatFromEnemy(primaryEnemy);
+                if (threat.threatLevel > 0.5) {
+                    ctx.strokeStyle = 'rgba(0, 255, 157, 0.6)';
+                    ctx.setLineDash([3, 4]);
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y);
+                    ctx.lineTo(
+                        this.x + threat.flankVector.x * 50,
+                        this.y + threat.flankVector.y * 50
+                    );
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            }
+        }
+        
+        if (this._inEnemyArc && showVision) {
+            ctx.strokeStyle = 'rgba(255, 50, 50, 0.8)';
+            ctx.setLineDash([2, 2]);
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, Agent.VISUAL_RADIUS + 14, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
     }
     
     getDebugInfo() {
         const metrics = this.getLearningMetrics();
+        const attention = this.interpretAttention();
+        const enemyIntent = this.predictEnemyIntent(
+            (this._lastWorld?.enemies || []).find(e => e?.id !== this.id && e?.alive)?.agent
+        );
+        
         return {
             mode: this.mode, 
             weapon: this.weapon.icon + ' ' + this.weapon.name, 
@@ -2236,7 +2647,16 @@ class Agent {
             deaths: this.deaths,
             kbVel: `${this._knockbackVelocity.x.toFixed(1)},${this._knockbackVelocity.y.toFixed(1)}`,
             stun: this._stunTimer,
-            forcedCombat: this._forcedCombatTimer
+            forcedCombat: this._forcedCombatTimer,
+            threat: this._lastThreatAssessment?.threatLevel?.toFixed(2) || '—',
+            flank: this._lastThreatAssessment ? `${this._lastThreatAssessment.flankVector.x.toFixed(2)},${this._lastThreatAssessment.flankVector.y.toFixed(2)}` : '—',
+            // ✅ НОВЫЕ ПОЛЯ ДЛЯ ИНТЕРПРЕТАЦИИ
+            attThreat: attention.threat,
+            attFlank: attention.flank,
+            attDist: attention.distance,
+            attPred: attention.prediction,
+            enemyIntent: enemyIntent.intent,
+            intentConf: enemyIntent.confidence.toFixed(2)
         };
     }
     
@@ -2270,6 +2690,15 @@ class Agent {
         agent._learnFromWinner = this._learnFromWinner;
         agent._lastKiller = this._lastKiller;
         agent._deathMode = this._deathMode;
+        agent._lastAttackDir = this._lastAttackDir;
+        agent._recentArcExposure = this._recentArcExposure ? [...this._recentArcExposure] : [];
+        agent._inEnemyArc = this._inEnemyArc;
+        agent._lastThreatAssessment = this._lastThreatAssessment ? { ...this._lastThreatAssessment } : null;
+        agent._totalDamageDealt = this._totalDamageDealt;
+        agent._totalAttacks = this._totalAttacks;
+        agent._successfulHits = this._successfulHits;
+        agent._tacticalHits = this._tacticalHits;
+        agent._frontalHits = this._frontalHits;
         return agent;
     }
     
@@ -2300,7 +2729,16 @@ class Agent {
             _forcedCombatTimer: this._forcedCombatTimer,
             _learnFromWinner: this._learnFromWinner,
             _lastKiller: this._lastKiller,
-            _deathMode: this._deathMode
+            _deathMode: this._deathMode,
+            _lastAttackDir: this._lastAttackDir,
+            _recentArcExposure: this._recentArcExposure,
+            _inEnemyArc: this._inEnemyArc,
+            _lastThreatAssessment: this._lastThreatAssessment,
+            _totalDamageDealt: this._totalDamageDealt,
+            _totalAttacks: this._totalAttacks,
+            _successfulHits: this._successfulHits,
+            _tacticalHits: this._tacticalHits,
+            _frontalHits: this._frontalHits
         };
     }
     
@@ -2340,12 +2778,21 @@ class Agent {
         if (data._learnFromWinner !== undefined) agent._learnFromWinner = data._learnFromWinner;
         if (data._lastKiller) agent._lastKiller = data._lastKiller;
         if (data._deathMode) agent._deathMode = data._deathMode;
+        if (data._lastAttackDir !== undefined) agent._lastAttackDir = data._lastAttackDir;
+        if (data._recentArcExposure) agent._recentArcExposure = [...data._recentArcExposure];
+        if (data._inEnemyArc !== undefined) agent._inEnemyArc = data._inEnemyArc;
+        if (data._lastThreatAssessment) agent._lastThreatAssessment = { ...data._lastThreatAssessment };
+        if (data._totalDamageDealt !== undefined) agent._totalDamageDealt = data._totalDamageDealt;
+        if (data._totalAttacks !== undefined) agent._totalAttacks = data._totalAttacks;
+        if (data._successfulHits !== undefined) agent._successfulHits = data._successfulHits;
+        if (data._tacticalHits !== undefined) agent._tacticalHits = data._tacticalHits;
+        if (data._frontalHits !== undefined) agent._frontalHits = data._frontalHits;
         return agent;
     }
 }
 
 // ============================================================================
-// WORLD
+// WORLD — БЕЗ ИЗМЕНЕНИЙ В ЯДРЕ
 // ============================================================================
 class World {
     constructor(width, height) {
@@ -2447,11 +2894,23 @@ class World {
                 if (opponents.length > 0) {
                     const enemy = opponents[0], dist = Utils.dist(agent, enemy), range = agent.attackRange || Agent.ATTACK_RANGE;
                     if (dist <= range && (agent.attackCooldown || 0) <= 0) {
+                        if (!agent.isPointInWeaponArc(enemy)) {
+                            Logger.log(`${agent.id.toUpperCase()} промахнулся: цель вне сектора ${agent.weapon.name}`, 'warn');
+                            agent.attackCooldown = Math.floor(agent.stats.fireRate * 0.4);
+                            continue;
+                        }
+                        
                         this.totalFights++;
                         const aggression = agent.lastDecision?.behaviors?.aggression || 0.5;
                         const skill = agent.permanent?.skills?.combat || 0.3;
                         const baseDmg = agent.stats.damage;
-                        const damage = Math.floor(Utils.clamp(baseDmg * (0.8 + aggression * 0.4) * (0.7 + skill * 0.6), 1, 10));
+                        
+                        const directionalMult = enemy.calculateDirectionalDamageMultiplier(agent);
+                        const damage = Math.floor(Utils.clamp(
+                            baseDmg * (0.8 + aggression * 0.4) * (0.7 + skill * 0.6) * directionalMult, 
+                            1, 15
+                        ));
+                        
                         const dodgeRoll = Math.random();
                         if (dodgeRoll < enemy.stats.dodgeChance) {
                             Logger.log(`🛡️ ${enemy.id.toUpperCase()} уклонился!`, 'warn');
@@ -2459,8 +2918,24 @@ class World {
                             enemy.health -= damage;
                             enemy._lastHitReceived = damage;
                             agent._lastHitDealt = damage;
+                            
+                            // ✅ СТАТИСТИКА
+                            agent._totalAttacks++;
+                            agent._totalDamageDealt += damage;
+                            agent._successfulHits++;
+                            
+                            if (directionalMult >= 1.5) {
+                                agent._tacticalHits++;
+                            } else if (directionalMult <= 0.7) {
+                                agent._frontalHits++;
+                            }
+                            
+                            agent._lastAttackDir = Math.atan2(enemy.y - agent.y, enemy.x - agent.x);
+                            
                             agent._applyKnockback(enemy, aggression, agent.weapon);
-                            Logger.log(`${agent.id.toUpperCase()} (${agent.weapon.icon}) → ${enemy.id.toUpperCase()} -${damage} HP [${agent.weapon.knockbackType} KB:${agent.weapon.knockback}]`, 'info');
+                            
+                            const hitType = directionalMult >= 1.5 ? '🔙 СПИНА' : (directionalMult <= 0.7 ? '🎯 ЛОБ' : '🔄 ФЛАНГ');
+                            Logger.log(`${agent.id.toUpperCase()} ${hitType}→ ${enemy.id.toUpperCase()} -${damage} HP [x${directionalMult.toFixed(2)}]`, 'info');
                         }
                         agent.attackCooldown = agent.stats.fireRate;
                         if (enemy.health <= 0) {
@@ -2469,14 +2944,17 @@ class World {
                             Logger.log(`🏳️ ${enemy.id.toUpperCase()} повержен ${agent.id.toUpperCase()}`, 'success');
                         }
                     } else if (arenaConfig.enableRanged && (agent.attackCooldown || 0) <= 0) {
-                        const aggr = agent.lastDecision?.behaviors?.aggression || 0.4;
-                        if (aggr > 0.3 && dist > range && dist <= 200) {
-                            const dir = Utils.normalize(enemy.x - agent.x, enemy.y - agent.y);
-                            const speed = 10 + Math.random() * 4;
-                            const dmg = Math.floor(Utils.clamp(agent.stats.damage * 0.5 * (0.8 + aggr * 0.8), 1, 5));
-                            const p = new Projectile(agent.x + dir.x * 12, agent.y + dir.y * 12, dir.x * speed, dir.y * speed, agent.id, dmg, 80);
-                            this.projectiles.push(p); agent.attackCooldown = agent.stats.fireRate + 5; 
-                            Logger.log(`${agent.id.toUpperCase()} стреляет → ${enemy.id.toUpperCase()} (-${dmg} HP)`, 'info');
+                        // ✅ ИСПРАВЛЕНО: Дальний бой только для ranged оружия
+                        if (agent.weapon.type === 'ranged') {
+                            const aggr = agent.lastDecision?.behaviors?.aggression || 0.4;
+                            if (aggr > 0.3 && dist > range && dist <= 200) {
+                                const dir = Utils.normalize(enemy.x - agent.x, enemy.y - agent.y);
+                                const speed = 10 + Math.random() * 4;
+                                const dmg = Math.floor(Utils.clamp(agent.stats.damage * 0.5 * (0.8 + aggr * 0.8), 1, 5));
+                                const p = new Projectile(agent.x + dir.x * 12, agent.y + dir.y * 12, dir.x * speed, dir.y * speed, agent.id, dmg, 80);
+                                this.projectiles.push(p); agent.attackCooldown = agent.stats.fireRate + 5; 
+                                Logger.log(`${agent.id.toUpperCase()} стреляет → ${enemy.id.toUpperCase()} (-${dmg} HP)`, 'info');
+                            }
                         }
                     }
                 }
@@ -2521,6 +2999,7 @@ class World {
                     winner.generation++;
                     winner.evolutionPoints = 2;
                     winner.applyEvolutionPoints();
+                    winner.cumulativeReward += arenaConfig.EVOLUTION.WIN_BONUS;
                     winner.net.updateDiagnostics({ kill: true });
                     Logger.log(`🏆 ${winner.id.toUpperCase()} Gen${winner.generation} wins! Total Wins: ${winner.wins}`, 'success');
                     
@@ -2528,7 +3007,6 @@ class World {
                     deadAgent._lastKiller = winner.id;
                     deadAgent._deathMode = deadAgent.mode;
                     deadAgent.net.updateDiagnostics({ death: true });
-                    deadAgent.cumulativeReward += arenaConfig.EVOLUTION.DEATH_PENALTY;
                     deadAgent.learnFromWinner(winner);
                     deadAgent.net.mutate(arenaConfig.EVOLUTION.MUTATION_ON_DEATH, 0.2);
                     
@@ -2680,10 +3158,7 @@ class GameEngine {
         };
         bindSlider('learningRate', 'learningRate', 'learningRateValue'); 
         bindSlider('lambda', 'lambda', 'lambdaValue'); 
-        bindSlider('gamma', 'gamma', 'gammaValue');
-        bindSlider('entropyCoeff', 'entropyCoeff', 'entropyValue'); 
         bindSlider('mutationRate', 'mutationRate', 'mutationRateValue'); 
-        bindSlider('skillGrowth', 'skillGrowthRate', 'skillGrowthValue');
         const bindToggle = (id, key) => { 
             const toggle = document.getElementById(id); 
             if (toggle) toggle.onchange = (e) => { this.settings[key] = e.target.checked; }; 
@@ -2701,6 +3176,7 @@ class GameEngine {
         bindToggle('enableHebbian', 'enableHebbian');
         bindToggle('compactInputs', 'compactInputs');
         bindToggle('enableWeightInheritance', 'enableWeightInheritance');
+        bindToggle('enableTactical', 'enableTactical');
     }
     
     _onKey(e) { 
@@ -2745,15 +3221,17 @@ class GameEngine {
         this.updateStats(); 
         this.updateMetrics(); 
         if (this.world.enemies[0] && this.world.enemies[1]) this.world.draw(this.ctx, false, true); 
-        Logger.log('🚀 AI ARENA v4.0.1 PURE COMBAT инициализирована', 'success'); 
+        Logger.log('🚀 AI ARENA v4.0.2 TACTICAL инициализирована', 'success'); 
         Logger.log(`🔧 Архитектура: ${arenaConfig.compactInputs ? '25→16→48→36→16' : '57→24→48→36→16'} + RNN(16) память`, 'success'); 
         Logger.log('🧠 Обучение: TD(λ)+Actor-Critic+LearnablePolicy+MoE+Hebbian+SocialMemory', 'success'); 
         Logger.log('🔑 Детерминированная инициализация от ключа', 'success'); 
-        Logger.log('⚡ Эволюционное давление: смерть = -50 reward', 'success');
+        Logger.log('⚡ Эволюционное давление: смерть = 0 reward', 'success');
         Logger.log('📚 Проигравший ОБЯЗАТЕЛЬНО учится у победителя (85% весов)', 'success');
         Logger.log('⚔️ РЕЖИМ: ТОЛЬКО COMBAT — агенты ВСЕГДА атакуют', 'success');
-        Logger.log(`🔨 BLUE: ${WEAPONS[blueWeapon].icon} ${WEAPONS[blueWeapon].name} (KB:${WEAPONS[blueWeapon].knockback})`, 'success');
-        Logger.log(`🔨 RED: ${WEAPONS[redWeapon].icon} ${WEAPONS[redWeapon].name} (KB:${WEAPONS[redWeapon].knockback})`, 'success');
+        Logger.log('🎯 ТАКТИКА: Directional weapons + Flanking + Threat awareness', 'success');
+        Logger.log(`🔨 BLUE: ${WEAPONS[blueWeapon].icon} ${WEAPONS[blueWeapon].name} (arc:${(WEAPONS[blueWeapon].arcAngle/Math.PI*180).toFixed(0)}°)`, 'success');
+        Logger.log(`🔨 RED: ${WEAPONS[redWeapon].icon} ${WEAPONS[redWeapon].name} (arc:${(WEAPONS[redWeapon].arcAngle/Math.PI*180).toFixed(0)}°)`, 'success');
+        Logger.log('🧠 ИНТЕРПРЕТАЦИЯ: Attention heads + Theory of Mind активны и ИНТЕГРИРОВАНЫ', 'success');
     }
     
     toggle() { 
@@ -2891,21 +3369,32 @@ class GameEngine {
               avgPred = (blueMetrics.avgPredictionError + redMetrics.avgPredictionError) / 2, 
               avgEnt = (blueMetrics.avgPolicyEntropy + redMetrics.avgPolicyEntropy) / 2, 
               avgWin = (blueMetrics.winRate + redMetrics.winRate) / 2, 
-              avgColl = (blueMetrics.collectionRate + redMetrics.collectionRate) / 2, 
-              avgSurv = (blueMetrics.survivalTime + redMetrics.survivalTime) / 2; 
-        const tdEl = document.getElementById('metricTDError'), predEl = document.getElementById('metricPredError'), 
-              entEl = document.getElementById('metricEntropy'), winEl = document.getElementById('metricWinRate'), 
-              collEl = document.getElementById('metricCollection'), survEl = document.getElementById('metricSurvival'); 
+              avgDmg = (blueMetrics.avgDamage + redMetrics.avgDamage) / 2,
+              avgAcc = (blueMetrics.accuracy + redMetrics.accuracy) / 2;
+        
+        const tdEl = document.getElementById('metricTDError'), 
+              winEl = document.getElementById('metricWinRate'), 
+              dmgEl = document.getElementById('metricDamage'), 
+              accEl = document.getElementById('metricAccuracy');
+        
         if (tdEl) { tdEl.textContent = avgTD.toFixed(4); tdEl.className = `metric-value${avgTD < 0.5 ? ' good' : avgTD > 2 ? ' degrading' : ''}`; } 
-        if (predEl) { predEl.textContent = avgPred.toFixed(3); predEl.className = `metric-value${avgPred < 0.3 ? ' good' : avgPred > 0.7 ? ' degrading' : ''}`; } 
-        if (entEl) { entEl.textContent = avgEnt.toFixed(3); entEl.className = `metric-value${avgEnt > 0.1 && avgEnt < 0.8 ? ' good' : ''}`; } 
         if (winEl) winEl.textContent = avgWin.toFixed(2); 
-        if (collEl) collEl.textContent = avgColl.toFixed(2); 
-        if (survEl) survEl.textContent = avgSurv.toFixed(2); 
-        const progressTDEl = document.getElementById('progressTD'), progressEntropyEl = document.getElementById('progressEntropy'), progressPredEl = document.getElementById('progressPred'); 
-        if (progressTDEl) { const w = Utils.clamp(100 - avgTD * 20, 0, 100); progressTDEl.style.width = `${w}%`; progressTDEl.setAttribute('aria-valuenow', String(Math.round(w))); } 
-        if (progressEntropyEl) { const w = Utils.clamp(avgEnt * 100, 0, 100); progressEntropyEl.style.width = `${w}%`; progressEntropyEl.setAttribute('aria-valuenow', String(Math.round(w))); } 
-        if (progressPredEl) { const w = Utils.clamp(100 - avgPred * 100, 0, 100); progressPredEl.style.width = `${w}%`; progressPredEl.setAttribute('aria-valuenow', String(Math.round(w))); } 
+        if (dmgEl) dmgEl.textContent = avgDmg.toFixed(2);
+        if (accEl) accEl.textContent = avgAcc.toFixed(2);
+        
+        const progressTDEl = document.getElementById('progressTD'), 
+              progressPredEl = document.getElementById('progressPred');
+        
+        if (progressTDEl) { 
+            const w = Utils.clamp(100 - avgTD * 20, 0, 100); 
+            progressTDEl.style.width = `${w}%`; 
+            progressTDEl.setAttribute('aria-valuenow', String(Math.round(w))); 
+        }
+        if (progressPredEl) { 
+            const w = Utils.clamp(100 - avgPred * 100, 0, 100); 
+            progressPredEl.style.width = `${w}%`; 
+            progressPredEl.setAttribute('aria-valuenow', String(Math.round(w))); 
+        }
     }
     
     updateDebugPanel() { 
@@ -2937,6 +3426,16 @@ class GameEngine {
         setDebugValue('dbgHebbian', info.hebbian); 
         setDebugValue('dbgSocialRep', info.socialRep); 
         setDebugValue('dbgArchetype', info.archetype); 
+        setDebugValue('dbgThreat', info.threat);
+        setDebugValue('dbgFlank', info.flank);
+        // ✅ НОВЫЕ ЗНАЧЕНИЯ ДЛЯ ИНТЕРПРЕТАЦИИ
+        setDebugValue('dbgAttThreat', info.attThreat);
+        setDebugValue('dbgAttFlank', info.attFlank);
+        setDebugValue('dbgAttDist', info.attDist);
+        setDebugValue('dbgAttPred', info.attPred);
+        setDebugValue('dbgEnemyIntent', info.enemyIntent);
+        setDebugValue('dbgIntentConf', info.intentConf);
+        
         const confBar = document.getElementById('dbgConfBar'), confVal = document.getElementById('dbgConfVal'); 
         if (confBar) { const w = (this.selectedAgent.predictive.confidence || 0.5) * 100; confBar.style.width = `${w}%`; confBar.setAttribute('aria-valuenow', String(Math.round(w))); } 
         if (confVal) confVal.textContent = info.confidence; 
@@ -2959,14 +3458,14 @@ class GameEngine {
     save() { 
         try { 
             const data = { 
-                version: '4.0.1', 
+                version: '4.0.2', 
                 timestamp: Date.now(), 
                 settings: this.settings, 
                 world: { episode: this.world.episode, step: this.world.step, totalFights: this.world.totalFights, walls: this.world.walls.map(w => ({ x: w.x, y: w.y })) }, 
                 agents: this.world.enemies.map(a => a ? a.toJSON() : null).filter(a => a) 
             }; 
-            localStorage.setItem('aiArenaV4Combat', JSON.stringify(data)); 
-            Logger.log('💾 Сохранено (v4.0.1 Combat)', 'success'); 
+            localStorage.setItem('aiArenaV4Tactical', JSON.stringify(data)); 
+            Logger.log('💾 Сохранено (v4.0.2 Tactical)', 'success'); 
         } catch (e) { 
             if (e.name === 'QuotaExceededError') Logger.log('💾 Сохранение отклонено: превышен лимит хранилища', 'error'); 
             else Logger.log(`❌ Ошибка сохранения: ${e.message}`, 'error'); 
@@ -2975,23 +3474,17 @@ class GameEngine {
     
     load() { 
         try { 
-            const raw = localStorage.getItem('aiArenaV4Combat'); 
-            if (!raw) { Logger.log('❌ Нет сохранений v4.0.1', 'error'); return; } 
+            const raw = localStorage.getItem('aiArenaV4Tactical'); 
+            if (!raw) { Logger.log('❌ Нет сохранений v4.0.2', 'error'); return; } 
             const data = JSON.parse(raw); 
-            if (data.version !== '4.0.1') { Logger.log('⚠️ Требуется сохранение v4.0.1', 'warn'); return; } 
+            if (data.version !== '4.0.2') { Logger.log('⚠️ Требуется сохранение v4.0.2', 'warn'); return; } 
             this.settings = { ...this.settings, ...data.settings }; 
             document.getElementById('learningRate').value = this.settings.learningRate; 
             document.getElementById('lambda').value = this.settings.lambda; 
-            document.getElementById('gamma').value = this.settings.gamma; 
-            document.getElementById('entropyCoeff').value = this.settings.entropyCoeff; 
-            document.getElementById('mutationRate').value = this.settings.mutationRate; 
-            document.getElementById('skillGrowth').value = this.settings.skillGrowthRate; 
             document.getElementById('learningRateValue').textContent = this.settings.learningRate; 
             document.getElementById('lambdaValue').textContent = this.settings.lambda; 
-            document.getElementById('gammaValue').textContent = this.settings.gamma; 
-            document.getElementById('entropyValue').textContent = this.settings.entropyCoeff; 
+            document.getElementById('mutationRate').value = this.settings.mutationRate; 
             document.getElementById('mutationRateValue').textContent = this.settings.mutationRate; 
-            document.getElementById('skillGrowthValue').textContent = this.settings.skillGrowthRate; 
             this.world.episode = data.world?.episode || 0; 
             this.world.step = data.world?.step || 0; 
             this.world.totalFights = data.world?.totalFights || 0; 
@@ -3005,7 +3498,7 @@ class GameEngine {
                 if (a.critic) a.critic.lr = this.settings.learningRate; 
                 if (a.policySelector) a.policySelector.lr = this.settings.learningRate * 0.6; 
             }); 
-            Logger.log('📂 Загружено сохранение v4.0.1', 'success'); 
+            Logger.log('📂 Загружено сохранение v4.0.2', 'success'); 
             this.updateStats({ blue: this.world.enemies[0], red: this.world.enemies[1], episode: this.world.episode, totalFights: this.world.totalFights }); 
             this.updateMetrics(); 
         } catch (e) { Logger.log(`❌ Ошибка загрузки: ${e.message}`, 'error'); } 
@@ -3013,11 +3506,11 @@ class GameEngine {
     
     exportWeights() { 
         try { 
-            const data = { version: '4.0.1', timestamp: Date.now(), blue: this.world.enemies[0]?.toJSON() || null, red: this.world.enemies[1]?.toJSON() || null }, 
+            const data = { version: '4.0.2', timestamp: Date.now(), blue: this.world.enemies[0]?.toJSON() || null, red: this.world.enemies[1]?.toJSON() || null }, 
                   blob = new Blob([JSON.stringify(data)], { type: 'application/json' }), 
                   url = URL.createObjectURL(blob), 
                   a = document.createElement('a'); 
-            a.href = url; a.download = `arena-v4.0.1-combat-${Date.now()}.json`; a.click(); 
+            a.href = url; a.download = `arena-v4.0.2-tactical-${Date.now()}.json`; a.click(); 
             URL.revokeObjectURL(url); 
             Logger.log('📤 Агенты экспортированы', 'success'); 
         } catch (e) { Logger.log(`❌ Ошибка экспорта: ${e.message}`, 'error'); } 
@@ -3033,7 +3526,7 @@ class GameEngine {
                 const result = ev.target?.result; 
                 if (typeof result !== 'string') throw new Error('Invalid file content'); 
                 const data = JSON.parse(result); 
-                if (data.version !== '4.0.1') throw new Error('Требуется формат v4.0.1'); 
+                if (data.version !== '4.0.2') throw new Error('Требуется формат v4.0.2'); 
                 if (!data.blue || !data.red) throw new Error('Неверная структура файла'); 
                 if (data.blue && this.world.enemies[0]) this.world.enemies[0] = Agent.fromJSON(data.blue, '#00d4ff'); 
                 if (data.red && this.world.enemies[1]) this.world.enemies[1] = Agent.fromJSON(data.red, '#ff5577'); 
@@ -3105,11 +3598,11 @@ class GameEngine {
         const redWeapon = document.getElementById('redWeaponSelect')?.value || 'hammer';
         if (this.world.enemies[0]) {
             this.world.enemies[0].setWeapon(blueWeapon);
-            Logger.log(`🔵 BLUE weapon changed to ${WEAPONS[blueWeapon].icon} ${WEAPONS[blueWeapon].name} (KB:${WEAPONS[blueWeapon].knockback})`, 'success');
+            Logger.log(`🔵 BLUE weapon changed to ${WEAPONS[blueWeapon].icon} ${WEAPONS[blueWeapon].name} (arc:${(WEAPONS[blueWeapon].arcAngle/Math.PI*180).toFixed(0)}°)`, 'success');
         }
         if (this.world.enemies[1]) {
             this.world.enemies[1].setWeapon(redWeapon);
-            Logger.log(`🔴 RED weapon changed to ${WEAPONS[redWeapon].icon} ${WEAPONS[redWeapon].name} (KB:${WEAPONS[redWeapon].knockback})`, 'success');
+            Logger.log(`🔴 RED weapon changed to ${WEAPONS[redWeapon].icon} ${WEAPONS[redWeapon].name} (arc:${(WEAPONS[redWeapon].arcAngle/Math.PI*180).toFixed(0)}°)`, 'success');
         }
         this.updateStats();
     }
@@ -3121,7 +3614,7 @@ class GameEngine {
         document.getElementById('blueWeaponSelect').value = blueWeapon;
         document.getElementById('redWeaponSelect').value = redWeapon;
         this.applyWeapons();
-        Logger.log(`🎲 Random weapons: BLUE=${blueWeapon}(KB:${WEAPONS[blueWeapon].knockback}), RED=${redWeapon}(KB:${WEAPONS[redWeapon].knockback})`, 'info');
+        Logger.log(`🎲 Random weapons: BLUE=${blueWeapon}(arc:${(WEAPONS[blueWeapon].arcAngle/Math.PI*180).toFixed(0)}°), RED=${redWeapon}(arc:${(WEAPONS[redWeapon].arcAngle/Math.PI*180).toFixed(0)}°)`, 'info');
     }
 }
 
@@ -3133,7 +3626,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 function initArena() { 
     try { 
         window.arenaGame = new GameEngine(); 
-        if (window.arenaGame) console.log('✅ AI Arena v4.0.1 Pure Combat initialized'); 
+        if (window.arenaGame) console.log('✅ AI Arena v4.0.2 Tactical initialized'); 
     } catch (e) { 
         console.error('❌ Failed to initialize AI Arena:', e); 
         console.error('Stack:', e.stack); 
@@ -3150,18 +3643,18 @@ window.addEventListener('beforeunload', () => {
 
 
               <script>
-                              class BehaviorArbiter {
-    constructor() { 
-        this.modes = ['combat']; // ✅ ТОЛЬКО COMBAT
-    }
-    
-    select(agent, world) {
-        return 'combat'; // ✅ ВСЕГДА COMBAT
-    }
+                              if (enemyIntent.intent === 'desperate_attack' && enemyIntent.confidence > 0.7) {
+    output[7] *= 0.5;  // Агрессия ↓
+    output[5] *= 1.4;  // Скорость ↑
+    output[9] += 0.3;  // Боковое движение ↑
+}
+
+// ✅ ИСПРАВЛЕНО: Дальний бой только для ranged оружия
+if (arenaConfig.enableRanged && agent.weapon.type === 'ranged') {
+    // Стрельба
 }
 
 
               </script>
                         </body>
                         </html>
-                    
