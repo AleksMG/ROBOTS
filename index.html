@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self'; font-src 'self';">
-    <meta name="description" content="AI Arena v5.0.2 — Emotional Cortex">
+    <meta name="description" content="AI Arena v5.0.4 — Committed Decisions + Emotional Influence">
     <meta name="theme-color" content="#0a0a15">
     <meta name="robots" content="noindex">
-    <title>🎮 AI Arena v5.0.2 — Emotional</title>
+    <title>🎮 AI Arena v5.0.4 — Committed</title>
     <style>
         :root {
             --bg: #0a0a15; --bg-gradient-start: #0a0a15; --bg-gradient-end: #1a1a2e;
@@ -47,8 +47,7 @@
         }
         .skip-link { position: absolute; top: -40px; left: 0; background: var(--primary); color: #000; padding: 0.5rem 1rem; z-index: var(--z-modal); }
         .skip-link:focus { top: 0; }
-        .container {
-            display: grid; grid-template-columns: 1fr var(--sidebar-width);
+        .container {            display: grid; grid-template-columns: 1fr var(--sidebar-width);
             grid-template-rows: var(--header-height) 1fr; grid-template-areas: "header header" "canvas sidebar";
             height: 100vh; width: 100vw;
         }
@@ -97,8 +96,7 @@
         button:active { transform: translateY(1px); }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-primary { background: var(--primary); color: #000; }
-        .btn-danger { background: var(--danger); color: #fff; }
-        .btn-success { background: var(--success); color: #000; }
+        .btn-danger { background: var(--danger); color: #fff; }        .btn-success { background: var(--success); color: #000; }
         .btn-secondary { background: var(--border); color: var(--text); }
         .btn-toggle.active { background: var(--accent); color: #fff; }
         .toggle { display: flex; align-items: center; gap: 0.25rem; font-size: 0.6875rem; margin-bottom: 0.1875rem; color: var(--text-dim); cursor: pointer; user-select: none; }
@@ -147,8 +145,7 @@
         .skill-explore .skill-fill { background: var(--primary); }
         .skill-avoid .skill-fill { background: var(--purple); }
         .mode-badge {
-            display: inline-flex; align-items: center; padding: 0.0625rem 0.25rem;
-            border-radius: 0.375rem; font-size: 0.5rem; font-weight: 600; margin-left: 0.25rem;
+            display: inline-flex; align-items: center; padding: 0.0625rem 0.25rem;            border-radius: 0.375rem; font-size: 0.5rem; font-weight: 600; margin-left: 0.25rem;
         }
         .mode-combat { background: var(--mode-combat-bg); color: var(--mode-combat-text); }
         .learning-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.1875rem; margin-top: 0.25rem; }
@@ -192,13 +189,12 @@
     <a href="#gameCanvas" class="skip-link">Перейти к симуляции</a>
     <div class="container">
         <header class="header">
-            <h1>🎮 AI ARENA <span class="version-badge">v5.0.2 EMOTION</span></h1>
+            <h1>🎮 AI ARENA <span class="version-badge">v5.0.4 COMMITTED</span></h1>
             <div class="fps-counter" id="fpsCounter">FPS: 0</div>
         </header>
         <canvas id="gameCanvas"></canvas>
         <aside class="sidebar">
-            <section class="panel">
-                <h2 class="panel-title">👥 АГЕНТЫ</h2>
+            <section class="panel">                <h2 class="panel-title">👥 АГЕНТЫ</h2>
                 <article class="agent-card blue">
                     <header class="agent-header"><span>🔵 BLUE</span><span class="mode-badge mode-combat" id="blue-mode">COMBAT</span></header>
                     <div class="health-bar"><div class="health-fill" id="blue-health" style="width: 100%"></div></div>
@@ -247,8 +243,7 @@
                         <option value="drill">🔩 Drill (Fast, Stagger)</option>
                         <option value="sword">⚔️ Sword (High DMG, Slash)</option>
                         <option value="blaster">🔫 Blaster (Ranged, Pulse)</option>
-                        <option value="axe">🪓 Axe (Heavy Knockback)</option>
-                        <option value="dagger">🗡️ Dagger (Quick, Low KB)</option>
+                        <option value="axe">🪓 Axe (Heavy Knockback)</option>                        <option value="dagger">🗡️ Dagger (Quick, Low KB)</option>
                         <option value="spear">🔱 Spear (Long, Thrust)</option>
                         <option value="chainsaw">⚙️ Chainsaw (Continuous)</option>
                     </select>
@@ -297,8 +292,7 @@
                 </div>
                 <div class="control-group">
                     <label class="control-label"><span>🚗 Базовая скорость</span><span id="baseSpeedValue">22</span></label>
-                    <input type="range" id="baseSpeed" min="10" max="35" step="1" value="22">
-                </div>
+                    <input type="range" id="baseSpeed" min="10" max="35" step="1" value="22">                </div>
                 <div class="separator"></div>
                 <label class="toggle"><input type="checkbox" id="enableTraining" checked> TD(λ) Learning</label>
                 <label class="toggle"><input type="checkbox" id="enableEvolution" checked> Evolution</label>
@@ -347,15 +341,16 @@
                     <div class="debug-item"><span class="debug-label">Mode</span><span class="debug-value" id="dbgMode">—</span></div>
                     <div class="debug-item"><span class="debug-label">Weapon</span><span class="debug-value" id="dbgWeapon">—</span></div>
                     <div class="debug-item"><span class="debug-label">Health</span><span class="debug-value" id="dbgHealth">—</span></div>
-                    <div class="debug-item"><span class="debug-label">Wins</span><span class="debug-value" id="dbgWins">—</span></div>
-                    <div class="debug-item"><span class="debug-label">Speed</span><span class="debug-value" id="dbgSpeed">—</span></div>
+                    <div class="debug-item"><span class="debug-label">Wins</span><span class="debug-value" id="dbgWins">—</span></div>                    <div class="debug-item"><span class="debug-label">Speed</span><span class="debug-value" id="dbgSpeed">—</span></div>
                     <div class="debug-item"><span class="debug-label">Throttle</span><span class="debug-value" id="dbgThrottle">—</span></div>
                     <div class="debug-item"><span class="debug-label">Steering</span><span class="debug-value" id="dbgSteering">—</span></div>
                     <div class="debug-item"><span class="debug-label">Facing Enemy</span><span class="debug-value" id="dbgFacingEnemy">—</span></div>
-                    <div class="debug-item"><span class="debug-label">Wall Dist</span><span class="debug-value" id="dbgWallDist">—</span></div>
-                    <div class="debug-item"><span class="debug-label">Attack Valid</span><span class="debug-value" id="dbgAttackValid">—</span></div>
-                    <div class="debug-item"><span class="debug-label">Frustration</span><span class="debug-value" id="dbgFrustration">—</span></div>
-                    <div class="debug-item"><span class="debug-label">Confidence</span><span class="debug-value" id="dbgConfidence">—</span></div>
+                    <div class="debug-item"><span class="debug-label">Emotion</span><span class="debug-value" id="dbgEmotion">—</span></div>
+                    <div class="debug-item"><span class="debug-label">Satisfaction</span><span class="debug-value" id="dbgSatisfaction">—</span></div>
+                    <div class="debug-item"><span class="debug-label">Grudge</span><span class="debug-value" id="dbgGrudge">—</span></div>
+                    <div class="debug-item"><span class="debug-label">Command</span><span class="debug-value" id="dbgCommand">—</span></div>
+                    <div class="debug-item"><span class="debug-label">Decision Phase</span><span class="debug-value" id="dbgDecisionPhase">—</span></div>
+                    <div class="debug-item"><span class="debug-label">Committed</span><span class="debug-value" id="dbgCommitted">—</span></div>
                 </div>
             </section>
         </aside>
@@ -389,14 +384,13 @@ window.arenaConfig = {
     learningRate: 0.015, lambda: 0.95, gamma: 0.99, entropyCoeff: 0.01,
     mutationRate: 0.15, skillGrowthRate: 0.04, hebbianRate: 0.002,
     baseSpeed: 22,
-    seed: 'ARENA_V5_EMOTION_' + Date.now().toFixed(0),
-    timestamp: Date.now(), version: '5.0.2-EMOTION',
+    seed: 'ARENA_V5_COMMITTED_' + Date.now().toFixed(0),
+    timestamp: Date.now(), version: '5.0.4-COMMITTED',
     ARCH: Object.freeze({
         INPUT_DIM: 63, INPUT_DIM_COMPACT: 25, EMBEDDING_DIM: 24, EMBEDDING_DIM_COMPACT: 16,
         HIDDEN1: 48, HIDDEN2: 36, OUTPUT_DIM: 16, MEMORY_DIM: 16, NUM_HEADS: 4,
         NUM_EXPERTS: 4, EXPERT_DIM: 36, POLICY_CONTEXT_DIM: 8, POLICY_SKILL_DIM: 5,
-        POLICY_HIDDEN: 24, POLICY_MODES: 5, CRITIC_HIDDEN: 32, LOGICAL_WIDTH: 820, LOGICAL_HEIGHT: 600
-    }),
+        POLICY_HIDDEN: 24, POLICY_MODES: 5, CRITIC_HIDDEN: 32, LOGICAL_WIDTH: 820, LOGICAL_HEIGHT: 600    }),
     PHYSICS: Object.freeze({
         AGENT_COLLISION_RADIUS: 22, AGENT_REPULSION_STRENGTH: 2.5,
         MAX_VELOCITY: 25, VELOCITY_DAMPING: 0.88,
@@ -412,8 +406,8 @@ window.arenaConfig = {
         })
     }),
     EVOLUTION: Object.freeze({
-        DEATH_PENALTY: 0, FLEE_PENALTY: -0.5, WIN_BONUS: 100,
-        LEARN_FROM_WINNER_RATE: 0.50, FORCED_COMBAT_AFTER_DEATH: 30,
+        DEATH_PENALTY: 0, FLEE_PENALTY: -0.5, WIN_BONUS: 300,
+        LEARN_FROM_WINNER_RATE: 0.85, FORCED_COMBAT_AFTER_DEATH: 30,
         MUTATION_ON_DEATH: 0.2, COMBAT_SKILL_GROWTH: 0.15
     }),
     TACTICAL: Object.freeze({
@@ -422,13 +416,37 @@ window.arenaConfig = {
         DAMAGE_FRONT: 0.6, DAMAGE_FLANK: 1.0, DAMAGE_BACK: 1.8,
         VICTORY_FOCUS_REWARD: 0.10, EXPOSURE_PENALTY: 0.10,
         COMBAT_STAY_REWARD: 0.08, REVERSE_ONLY_TACTICAL: true,
-        FACING_ENEMY_REWARD: 0.00, WALL_PENALTY: 0.25,
-        BACKPEDAL_PENALTY: 0.55, AGGRESSIVE_APPROACH_REWARD: 0.25
+        FACING_ENEMY_REWARD: 0.00, WALL_PENALTY: 0.05,
+        BACKPEDAL_PENALTY: 0.15, AGGRESSIVE_APPROACH_REWARD: 0.25
     }),
     CORTEX: Object.freeze({
         DIM_P: 32, DIM_A: 64, DIM_M: 144, DIM_C: 256, DIM_S: 32, DIM_D: 16,
         DIM_SENSOR: 64, NUM_HEADS: 4, HEAD_DIM: 16,
         M_WORK_START: 0, M_WORK_END: 48, M_PERM_START: 48, M_PERM_END: 96, M_PRED_START: 96, M_PRED_END: 144
+    }),
+    // === EMOTION CONFIGURATION ===
+    EMOTION: Object.freeze({
+        DECAY_RATE: 0.98,
+        MOMENTUM_WEIGHT: 0.3,
+        COMMITMENT_MIN_FRAMES: 60,
+        SATISFACTION_THRESHOLD: 0.6,
+        GRUDGE_DECAY: 0.995,
+        TRAUMA_DECAY: 0.99,
+        INFLUENCE_WEIGHT: 0.35  // Эмоции влияют на 35%, кортекс на 65%
+    }),
+    // === DECISION COMMITMENT CONFIGURATION ===
+    DECISION: Object.freeze({
+        MIN_FRAMES: {
+            attack: 45,     // 0.75 секунды при 60 FPS
+            retreat: 30,    // 0.5 секунды
+            flank: 60,      // 1 секунда            approach: 30    // 0.5 секунды
+        },
+        PHASE_DURATIONS: {
+            winding: 10,
+            executing: 1,
+            completing: 1,
+            evaluating: 1
+        }
     })
 };
 
@@ -470,8 +488,7 @@ const Utils = Object.freeze({
         return -sum / len;
     },
     entropyBonus: (probs) => {
-        if (!probs?.length) return 0;
-        let sum = 0;
+        if (!probs?.length) return 0;        let sum = 0;
         for (const p of probs) { const safeP = Math.max(Utils.safeNumber(p, 0), 1e-10); sum += safeP * Math.log(safeP); }
         return -sum;
     },
@@ -520,8 +537,7 @@ const Utils = Object.freeze({
     hashSeed: (seed, i, j) => {
         if (!seed) seed = 'default';
         let h = String(seed).split('').reduce((a, c, idx) => { return ((a * 31 + c.charCodeAt(0)) ^ (idx * 17 + i * 7919 + j * 104729)) % 2147483647; }, String(seed).length) || 12345;
-        h = (h * 2654435761) >>> 0; return h / 4294967296;
-    },
+        h = (h * 2654435761) >>> 0; return h / 4294967296;    },
     deepClone: (obj) => {
         if (obj === null || typeof obj !== 'object') return obj;
         if (obj instanceof Float32Array) return new Float32Array(obj);
@@ -570,8 +586,7 @@ const Utils = Object.freeze({
     },
     angleToTarget: (fromX, fromY, toX, toY, currentFacing) => {
         const targetAngle = Math.atan2(toY - fromY, toX - fromX);
-        return Utils.normalizeAngle(targetAngle - currentFacing);
-    },
+        return Utils.normalizeAngle(targetAngle - currentFacing);    },
     calculateSteeringAssist: (angleToEnemy, currentSteering, assistStrength = 0.7, deadzone = 0.15, gain = 3.0) => {
         const desiredSteering = Utils.clamp(angleToEnemy * gain, -1, 1);
         if (Math.abs(currentSteering) > deadzone) {
@@ -620,8 +635,7 @@ class SeededRNG {
         let x = this._state;
         x ^= x << 13;
         x ^= x >>> 17;
-        x ^= x << 5;
-        this._state = x >>> 0;
+        x ^= x << 5;        this._state = x >>> 0;
         return (x * 0x2545F4914F6CDD1D) >>> 0 / 4294967296;
     }
     deriveWeights(rows, cols, scale) {
@@ -649,7 +663,7 @@ class SeededRNG {
 }
 
 // ============================================================================
-// SECTION 4: CORTEX-2 BRAIN WITH EMOTIONS
+// SECTION 4: CORTEX-2 BRAIN WITH EMOTIONAL INFLUENCE
 // ============================================================================
 
 class Cortex2Brain {
@@ -670,8 +684,7 @@ class Cortex2Brain {
         this.b_A = [];
         for (let h = 0; h < this.DIM.NUM_HEADS; h++) {
             this.W_A.push(this._initMatrix(160, this.DIM.HEAD_DIM, 0.3));
-            this.b_A.push(this._initVector(this.DIM.HEAD_DIM, 0.1));
-        }
+            this.b_A.push(this._initVector(this.DIM.HEAD_DIM, 0.1));        }
         
         this.W_gate = this._initVector(this.DIM.NUM_HEADS, 0.25);
         this.W_reflex = this._initVector(4, 0.5);
@@ -720,8 +733,7 @@ class Cortex2Brain {
         this.predictionErrors = new Float32Array(48);
         
         // Memory consolidation
-        this.consolidationBuffer = [];
-        this.maxBuffer = 32;
+        this.consolidationBuffer = [];        this.maxBuffer = 32;
         
         // Statistics
         this._stats = {
@@ -742,7 +754,7 @@ class Cortex2Brain {
         this._activeNeurons = [];
         this._attentionHeadNorms = null;
         
-        // === EMOTIONAL SYSTEM (NEW) ===
+        // === DEEP EMOTIONAL SYSTEM ===
         this.emotions = {
             threat: 0,
             frustration: 0,
@@ -750,11 +762,51 @@ class Cortex2Brain {
             aggression: 0,
             fear: 0,
             surprise: 0,
-            caution: 0
+            caution: 0,
+            desperation: 0,
+            vengeance: 0
         };
-        this.emotionDecay = 0.98;
-        this._lastReward = 0;
-        this._rewardStreak = 0;
+        
+        this.emotionHistory = [];
+        this.maxHistory = 30;
+        
+        this.emotionalState = {
+            current: null,
+            history: [],
+            satisfaction: 0,
+            momentum: {
+                fear: 0,
+                aggression: 0,
+                frustration: 0,
+                desperation: 0,
+                confidence: 0,
+                vengeance: 0
+            }
+        };        
+        this.emotionMemory = {
+            trauma: 0,
+            grudge: new Map(),
+            lastEmotion: null,
+            unresolved: 0,
+            killer: null
+        };
+        
+        this.emotionConfig = {
+            fear: { baseDuration: 180, intensityMultiplier: 2.0, satisfactionDecay: 0.02 },
+            aggression: { baseDuration: 120, intensityMultiplier: 1.5, satisfactionDecay: 0.03 },
+            frustration: { baseDuration: 240, intensityMultiplier: 2.5, satisfactionDecay: 0.01 },
+            desperation: { baseDuration: 300, intensityMultiplier: 3.0, satisfactionDecay: 0.005 },
+            confidence: { baseDuration: 150, intensityMultiplier: 1.2, satisfactionDecay: 0.04 },
+            vengeance: { baseDuration: 360, intensityMultiplier: 3.5, satisfactionDecay: 0.003 }
+        };
+        
+        this.emotionDecay = arenaConfig.EMOTION.DECAY_RATE;
+        this.emotionInfluence = arenaConfig.EMOTION.INFLUENCE_WEIGHT;  // 35% influence
+        this.step = 0;
+        this.cumulativeReward = 0;
+        this.health = 100;
+        this.stats = { maxHealth: 100 };
+        this._lastKiller = null;
     }
     
     _initMatrix(rows, cols, scale) {
@@ -779,8 +831,7 @@ class Cortex2Brain {
         return vec;
     }
     
-    _initEligibilityTraces() {
-        this.trace_P = new Float32Array(400 * this.DIM.DIM_P);
+    _initEligibilityTraces() {        this.trace_P = new Float32Array(400 * this.DIM.DIM_P);
         this.trace_C = new Float32Array(289 * this.DIM.DIM_C);
         this.trace_D = new Float32Array(336 * this.DIM.DIM_D);
         this.trace_pred = new Float32Array(48 * this.DIM.DIM_SENSOR);
@@ -829,8 +880,7 @@ class Cortex2Brain {
         for (let i = 0; i < this.DIM.DIM_D; i++) input[idx++] = D_prev[i];
         return input;
     }
-    
-    _buildMWorkInput(P_t, A_t, C_prev) {
+        _buildMWorkInput(P_t, A_t, C_prev) {
         const input = new Float32Array(160);
         let idx = 0;
         for (let i = 0; i < this.DIM.DIM_P; i++) input[idx++] = P_t[i];
@@ -879,8 +929,7 @@ class Cortex2Brain {
         let idx = 0;
         for (let i = 0; i < this.DIM.DIM_P; i++) input[idx++] = P_t[i];
         for (let i = 0; i < 48; i++) input[idx++] = M_perm[i];
-        for (let i = 0; i < 32; i++) {
-            const cIdx = 224 + i;
+        for (let i = 0; i < 32; i++) {            const cIdx = 224 + i;
             input[idx++] = (cIdx < this.DIM.DIM_C) ? C_prev[cIdx] : 0;
         }
         for (let i = 0; i < this.DIM.DIM_D; i++) input[idx++] = D_prev[i];
@@ -929,8 +978,7 @@ class Cortex2Brain {
                     this.W_pred[i][j] = Utils.clamp(this.W_pred[i][j], -2, 2);
                 }
             }
-        }
-    }
+        }    }
     
     _computeAvgPredError() {
         let sum = 0;
@@ -938,36 +986,71 @@ class Cortex2Brain {
         return sum / 48;
     }
     
-    // === REFLEX PATH ===
+    // === REFLEX PATH (EMOTIONS INFLUENCE, NOT REPLACE) ===
     
     _checkReflexPath(x_t, S_new, D_new) {
-        // === FRUSTRATION → AGGRESSIVE ATTACK ===
+        const emotionModulator = this.emotionInfluence;  // 0.35 = 35% influence
+        
+        // VENGEANCE → bonus to aggression (doesn't override cortex)
+        if (S_new[8] > 0.6) {
+            this._stats.reflexTriggers++;
+            D_new[6] = Utils.lerp(D_new[6], Math.min(1, D_new[6] + 0.4), emotionModulator);
+            D_new[4] = Utils.lerp(D_new[4], Math.min(1, D_new[4] + 0.3), emotionModulator);
+            // NO return - cortex continues working
+        }
+        
+        // DESPERATION → bonus to attack
+        if (S_new[7] > 0.6) {
+            this._stats.reflexTriggers++;
+            D_new[6] = Utils.lerp(D_new[6], Math.min(1, D_new[6] + 0.35), emotionModulator);
+            D_new[4] = Utils.lerp(D_new[4], Math.min(1, D_new[4] + 0.3), emotionModulator);
+        }
+        
+        // FEAR → bonus to retreat (but cortex can override)
+        if (S_new[4] > 0.7) {
+            this._stats.reflexTriggers++;
+            D_new[10] = Utils.lerp(D_new[10], Math.min(1, D_new[10] + 0.35), emotionModulator);
+            D_new[4] = Utils.lerp(D_new[4], Math.max(0, D_new[4] - 0.2), emotionModulator);
+        }
+        
+        // FRUSTRATION → bonus to aggression
         if (S_new[1] > 0.7) {
             this._stats.reflexTriggers++;
-            D_new[6] = Math.max(D_new[6], 0.8);
-            D_new[4] = Math.max(D_new[4], 0.6);
+            D_new[6] = Utils.lerp(D_new[6], Math.min(1, D_new[6] + 0.3), emotionModulator);
+            D_new[4] = Utils.lerp(D_new[4], Math.min(1, D_new[4] + 0.25), emotionModulator);
         }
         
-        // === FEAR → RETREAT OR CAUTION ===
-        if (S_new[4] > 0.6) {
-            if (S_new[0] > 0.5) {
-                D_new[10] = Math.max(D_new[10], 0.7);
-            } else {
-                D_new[4] = D_new[4] * 0.5;
-            }
-        }
-        
-        // === CONFIDENCE → BOLD ACTIONS ===
+        // CONFIDENCE → bonus to flank
         if (S_new[2] > 0.6) {
-            D_new[6] = Math.max(D_new[6], 0.5);
-            D_new[11] = Math.max(D_new[11], 0.6);
+            D_new[11] = Utils.lerp(D_new[11], Math.min(1, D_new[11] + 0.25), emotionModulator);
         }
         
-        // === SURPRISE → ANALYSIS (slow down) ===
-        if (S_new[5] > 0.5) {
-            D_new[4] = D_new[4] * 0.7;
-            D_new[7] = Math.max(D_new[7], 0.6);
+        // ← NO return! Cortex controls output
+    }
+        // === RESOLVE COMMAND CONFLICTS (EMOTIONS BIAS, NOT BLOCK) ===
+    
+    _resolveCommandConflicts(D_new, emotions) {
+        const emotionBias = this.emotionInfluence;  // 35%
+        
+        // VENGEANCE/DESPERATION → lower retreat threshold
+        if (emotions.vengeance > 0.6 || emotions.desperation > 0.6) {
+            D_new[10] = Math.max(0, D_new[10] - emotionBias);  // Harder to retreat
+            D_new[7] = Math.min(1, D_new[7] + emotionBias * 0.5);  // Easier to go forward
         }
+        
+        // FEAR → higher attack threshold
+        if (emotions.fear > 0.7) {
+            D_new[6] = Math.max(0, D_new[6] - emotionBias);  // Harder to attack
+            D_new[4] = Math.max(0, D_new[4] - emotionBias * 0.3);  // Slower movement
+        }
+        
+        // AGGRESSION → lower attack threshold
+        if (emotions.aggression > 0.6) {
+            D_new[6] = Math.min(1, D_new[6] + emotionBias);  // Easier to attack
+            D_new[4] = Math.min(1, D_new[4] + emotionBias * 0.3);  // Faster movement
+        }
+        
+        // ← NO complete blocking! Cortex can override
     }
     
     // === ACTIVE NEURONS ===
@@ -993,8 +1076,7 @@ class Cortex2Brain {
     _computeAttentionHeadNorms() {
         const norms = [];
         for (let h = 0; h < this.DIM.NUM_HEADS; h++) {
-            let sum = 0;
-            for (let i = 0; i < this.DIM.HEAD_DIM; i++) {
+            let sum = 0;            for (let i = 0; i < this.DIM.HEAD_DIM; i++) {
                 sum += Math.abs(this.A[h * this.DIM.HEAD_DIM + i]);
             }
             norms.push(sum / this.DIM.HEAD_DIM);
@@ -1002,49 +1084,261 @@ class Cortex2Brain {
         return norms;
     }
     
-    // === EMOTIONAL SYSTEM (NEW) ===
+    // === DEEP EMOTIONAL SYSTEM ===
     
-    _updateEmotions(r_t, x_t) {
-        // Frustration grows when no rewards
-        if (r_t < 0.1) {
-            this.emotions.frustration = Math.min(1, this.emotions.frustration + 0.02);
-            this._rewardStreak = 0;
-        } else {
-            this.emotions.frustration *= 0.95;
-            this._rewardStreak++;
+    _getDominantEmotion() {
+        const emotions = [
+            { name: 'vengeance', value: this.emotions.vengeance },
+            { name: 'desperation', value: this.emotions.desperation },
+            { name: 'fear', value: this.emotions.fear },
+            { name: 'aggression', value: this.emotions.aggression },
+            { name: 'frustration', value: this.emotions.frustration },
+            { name: 'confidence', value: this.emotions.confidence }
+        ];
+        
+        emotions.sort((a, b) => b.value - a.value);
+        
+        return {
+            name: emotions[0].name,
+            intensity: emotions[0].value
+        };
+    }
+    
+    _enterEmotion(name, intensity) {
+        const config = this.emotionConfig[name];
+        if (!config) return;
+        
+        if (this.emotionalState.current) {
+            this.emotionalState.history.push({
+                ...this.emotionalState.current,
+                endStep: this.step,
+                reason: 'transition'
+            });
+            if (this.emotionalState.history.length > 5) {
+                this.emotionalState.history.shift();
+            }
         }
         
-        // Confidence grows with success
+        this.emotionalState.current = {
+            name,
+            intensity,
+            initialIntensity: intensity,
+            baseDuration: config.baseDuration,
+            remainingFrames: Math.floor(config.baseDuration * intensity * config.intensityMultiplier),
+            satisfaction: this.emotionalState.satisfaction,            startStep: this.step
+        };
+    }
+    
+    _exitEmotion(state, reason = 'completed') {
+        this.emotionalState.history.push({
+            ...state,
+            endStep: this.step,
+            reason
+        });
+        if (this.emotionalState.history.length > 5) {
+            this.emotionalState.history.shift();
+        }
+        
+        this.emotionMemory.lastEmotion = {
+            name: state.name,
+            intensity: state.intensity,
+            satisfaction: state.satisfaction,
+            completed: reason === 'completed' || reason === 'satisfied'
+        };
+        
+        if (reason === 'transition' || reason === 'interrupted') {
+            this.emotionMemory.unresolved = Utils.clamp(this.emotionMemory.unresolved + state.intensity * 0.5, 0, 1);
+        }
+        
+        this.emotionalState.current = null;
+    }
+    
+    _canExitEmotion(state) {
+        if (state.remainingFrames < state.baseDuration * 0.3) return false;
+        if (state.satisfaction > 0.6) return true;
+        if (state.intensity < 0.3) return true;
+        return false;
+    }
+    
+    _shouldExtendEmotion(state) {
+        if (state.intensity > state.initialIntensity + 0.2) return true;
+        if (state.satisfaction < -0.3) return true;
+        return false;
+    }
+    
+    _checkEmotionTransition(state) {
+        const current = state.name;
+        
+        if (current === 'fear' && this.emotions.desperation > 0.7) {
+            return { name: 'desperation', intensity: this.emotions.desperation };
+        }
+        
+        if (current === 'frustration' && this.emotions.aggression > 0.6) {
+            return { name: 'aggression', intensity: this.emotions.aggression };        }
+        
+        if (current === 'aggression' && state.satisfaction < -0.5) {
+            return { name: 'frustration', intensity: this.emotions.frustration };
+        }
+        
+        if (current === 'desperation' && state.intensity < 0.4) {
+            return { name: 'fear', intensity: this.emotions.fear };
+        }
+        
+        if (current === 'vengeance' && state.satisfaction > 0.5) {
+            return { name: 'confidence', intensity: this.emotions.confidence };
+        }
+        
+        return null;
+    }
+    
+    _processCombatEvents(events) {
+        if (!events) return;
+        
+        for (const event of events) {
+            switch(event.type) {
+                case 'hit_dealt':
+                    this.emotionalState.satisfaction = Utils.clamp(this.emotionalState.satisfaction + 0.15, -1, 1);
+                    if (this.emotionalState.current?.name === 'aggression' || this.emotionalState.current?.name === 'vengeance') {
+                        this.emotionalState.current.intensity = Math.min(1, this.emotionalState.current.intensity + 0.05);
+                    }
+                    if (this.emotionalState.current?.name === 'vengeance') {
+                        this.emotionalState.satisfaction = Utils.clamp(this.emotionalState.satisfaction + 0.1, -1, 1);
+                    }
+                    break;
+                    
+                case 'hit_missed':
+                    this.emotions.frustration = Math.min(1, this.emotions.frustration + 0.1);
+                    this.emotionalState.satisfaction = Utils.clamp(this.emotionalState.satisfaction - 0.1, -1, 1);
+                    break;
+                    
+                case 'damage_received':
+                    this.emotions.fear = Math.min(1, this.emotions.fear + (event.damage || 1) * 0.02);
+                    this.emotionalState.satisfaction = Utils.clamp(this.emotionalState.satisfaction - 0.2, -1, 1);
+                    
+                    if (this.health / this.stats.maxHealth < 0.3) {
+                        this.emotions.desperation = Math.min(1, this.emotions.desperation + 0.15);
+                    }
+                    
+                    if (event.attacker && this.emotionalState.current?.name === 'vengeance') {
+                        const grudge = this.emotionMemory.grudge.get(event.attacker) || 0;
+                        this.emotionMemory.grudge.set(event.attacker, Utils.clamp(grudge + 0.1, -1, 1));
+                    }
+                    break;                    
+                case 'enemy_defeated':
+                    this.emotions.confidence = Math.min(1, this.emotions.confidence + 0.3);
+                    this.emotionalState.satisfaction = Utils.clamp(this.emotionalState.satisfaction + 0.5, -1, 1);
+                    
+                    if (this.emotionalState.current?.name === 'aggression' || this.emotionalState.current?.name === 'vengeance') {
+                        this._exitEmotion(this.emotionalState.current, 'satisfied');
+                    }
+                    
+                    if (event.target === this.emotionMemory.killer) {
+                        this.emotions.vengeance = 0;
+                        this.emotionMemory.killer = null;
+                        this.emotionMemory.grudge.delete(event.target);
+                    }
+                    break;
+                    
+                case 'killed_by':
+                    if (event.killer) {
+                        this.emotionMemory.killer = event.killer;
+                        const grudge = this.emotionMemory.grudge.get(event.killer) || 0;
+                        this.emotionMemory.grudge.set(event.killer, Utils.clamp(grudge + 0.5, -1, 1));
+                        this.emotions.vengeance = Math.min(1, this.emotions.vengeance + 0.6);
+                    }
+                    break;
+            }
+        }
+    }
+    
+    _updateEmotions(r_t, x_t, combatEvents = null) {
+        this.step++;
+        
+        this.emotionHistory.push({ ...this.emotions, step: this.step });
+        if (this.emotionHistory.length > this.maxHistory) {
+            this.emotionHistory.shift();
+        }
+        
+        if (combatEvents) {
+            this._processCombatEvents(combatEvents);
+        }
+        
+        if (this.emotionalState.current) {
+            const state = this.emotionalState.current;
+            const config = this.emotionConfig[state.name];
+            
+            state.remainingFrames--;
+            state.satisfaction = Utils.lerp(state.satisfaction, this.emotionalState.satisfaction, 0.1);
+            
+            if (this._canExitEmotion(state)) {
+                this._exitEmotion(state);
+            }            
+            if (this._shouldExtendEmotion(state)) {
+                state.remainingFrames = Math.min(state.remainingFrames + 30, config.baseDuration * 3);
+            }
+            
+            const transition = this._checkEmotionTransition(state);
+            if (transition) {
+                this._enterEmotion(transition.name, transition.intensity);
+            }
+        } else {
+            const dominant = this._getDominantEmotion();
+            if (dominant.intensity > 0.7) {
+                this._enterEmotion(dominant.name, dominant.intensity);
+            }
+        }
+        
+        if (r_t < 0.1) {
+            this.emotions.frustration = Math.min(1, this.emotions.frustration + 0.03);
+        } else {
+            this.emotions.frustration *= 0.92;
+        }
+        
+        const normalizedReward = Utils.clamp((this.cumulativeReward + 100) / 200, 0, 1);
+        if (normalizedReward < 0.3) {
+            this.emotions.desperation = Math.min(1, this.emotions.desperation + 0.05);
+        } else {
+            this.emotions.desperation *= 0.85;
+        }
+        
         if (r_t > 1) {
             this.emotions.confidence = Math.min(1, this.emotions.confidence + 0.05);
         } else {
-            this.emotions.confidence *= 0.97;
+            this.emotions.confidence *= 0.95;
         }
         
-        // Fear from damage (negative reward)
         if (r_t < -0.5) {
             this.emotions.fear = Math.min(1, this.emotions.fear + 0.1);
         } else {
-            this.emotions.fear *= 0.95;
+            this.emotions.fear *= 0.85;
         }
         
-        // Surprise from prediction error
         const avgPredError = this._computeAvgPredError();
         this.emotions.surprise = avgPredError;
         
-        // Aggression = frustration + ability to attack
-        this.emotions.aggression = this.emotions.frustration * 0.7 + 
-                                   (1 - this.emotions.fear) * 0.3;
-        
-        // Caution from low health (x_t[12] = health input)
         const healthInput = x_t[12] ?? 0.5;
         this.emotions.caution = 1 - healthInput;
         
-        // Threat from enemy proximity (x_t[2] = distance input, inverted)
         const distanceInput = x_t[2] ?? 0.5;
         this.emotions.threat = 1 - distanceInput;
+                const recentFrames = Math.min(10, this.emotionHistory.length);
+        if (recentFrames > 0) {
+            const recent = this.emotionHistory.slice(-recentFrames);
+            this.emotionalState.momentum.fear = recent.reduce((s, e) => s + e.fear, 0) / recentFrames;
+            this.emotionalState.momentum.aggression = recent.reduce((s, e) => s + e.aggression, 0) / recentFrames;
+            this.emotionalState.momentum.frustration = recent.reduce((s, e) => s + e.frustration, 0) / recentFrames;
+            this.emotionalState.momentum.desperation = recent.reduce((s, e) => s + e.desperation, 0) / recentFrames;
+            this.emotionalState.momentum.confidence = recent.reduce((s, e) => s + e.confidence, 0) / recentFrames;
+            this.emotionalState.momentum.vengeance = recent.reduce((s, e) => s + e.vengeance, 0) / recentFrames;
+        }
         
-        // Write emotions to S vector for reflex use
+        const fearBlock = (1 - this.emotions.desperation) * this.emotionalState.momentum.fear;
+        this.emotions.aggression = 
+            this.emotionalState.momentum.frustration * 0.6 + 
+            this.emotionalState.momentum.desperation * 0.8 +
+            this.emotionalState.momentum.vengeance * 0.9 -
+            fearBlock * 0.4;
+        
         this.S[0] = this.emotions.threat;
         this.S[1] = this.emotions.frustration;
         this.S[2] = this.emotions.confidence;
@@ -1052,8 +1346,9 @@ class Cortex2Brain {
         this.S[4] = this.emotions.fear;
         this.S[5] = this.emotions.surprise;
         this.S[6] = this.emotions.caution;
+        this.S[7] = this.emotions.desperation;
+        this.S[8] = this.emotions.vengeance;
         
-        // Emotion decay
         for (const key of Object.keys(this.emotions)) {
             this.emotions[key] *= this.emotionDecay;
         }
@@ -1061,26 +1356,52 @@ class Cortex2Brain {
         this._lastReward = r_t;
     }
     
-    _getModulatedLearningRate(baseLr, subsystemRole) {
-        let modifier = 1.0;
+    storeEmotionalMemory() {
+        this.emotionMemory = {
+            trauma: this.emotionMemory.trauma + (this.emotions.fear * 0.3),
+            grudge: new Map(this.emotionMemory.grudge),
+            lastEmotion: this.emotionalState.current ? { ...this.emotionalState.current } : this.emotionMemory.lastEmotion,
+            unresolved: this.emotionMemory.unresolved,
+            killer: this._lastKiller,
+            timestamp: Date.now()
+        };
+    }
+    
+    restoreEmotionalMemory() {
+        if (!this.emotionMemory || !this.emotionMemory.lastEmotion) return;
         
-        if (subsystemRole === 'policy') {
-            modifier = 1 + this.emotions.frustration * 0.5 - this.emotions.confidence * 0.3;
-        } else if (subsystemRole === 'prediction') {
-            modifier = 1 + this.emotions.surprise * 0.8;
-        } else if (subsystemRole === 'modulator') {
-            modifier = 0.1 + Math.abs(this.emotions.frustration) * 0.2;
+        const memory = this.emotionMemory;        
+        this.emotions.fear = Math.min(1, memory.trauma * 0.5);
+        this.emotions.vengeance = memory.grudge.size > 0 ? 0.5 : 0;
+        
+        if (memory.lastEmotion.name === 'vengeance' && !memory.lastEmotion.completed) {
+            this.emotions.vengeance = memory.lastEmotion.intensity * 0.7;
+            this.emotions.aggression = memory.lastEmotion.intensity * 0.5;
         }
         
-        return baseLr * modifier;
+        if (memory.killer) {
+            const grudge = memory.grudge.get(memory.killer) || 0;
+            if (grudge > 0.3) {
+                this.emotions.vengeance = Math.max(this.emotions.vengeance, grudge);
+            }
+        }
+        
+        this.emotionMemory.trauma *= arenaConfig.EMOTION.TRAUMA_DECAY;
+        this.emotionMemory.unresolved *= 0.7;
+        
+        for (const [killerId, grudge] of this.emotionMemory.grudge) {
+            this.emotionMemory.grudge.set(killerId, grudge * arenaConfig.EMOTION.GRUDGE_DECAY);
+        }
     }
     
     // === FORWARD PASS ===
     
-    forward(rawInputs, reward = 0) {
+    forward(rawInputs, reward = 0, combatEvents = null) {
         const x_t = Utils.projectToCortexSensors(rawInputs, { DIM_SENSOR: this.DIM.DIM_SENSOR, seed: this.seed });
         const r_t = Utils.safeNumber(reward, 0);
         this._lastInputs = { x_t: Array.from(x_t), r_t };
+        
+        this.cumulativeReward = Utils.lerp(this.cumulativeReward, r_t, 0.1);
         
         const P_input = this._buildPInput(x_t, this.C_prev, this.S_prev, this._getMPerm(this.M_prev));
         const A_inputs = [];
@@ -1098,8 +1419,7 @@ class Cortex2Brain {
         for (let i = 0; i < this.DIM.DIM_P; i++) P_new[i] = Utils.leakyRelu(P_new[i] + this.b_P[i]);
         
         const A_new = new Float32Array(this.DIM.DIM_A);
-        const gateProbs = Utils.softmax(this.W_gate, 1.0);
-        for (let h = 0; h < this.DIM.NUM_HEADS; h++) {
+        const gateProbs = Utils.softmax(this.W_gate, 1.0);        for (let h = 0; h < this.DIM.NUM_HEADS; h++) {
             const headOut = Utils.matrixMultiply(A_inputs[h], this.W_A[h], 'relu');
             const gateWeight = gateProbs[h];
             for (let i = 0; i < this.DIM.HEAD_DIM; i++) {
@@ -1135,19 +1455,22 @@ class Cortex2Brain {
         
         this._updatePrediction(M_pred_new, x_t);
         
-        // === UPDATE EMOTIONS (NEW) ===
-        this._updateEmotions(r_t, x_t);
+        this._updateEmotions(r_t, x_t, combatEvents);
         
-        if (arenaConfig.enableReflexPath) this._checkReflexPath(x_t, S_new, D_new);
+        if (arenaConfig.enableReflexPath) {
+            this._checkReflexPath(x_t, S_new, D_new);
+            this._resolveCommandConflicts(D_new, this.emotions);
+        }
+        
         this._activeNeurons = this._selectActiveNeurons();
         this._attentionHeadNorms = this._computeAttentionHeadNorms();
         
         return {
             output: Array.from(this.D),
             cortex: Array.from(this.C),
-            predictionError: this._computeAvgPredError(),
-            reflexTriggered: this.S.some(v => v > 0.9),
-            emotions: { ...this.emotions }
+            predictionError: this._computeAvgPredError(),            reflexTriggered: this.S.some(v => v > 0.9),
+            emotions: { ...this.emotions },
+            emotionalState: this.emotionalState.current ? { ...this.emotionalState.current } : null
         };
     }
     
@@ -1194,8 +1517,7 @@ class Cortex2Brain {
                 this.trace_P[idx] = decay * this.trace_P[idx] + inputs[i] * this.P[j];
                 this.trace_P[idx] = Utils.clamp(this.trace_P[idx], -10, 10);
             }
-        }
-        for (let i = 0; i < 289; i++) {
+        }        for (let i = 0; i < 289; i++) {
             for (let j = 0; j < this.DIM.DIM_C; j++) {
                 const idx = i * this.DIM.DIM_C + j;
                 this.trace_C[idx] = decay * this.trace_C[idx] + inputs[i] * this.C[j];
@@ -1244,8 +1566,7 @@ class Cortex2Brain {
     
     _hebbianUpdate(pre, post, correlation, label, errorType = 'hebbian') {
         if (!arenaConfig.enableHebbian || !pre?.length || !post?.length) return;
-        const eta = this.hebbianRate * correlation * 0.5;
-        const step = Math.max(1, Math.floor(pre.length / 50));
+        const eta = this.hebbianRate * correlation * 0.5;        const step = Math.max(1, Math.floor(pre.length / 50));
         for (let i = 0; i < post.length; i += step) {
             for (let j = 0; j < pre.length; j += step) {
                 const delta = eta * pre[j] * post[i];
@@ -1294,8 +1615,7 @@ class Cortex2Brain {
                     break;
                 }
             }
-            this.M[48 + selected.idx] = Utils.lerp(this.M[48 + selected.idx], selected.value, 0.2);
-            this._stats.consolidationEvents++;
+            this.M[48 + selected.idx] = Utils.lerp(this.M[48 + selected.idx], selected.value, 0.2);            this._stats.consolidationEvents++;
             const idx = this.consolidationBuffer.indexOf(selected);
             if (idx >= 0) this.consolidationBuffer.splice(idx, 1);
         }
@@ -1344,8 +1664,7 @@ class Cortex2Brain {
                 mutations++;
             }
         }
-        return mutations;
-    }
+        return mutations;    }
     
     clone() {
         const clone = new Cortex2Brain({
@@ -1394,12 +1713,25 @@ class Cortex2Brain {
         clone.trace_C.set(this.trace_C);
         clone.trace_D.set(this.trace_D);
         clone.trace_pred.set(this.trace_pred);
-        clone._stats = { ...this._stats, tdErrorHistory: [...this._stats.tdErrorHistory] };
-        clone.consolidationBuffer = [...this.consolidationBuffer.map(x => ({...x}))];
+        clone._stats = { ...this._stats, tdErrorHistory: [...this._stats.tdErrorHistory] };        clone.consolidationBuffer = [...this.consolidationBuffer.map(x => ({...x}))];
         clone.emotions = { ...this.emotions };
+        clone.emotionHistory = [...this.emotionHistory];
+        clone.emotionalState = Utils.deepClone(this.emotionalState);
+        clone.emotionMemory = {
+            trauma: this.emotionMemory.trauma,
+            grudge: new Map(this.emotionMemory.grudge),
+            lastEmotion: this.emotionMemory.lastEmotion ? { ...this.emotionMemory.lastEmotion } : null,
+            unresolved: this.emotionMemory.unresolved,
+            killer: this.emotionMemory.killer
+        };
+        clone.emotionConfig = Utils.deepClone(this.emotionConfig);
         clone.emotionDecay = this.emotionDecay;
-        clone._lastReward = this._lastReward;
-        clone._rewardStreak = this._rewardStreak;
+        clone.emotionInfluence = this.emotionInfluence;
+        clone.step = this.step;
+        clone.cumulativeReward = this.cumulativeReward;
+        clone.health = this.health;
+        clone.stats = { ...this.stats };
+        clone._lastKiller = this._lastKiller;
         return clone;
     }
     
@@ -1430,8 +1762,7 @@ class Cortex2Brain {
                 W_reflex: Array.from(this.W_reflex),
                 W_M_work: this.W_M_work.map(r => Array.from(r)),
                 b_M_work: Array.from(this.b_M_work),
-                W_M_perm: this.W_M_perm.map(r => Array.from(r)),
-                b_M_perm: Array.from(this.b_M_perm),
+                W_M_perm: this.W_M_perm.map(r => Array.from(r)),                b_M_perm: Array.from(this.b_M_perm),
                 W_M_pred: this.W_M_pred.map(r => Array.from(r)),
                 b_M_pred: Array.from(this.b_M_pred),
                 W_C: this.W_C.map(r => Array.from(r)),
@@ -1462,13 +1793,25 @@ class Cortex2Brain {
             },
             stats: this._stats,
             emotions: { ...this.emotions },
+            emotionalState: Utils.deepClone(this.emotionalState),
+            emotionMemory: {
+                trauma: this.emotionMemory.trauma,
+                grudge: Array.from(this.emotionMemory.grudge.entries()),
+                lastEmotion: this.emotionMemory.lastEmotion,
+                unresolved: this.emotionMemory.unresolved,
+                killer: this.emotionMemory.killer
+            },
+            emotionConfig: Utils.deepClone(this.emotionConfig),
             emotionDecay: this.emotionDecay,
-            _lastReward: this._lastReward,
-            _rewardStreak: this._rewardStreak
+            emotionInfluence: this.emotionInfluence,
+            step: this.step,
+            cumulativeReward: this.cumulativeReward,
+            health: this.health,
+            stats_copy: { ...this.stats },
+            _lastKiller: this._lastKiller
         };
     }
-    
-    static fromJSON(data) {
+        static fromJSON(data) {
         if (!data || data.type !== 'Cortex2Brain' || !data.config) return new Cortex2Brain({});
         const brain = new Cortex2Brain(data.config);
         try {
@@ -1513,9 +1856,21 @@ class Cortex2Brain {
             brain.predictionErrors.set(s.predictionErrors);
             if (data.stats) brain._stats = { ...data.stats };
             if (data.emotions) brain.emotions = { ...data.emotions };
+            if (data.emotionalState) brain.emotionalState = Utils.deepClone(data.emotionalState);
+            if (data.emotionMemory) {
+                brain.emotionMemory.trauma = data.emotionMemory.trauma || 0;
+                brain.emotionMemory.grudge = new Map(data.emotionMemory.grudge || []);
+                brain.emotionMemory.lastEmotion = data.emotionMemory.lastEmotion;                brain.emotionMemory.unresolved = data.emotionMemory.unresolved || 0;
+                brain.emotionMemory.killer = data.emotionMemory.killer;
+            }
+            if (data.emotionConfig) brain.emotionConfig = Utils.deepClone(data.emotionConfig);
             if (data.emotionDecay) brain.emotionDecay = data.emotionDecay;
-            if (data._lastReward !== undefined) brain._lastReward = data._lastReward;
-            if (data._rewardStreak !== undefined) brain._rewardStreak = data._rewardStreak;
+            if (data.emotionInfluence !== undefined) brain.emotionInfluence = data.emotionInfluence;
+            if (data.step) brain.step = data.step;
+            if (data.cumulativeReward !== undefined) brain.cumulativeReward = data.cumulativeReward;
+            if (data.health) brain.health = data.health;
+            if (data.stats_copy) brain.stats = { ...data.stats_copy };
+            if (data._lastKiller) brain._lastKiller = data._lastKiller;
         } catch(e) {
             console.warn('Cortex2Brain.fromJSON error:', e);
         }
@@ -1539,7 +1894,8 @@ class Cortex2Brain {
             memoryConf: memoryConf.toFixed(2),
             reflexActive,
             cortexEnergy: cortexEnergy.toFixed(3),
-            emotions: { ...this.emotions }
+            emotions: { ...this.emotions },
+            emotionalState: this.emotionalState.current ? { ...this.emotionalState.current } : null
         };
     }
     
@@ -1553,7 +1909,6 @@ class Cortex2Brain {
 // ============================================================================
 // SECTION 5: CRITIC NETWORK
 // ============================================================================
-
 class CriticNetwork {
     constructor(config = {}) {
         this.inputDim = config.inputDim ?? (arenaConfig.compactInputs ? arenaConfig.ARCH.INPUT_DIM_COMPACT : arenaConfig.ARCH.INPUT_DIM);
@@ -1603,8 +1958,7 @@ class CriticNetwork {
             lr: this.lr,
             gamma: this.gamma
         });
-        clone._W1 = this._W1.map(r => r.slice());
-        clone._W2 = this._W2.map(r => r.slice());
+        clone._W1 = this._W1.map(r => r.slice());        clone._W2 = this._W2.map(r => r.slice());
         clone._b1 = this._b1.slice();
         clone._b2 = this._b2;
         return clone;
@@ -1653,8 +2007,7 @@ class PolicySelector {
         this._W2 = this._rng.deriveWeights(this.hidden, this.numModes, 0.15);
         this._b1 = this._rng.deriveVector(this.hidden, 0.1);
         this.lr = config.lr ?? arenaConfig.learningRate * 0.6;
-    }
-    
+    }    
     forward(context, skillEmbedding) {
         const combined = [...(context || []), ...(skillEmbedding || [])];
         const hidden = [];
@@ -1703,8 +2056,7 @@ class PolicySelector {
         return clone;
     }
     
-    toJSON() {
-        return {
+    toJSON() {        return {
             config: {
                 contextDim: this.contextDim,
                 skillEmbeddingDim: this.skillEmbeddingDim,
@@ -1753,8 +2105,7 @@ class Projectile {
         this.x = x;
         this.y = y;
         this.vx = vx;
-        this.vy = vy;
-        this.owner = owner;
+        this.vy = vy;        this.owner = owner;
         this.damage = damage;
         this.life = life;
         this.alive = true;
@@ -1776,7 +2127,7 @@ class Projectile {
 }
 
 // ============================================================================
-// SECTION 8: AGENT CLASS
+// SECTION 8: AGENT CLASS WITH DECISION COMMITMENT
 // ============================================================================
 
 class Agent {
@@ -1803,8 +2154,7 @@ class Agent {
         this.health = this.stats.maxHealth;
         this.lastMutationType = null;
         this.weaponType = weaponType;
-        this.weapon = WEAPONS[weaponType] || WEAPONS.hammer;
-        this._applyWeaponStats();
+        this.weapon = WEAPONS[weaponType] || WEAPONS.hammer;        this._applyWeaponStats();
         this.PHYSICS_CAR = {
             MAX_SPEED: arenaConfig.baseSpeed,
             MAX_REVERSE_SPEED: arenaConfig.PHYSICS.VEHICLE.MAX_REVERSE_SPEED,
@@ -1853,13 +2203,21 @@ class Agent {
         this.arbiter = new BehaviorArbiter();
         this.mode = 'combat';
         this.target = { x, y };
-        this.speed = 1;
-        this.stuckCounter = 0;
+        this.speed = 1;        this.stuckCounter = 0;
         this.lastPos = { x, y };
         this.cumulativeReward = 0;
         this.alive = true;
         this.skillEmbedding = [0.3, 0.4, 0.2, 0.5, 0.6];
-        this.socialMemory = { interactions: new Map(), reputation: 0, lastAggressor: null, allies: [], killerHistory: [] };
+        this.socialMemory = {
+            interactions: new Map(),
+            reputation: 0,
+            allies: [],
+            enemies: [],
+            killerHistory: [],
+            allianceHistory: [],
+            favors: new Map(),
+            groupAffiliation: null
+        };
         this.permanent = {
             skills: { hunting: 0.3, fleeing: 0.4, combat: 0.2, exploring: 0.5, avoiding: 0.6 },
             strategies: { huntPattern: 'direct', fleeDirection: 'away', combatStyle: 'direct' },
@@ -1894,8 +2252,7 @@ class Agent {
                 if (!this.fightHistory[opponentId]) this.fightHistory[opponentId] = { wins: 0, losses: 0, lastTactics: null, bestAccuracy: 0 };
                 const hist = this.fightHistory[opponentId];
                 if (won) { hist.wins++; hist.lastTactics = tactics; hist.bestAccuracy = Math.max(hist.bestAccuracy, accuracy || 0); }
-                else { hist.losses++; }
-            }
+                else { hist.losses++; }            }
         })();
         this.currentTactic = 'aggressive';
         this.fightStartTime = 0;
@@ -1939,6 +2296,27 @@ class Agent {
         this._exposure = { level: 0, type: 'none' };
         this._inCombatRange = false;
         this._isReversing = false;
+        this._combatEvents = [];
+        
+        // === DECISION COMMITMENT SYSTEM ===
+        this.decisionCommitment = {
+            current: null,
+            minFrames: {                attack: 45,
+                retreat: 30,
+                flank: 60,
+                approach: 30
+            }
+        };
+        
+        this.actionState = {
+            phase: 'idle',
+            startTime: 0,
+            expectedDuration: 0,
+            targetPosition: null,
+            completed: false
+        };
+        
+        this.world = null;  // Reference to world for step tracking
     }
     
     _applyWeaponStats() {
@@ -1972,8 +2350,7 @@ class Agent {
     calculateDirectionalDamageMultiplier(attacker) {
         if (!attacker) return 1.0;
         const toAttacker = Math.atan2(attacker.y - this.y, attacker.x - this.x);
-        let angleDiff = Utils.normalizeAngle(toAttacker - this.facingAngle);
-        const absAngle = Math.abs(angleDiff);
+        let angleDiff = Utils.normalizeAngle(toAttacker - this.facingAngle);        const absAngle = Math.abs(angleDiff);
         const weaponArc = (this.weapon.arcAngle || Math.PI) / 2;
         if (absAngle <= weaponArc * 0.5) return arenaConfig.TACTICAL.DAMAGE_FRONT;
         else if (absAngle <= weaponArc) return arenaConfig.TACTICAL.DAMAGE_FLANK;
@@ -2022,8 +2399,7 @@ class Agent {
         const inputs = [];
         const maxDist = Math.sqrt(820 ** 2 + 600 ** 2);
         const enemiesWithDist = (world?.enemies || []).filter(e => e && e.id !== this.id && e.alive).map(e => ({ agent: e, d: Utils.dist(this, e) })).sort((a, b) => a.d - b.d);
-        const enemies = enemiesWithDist.slice(0, 3);
-        const primaryEnemy = enemiesWithDist[0]?.agent;
+        const enemies = enemiesWithDist.slice(0, 3);        const primaryEnemy = enemiesWithDist[0]?.agent;
         for (const e of enemies) {
             inputs.push(Utils.clamp((e.agent.x - this.x) / maxDist, -1, 1));
             inputs.push(Utils.clamp((e.agent.y - this.y) / maxDist, -1, 1));
@@ -2072,8 +2448,7 @@ class Agent {
             inputs.push(Utils.clamp(distToArcEdge / Math.PI, -1, 1));
             inputs.push(Utils.clamp(1 - this.health / this.stats.maxHealth, 0, 1));
             const predictedEnemyX = primaryEnemy.x + primaryEnemy.vx * 8;
-            const predictedEnemyY = primaryEnemy.y + primaryEnemy.vy * 8;
-            inputs.push(Utils.clamp((predictedEnemyX - this.x) / 820, -1, 1));
+            const predictedEnemyY = primaryEnemy.y + primaryEnemy.vy * 8;            inputs.push(Utils.clamp((predictedEnemyX - this.x) / 820, -1, 1));
             inputs.push(Utils.clamp((predictedEnemyY - this.y) / 600, -1, 1));
             const flankTarget = { x: this.x + threat.flankVector.x * 60, y: this.y + threat.flankVector.y * 60 };
             const pathBlocked = (world?.walls || []).some(w => Utils._pointSegDist(this.x, this.y, flankTarget.x, flankTarget.y, w.x, w.y) < 20);
@@ -2098,18 +2473,141 @@ class Agent {
     
     selectBehavior(world, networkOutput) { return { mode: 'combat', modeProbs: [1, 0, 0, 0, 0] }; }
     
+    // === DECISION COMMITMENT METHODS ===
+    
+    _canChangeDecision() {
+        if (!this.decisionCommitment.current) return true;
+        
+        const commitment = this.decisionCommitment.current;
+        const framesCommitted = (this.world?.step || 0) - commitment.startFrame;
+        const minDuration = this.decisionCommitment.minFrames[commitment.type] || 30;
+        
+        // CANNOT CHANGE until minimum time passed
+        if (framesCommitted < minDuration) return false;
+        
+        // CAN CHANGE if action completed
+        if (this.actionState.completed) return true;
+        
+        // CAN CHANGE if enough time passed AND in evaluating phase
+        if (framesCommitted > minDuration * 1.5 && this.actionState.phase === 'evaluating') return true;
+        
+        return false;
+    }
+    
+    _classifyDecision(behaviors) {
+        if (behaviors.retreatUrgency > 0.6 && behaviors.throttle < -0.3) return 'retreat';
+        if (behaviors.flankCommit > 0.6) return 'flank';
+        if (behaviors.aggression > 0.6 && behaviors.throttle > 0.5) return 'attack';        if (behaviors.throttle > 0.3) return 'approach';
+        return 'idle';
+    }
+    
+    _commitToDecision(decisionType, behaviors) {
+        this.decisionCommitment.current = {
+            type: decisionType,
+            startFrame: this.world?.step || 0,
+            behaviors: { ...behaviors }
+        };
+        
+        // Set action phase
+        switch(decisionType) {
+            case 'attack':
+                this.actionState = {
+                    phase: 'winding',
+                    startTime: this.world?.step || 0,
+                    expectedDuration: this.decisionCommitment.minFrames.attack,
+                    targetPosition: { ...this.target },
+                    completed: false
+                };
+                break;
+            case 'retreat':
+                this.actionState = {
+                    phase: 'executing',
+                    startTime: this.world?.step || 0,
+                    expectedDuration: this.decisionCommitment.minFrames.retreat,
+                    targetPosition: null,
+                    completed: false
+                };
+                break;
+            case 'flank':
+                this.actionState = {
+                    phase: 'executing',
+                    startTime: this.world?.step || 0,
+                    expectedDuration: this.decisionCommitment.minFrames.flank,
+                    targetPosition: { ...this.target },
+                    completed: false
+                };
+                break;
+            case 'approach':
+                this.actionState = {
+                    phase: 'executing',
+                    startTime: this.world?.step || 0,
+                    expectedDuration: this.decisionCommitment.minFrames.approach,
+                    targetPosition: { ...this.target },
+                    completed: false
+                };
+                break;
+            default:                this.actionState.phase = 'idle';
+        }
+    }
+    
+    _executeCommittedDecision() {
+        const commitment = this.decisionCommitment.current;
+        const framesCommitted = (this.world?.step || 0) - commitment.startFrame;
+        const minDuration = this.decisionCommitment.minFrames[commitment.type] || 30;
+        
+        // Update action phase
+        if (this.actionState.phase === 'winding' && framesCommitted > 10) {
+            this.actionState.phase = 'executing';
+        }
+        
+        if (this.actionState.phase === 'executing' && framesCommitted > minDuration) {
+            this.actionState.phase = 'completing';
+        }
+        
+        if (this.actionState.phase === 'completing' && framesCommitted > minDuration * 1.2) {
+            this.actionState.phase = 'evaluating';
+            this.actionState.completed = true;
+        }
+        
+        // Return committed behaviors
+        return {
+            target: this.target,
+            speed: this.speed,
+            mode: this.mode,
+            behaviors: commitment.behaviors,
+            inputs: this.lastDecision?.inputs || [],
+            output: this.lastDecision?.output || []
+        };
+    }
+    
     decide(world) {
+        this.world = world;  // Store world reference for step tracking
+        
         this._lastWorld = {
             enemies: (world?.enemies || []).map(e => e ? { id: e.id, x: e.x, y: e.y, alive: e.alive, health: e.health, stats: { ...e.stats }, agent: e } : null).filter(e => e),
             walls: (world?.walls || []).map(w => w ? { x: w.x, y: w.y } : null).filter(w => w),
             step: world?.step || 0
         };
+        
         this.updatePredictiveMemory(world);
         const inputs = this.getInputs(world);
-        const cortexRes = this.net.forward(inputs, this.cumulativeReward * 0.01);
+        
+        // === CHECK: CAN WE CHANGE DECISION? ===
+        const canChangeDecision = this._canChangeDecision();
+        
+        if (!canChangeDecision && this.decisionCommitment.current) {            // CONTINUE PREVIOUS DECISION
+            return this._executeCommittedDecision();
+        }
+        
+        // NEW DECISION
+        const combatEvents = this._combatEvents.length > 0 ? [...this._combatEvents] : null;
+        const cortexRes = this.net.forward(inputs, this.cumulativeReward * 0.01, combatEvents);
+        this._combatEvents = [];
         let output = cortexRes.output;
+        
         const mode = 'combat';
         this.mode = mode;
+        
         const behaviors = {
             throttle: Utils.clamp(Utils.safeNumber(output?.[4], 0), -1, 1),
             curiosity: Utils.clamp(Utils.safeNumber(output?.[5], 0), 0, 1),
@@ -2120,44 +2618,63 @@ class Agent {
             retreatUrgency: Utils.clamp(Utils.safeNumber(output?.[10], 0), 0, 1),
             flankCommit: Utils.clamp(Utils.safeNumber(output?.[11], 0), 0, 1)
         };
+        
+        // === CLASSIFY DECISION TYPE ===
+        const decisionType = this._classifyDecision(behaviors);
+        
+        // === COMMIT TO DECISION ===
+        this._commitToDecision(decisionType, behaviors);
+        
         const enemies = (world?.enemies || []).filter(e => e && e.id !== this.id && e.alive);
         const enemy = enemies.length > 0 ? enemies[0] : null;
+        
         if (enemy && arenaConfig.enableTactical) {
             const worldHist = { lastDist: Utils.dist(this, enemy), dt: 1 };
             const enemyIntent = this.predictEnemyIntent(enemy, worldHist);
             const cortexInterp = this.net.interpret?.() || {};
+            
             if (enemyIntent.intent === 'desperate_attack' && enemyIntent.confidence > 0.7) {
                 behaviors.throttle = Utils.clamp(behaviors.throttle * 0.8, -1, 1);
                 behaviors.steering = Utils.clamp(behaviors.steering + 0.2 * Math.sign(behaviors.steering), -1, 1);
             }
+            
             if (cortexInterp.threat === 'HIGH' && cortexInterp.flank === 'IGNORE') {
                 behaviors.steering = Utils.clamp(behaviors.steering + 0.3 * Math.sign(behaviors.steering), -1, 1);
             }
+            
             if (behaviors.flankCommit > arenaConfig.TACTICAL.MIN_FLANK_COMMIT) {
                 const threat = this.assessThreatFromEnemy(enemy);
-                const desiredFlankAngle = Math.atan2((this.y + threat.flankVector.y * 50) - this.y, (this.x + threat.flankVector.x * 50) - this.x);
+                const desiredFlankAngle = Math.atan2(                    (this.y + threat.flankVector.y * 50) - this.y,
+                    (this.x + threat.flankVector.x * 50) - this.x
+                );
                 const flankSteering = Utils.normalizeAngle(desiredFlankAngle - this.facingAngle) / Math.PI;
                 behaviors.steering = Utils.lerp(behaviors.steering, flankSteering, behaviors.flankCommit * 0.5);
             }
         }
+        
         let target = this.arbiter.calculateTarget(mode, this, { enemies: world?.enemies || [], walls: world?.walls || [] });
         if (!target || typeof target.x !== 'number' || !isFinite(target.x) || typeof target.y !== 'number' || !isFinite(target.y)) {
             target = { x: Utils.clamp(this.x + Utils.rand(-50, 50), 30, 790), y: Utils.clamp(this.y + Utils.rand(-50, 50), 30, 570) };
         }
         this.target = target;
+        
         const confidenceMod = this.predictive.confidence > 0.7 ? 1.1 : (this.predictive.confidence < 0.4 ? 0.9 : 1);
         this.speed = Utils.lerp(this.speed, (Math.abs(behaviors.throttle) * 2.5 + 1.0) * confidenceMod, 0.08);
+        
         if (mode === 'combat' && behaviors.memoryWeight > 0.5 && enemy) {
             this.permanent.memory.lastEnemyPos = { ...enemy };
             this.permanent.memory.lastEnemyStep = world?.step || 0;
         }
+        
         const cell = `${Math.floor(this.x / 25)},${Math.floor(this.y / 25)}`;
         if (!this.permanent.memory.visited.has(cell)) {
             this.permanent.memory.visited.add(cell);
             if (this.permanent.memory.unvisited.length > 60) this.permanent.memory.unvisited.shift();
             this.permanent.memory.unvisited.push({ x: this.x + Utils.rand(-40, 40), y: this.y + Utils.rand(-30, 30) });
         }
+        
         this.lastDecision = { mode, behaviors, inputs, output, modeProbs: [1, 0, 0, 0, 0], value: this.critic.forward(inputs), nextValue: null, cortexOutput: cortexRes };
+        
         return { target: this.target, speed: this.speed, mode, behaviors, inputs, output };
     }
     
@@ -2176,8 +2693,7 @@ class Agent {
         const enemies = (this._lastWorld?.enemies || []).filter(e => e && e.id !== this.id && e.alive);
         const hasEnemy = enemies.length > 0;
         if (!isFinite(this.throttle) || Math.abs(this.throttle) < 0.05) {
-            if (hasEnemy && target && typeof target.x === 'number' && isFinite(target.x)) {
-                const distToTarget = Utils.dist(this, target);
+            if (hasEnemy && target && typeof target.x === 'number' && isFinite(target.x)) {                const distToTarget = Utils.dist(this, target);
                 this.throttle = distToTarget > 15 ? 0.9 : 0.4;
             } else {
                 this.throttle = 0.6;
@@ -2226,8 +2742,7 @@ class Agent {
         } else {
             this.facingAngle = Math.atan2(target.y - this.y, target.x - this.x);
         }
-        this.x += this.velocity.x * dt;
-        this.y += this.velocity.y * dt;
+        this.x += this.velocity.x * dt;        this.y += this.velocity.y * dt;
         if (arenaConfig.enableVehiclePhysics && Math.abs(this.turnRate) > 0.3 && currentSpeed > 3) {
             const driftDir = { x: -this._sinFacing, y: this._cosFacing };
             const driftAmount = this.PHYSICS_CAR.DRIFT_FACTOR * Math.abs(this.turnRate) * currentSpeed * 0.1;
@@ -2276,8 +2791,7 @@ class Agent {
     }
     
     _applyKnockback(target, aggression, weapon) {
-        const baseKB = weapon.knockback || 8.0;
-        const kbType = weapon.knockbackType || 'impact';
+        const baseKB = weapon.knockback || 8.0;        const kbType = weapon.knockbackType || 'impact';
         const kbStrength = baseKB + aggression * 3;
         const knockbackDir = Utils.normalize(target.x - this.x, target.y - this.y);
         const mass = arenaConfig.PHYSICS.KNOCKBACK_MASS;
@@ -2326,8 +2840,7 @@ class Agent {
                 target._stunTimer = Math.max(target._stunTimer, weapon.stunTime);
                 break;
             case 'continuous':
-                target._knockbackVelocity.x += knockbackDir.x * kbStrength * 0.4 / mass;
-                target._knockbackVelocity.y += knockbackDir.y * kbStrength * 0.4 / mass;
+                target._knockbackVelocity.x += knockbackDir.x * kbStrength * 0.4 / mass;                target._knockbackVelocity.y += knockbackDir.y * kbStrength * 0.4 / mass;
                 target._continuousKB = Math.min(1, (target._continuousKB || 0) + 0.25);
                 target._knockbackVelocity.x *= (1 - target._continuousKB * 0.15);
                 target._knockbackVelocity.y *= (1 - target._continuousKB * 0.15);
@@ -2346,47 +2859,42 @@ class Agent {
         const enemiesWithDist = (world?.enemies || []).filter(e => e && e.id !== this.id && e.alive).map(e => ({ agent: e, d: Utils.dist(this, e) })).sort((a, b) => a.d - b.d);
         const primaryEnemy = enemiesWithDist[0]?.agent;
         
-        // === EMOTIONAL REWARDS ===
         if (this._lastHitDealt > 0) {
-            reward += this._lastHitDealt;
+            reward += this._lastHitDealt * 1.5;
             this._lastHitDealt = 0;
         }
         if (this._lastHitReceived > 0) {
-            reward -= this._lastHitReceived * 0.3;
+            reward -= this._lastHitReceived * 0.15;
             this._lastHitReceived = 0;
         }
         
-        // === MOVEMENT AND POSITIONING ===
         if (primaryEnemy) {
             const currentDist = Utils.dist(this, primaryEnemy);
             const prevDist = Utils.dist(this.lastPos, primaryEnemy);
             const distChange = prevDist - currentDist;
             
-            if (distChange > 0.5) reward += 0.10;
-            else if (distChange < -0.5) reward -= 0.20;
+            if (distChange > 0.5) reward += 0.20;
+            else if (distChange < -0.5) reward -= 0.30;
             
             if (this.throttle < -0.1) reward -= 0.15;
             if (currentDist > 200) reward -= 0.50;
             else if (currentDist > 150) reward -= 0.25;
             else if (currentDist > 100) reward -= 0.10;
             
-            if (currentDist < 80 && currentDist < prevDist) reward += 0.30;
+            if (currentDist < 80 && currentDist < prevDist) reward += 0.50;
             if (currentDist < this.attackRange + 30) reward += arenaConfig.TACTICAL.COMBAT_STAY_REWARD;
             else reward -= 0.03;
         }
         
-        // === ATTACKS AND ACTION ===
         if (primaryEnemy && arenaConfig.enableTactical) {
             const angleToEnemy = Math.atan2(primaryEnemy.y - this.y, primaryEnemy.x - this.x);
             const facingDiff = Math.abs(Utils.normalizeAngle(angleToEnemy - this.facingAngle));
-            
-            if (facingDiff < Math.PI * 0.3) reward += arenaConfig.TACTICAL.FACING_ENEMY_REWARD;
+                        if (facingDiff < Math.PI * 0.3) reward += arenaConfig.TACTICAL.FACING_ENEMY_REWARD;
             
             this._exposure = Utils.calculateExposure(this, primaryEnemy);
             if (this._exposure.level > 0) reward -= arenaConfig.TACTICAL.EXPOSURE_PENALTY * this._exposure.level;
         }
         
-        // === MOVEMENT ===
         const moved = Math.hypot(this.x - this.lastPos.x, this.y - this.lastPos.y);
         if (moved > 1.0) {
             reward += 0.01;
@@ -2396,7 +2904,6 @@ class Agent {
             if (this.stuckCounter > 30) reward -= 0.05;
         }
         
-        // === WALLS ===
         const wallDist = (world?.walls || []).length ? Math.min(...world.walls.map(w => Utils.dist(this, w))) : 999;
         if (wallDist < 80) {
             reward -= arenaConfig.TACTICAL.WALL_PENALTY * (1 - wallDist / 80);
@@ -2405,14 +2912,11 @@ class Agent {
             reward -= 0.20;
         }
         
-        // === HEALTH ===
         const healthRatio = this.health / this.stats.maxHealth;
         if (healthRatio < 0.15) reward -= 0.10;
         
-        // === COMBAT MODE ===
         if (this.mode === 'combat' && enemiesWithDist.length > 0) reward += 0.02;
         
-        // === FINAL CHECK ===
         this.lastPos = { x: this.x, y: this.y };
         reward = isFinite(reward) ? reward : 0;
         this.cumulativeReward = isFinite(this.cumulativeReward) ? Math.max(this.cumulativeReward + reward, -100) : reward;
@@ -2434,8 +2938,7 @@ class Agent {
         this.learningBuffer.rewards.push(reward);
         this.learningBuffer.values.push(currentValue);
         if (this.learningBuffer.states.length >= this.learningBuffer.maxBuffer) this._batchLearn();
-    }
-    
+    }    
     _batchLearn() {
         if (!arenaConfig.enableTraining) { this._clearLearningBuffer(); return; }
         const advantages = Utils.computeGAE(this.learningBuffer.rewards, this.learningBuffer.values, 0, this.net.gamma, this.net.lambda);
@@ -2484,8 +2987,7 @@ class Agent {
         }
     }
     
-    updatePredictiveMemory(world) {
-        this.predictive.shortTerm.positions.push({ x: this.x, y: this.y });
+    updatePredictiveMemory(world) {        this.predictive.shortTerm.positions.push({ x: this.x, y: this.y });
         if (this.predictive.shortTerm.positions.length > 20) this.predictive.shortTerm.positions.shift();
         const enemies = (world?.enemies || []).filter(e => e && e.id !== this.id && e.alive);
         if (enemies.length > 0) {
@@ -2534,8 +3036,7 @@ class Agent {
     applyEvolutionPoints() {
         if (this.evolutionPoints <= 0) return;
         this.evolutionPoints = Math.max(0, this.evolutionPoints);
-        const priorities = { maxHealth: this.health < this.stats.maxHealth * 0.5 ? 2 : 1, damage: this.permanent.skills.combat > 0.5 ? 1.5 : 1, dodgeChance: this.permanent.skills.fleeing > 0.5 ? 1.3 : 1, fireRate: this.permanent.skills.combat > 0.4 ? 1.2 : 1 };
-        const sorted = this.statChoices.sort((a, b) => priorities[b] - priorities[a]);
+        const priorities = { maxHealth: this.health < this.stats.maxHealth * 0.5 ? 2 : 1, damage: this.permanent.skills.combat > 0.5 ? 1.5 : 1, dodgeChance: this.permanent.skills.fleeing > 0.5 ? 1.3 : 1, fireRate: this.permanent.skills.combat > 0.4 ? 1.2 : 1 };        const sorted = this.statChoices.sort((a, b) => priorities[b] - priorities[a]);
         const useDouble = Math.random() < 0.3;
         if (useDouble) this._applyStatBonus(sorted[0], 2);
         else { this._applyStatBonus(sorted[0], 1); this._applyStatBonus(sorted[1], 1); }
@@ -2584,8 +3085,7 @@ class Agent {
         if (this.critic?._W1) {
             this.critic._W1.forEach(row => {
                 if (!row) return;
-                row.forEach((v, i) => {
-                    if (this.net._rng.next() < actualRate) {
+                row.forEach((v, i) => {                    if (this.net._rng.next() < actualRate) {
                         row[i] += (this.net._rng.next() * 2 - 1) * 0.15;
                         row[i] = Utils.clamp(row[i], -2, 2);
                     }
@@ -2597,6 +3097,8 @@ class Agent {
     }
     
     reset(x, y) {
+        this.net.restoreEmotionalMemory();
+        
         this.x = x; this.y = y; this.vx = 0; this.vy = 0; this.velocity = { x: 0, y: 0 };
         this.health = this.stats.maxHealth; this.stuckCounter = 0; this.lastPos = { x, y };
         this.cumulativeReward = 0; this.mode = 'combat'; this.target = { x, y }; this.trail = [];
@@ -2611,9 +3113,28 @@ class Agent {
         this._cosFacing = 1; this._sinFacing = 0; this._angleToEnemy = 0; this._steeringAssist = 0; this._wallDistance = 999;
         this._isFacingEnemy = false; this._attackValid = false;
         this._exposure = { level: 0, type: 'none' }; this._inCombatRange = false; this._isReversing = false;
+        this._combatEvents = [];
+        
+        // Reset decision commitment
+        this.decisionCommitment = {
+            current: null,
+            minFrames: {
+                attack: 45,
+                retreat: 30,
+                flank: 60,
+                approach: 30
+            }
+        };
+        this.actionState = {
+            phase: 'idle',
+            startTime: 0,
+            expectedDuration: 0,
+            targetPosition: null,
+            completed: false
+        };
+        this.world = null;
     }
-    
-    learnFromWinner(winner) {
+        learnFromWinner(winner) {
         if (!winner || !arenaConfig.enableWeightInheritance) return;
         this._learnFromWinner = true;
         const inheritRate = arenaConfig.EVOLUTION.LEARN_FROM_WINNER_RATE;
@@ -2662,8 +3183,7 @@ class Agent {
         const mount = this.weapon.mountOffset || this.PHYSICS_CAR.WEAPON_MOUNT;
         ctx.fillStyle = this.weapon.color || '#ffaa00'; ctx.font = '20px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText(this.weapon.icon, mount.x, mount.y);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(28, 0); ctx.stroke();
-        ctx.restore();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(28, 0); ctx.stroke();        ctx.restore();
         ctx.fillStyle = '#fff'; ctx.font = '9px monospace'; ctx.textAlign = 'center';
         ctx.fillText(`HP:${Math.round(this.stats.maxHealth)} DMG:${this.stats.damage}`, this.x, this.y - 32);
         ctx.fillText(`${this.weapon.name} W:${this.wins}`, this.x, this.y - 22); ctx.textAlign = 'left';
@@ -2712,8 +3232,7 @@ class Agent {
             ctx.arc(0, 0, this.weapon.range * 0.7, -(this.weapon.arcAngle||Math.PI)/4, (this.weapon.arcAngle||Math.PI)/4);
             ctx.closePath(); ctx.fill();
             ctx.strokeStyle = this.weapon.color; ctx.lineWidth = 2; ctx.beginPath();
-            ctx.moveTo(this.weapon.mountOffset.x, this.weapon.mountOffset.y);
-            ctx.lineTo(this.weapon.mountOffset.x + 12, this.weapon.mountOffset.y); ctx.stroke();
+            ctx.moveTo(this.weapon.mountOffset.x, this.weapon.mountOffset.y);            ctx.lineTo(this.weapon.mountOffset.x + 12, this.weapon.mountOffset.y); ctx.stroke();
             ctx.restore();
             const enemies = (this._lastWorld?.enemies || []).filter(e => e && e.id !== this.id && e.alive);
             const primaryEnemy = enemies[0]?.agent;
@@ -2756,6 +3275,16 @@ class Agent {
         const attention = this.interpretAttention();
         const enemyIntent = this.predictEnemyIntent((this._lastWorld?.enemies || []).find(e => e?.id !== this.id && e?.alive)?.agent);
         const emotions = this.net.getEmotions();
+        const emotionalState = this.net.emotionalState.current;
+        const grudge = this.net.emotionMemory.grudge.size > 0 ? 
+            Array.from(this.net.emotionMemory.grudge.values()).reduce((a, b) => a + b, 0) / this.net.emotionMemory.grudge.size : 0;
+        
+        let dominantCommand = 'NONE';
+        if (this.lastDecision?.behaviors) {
+            if (this.lastDecision.behaviors.throttle > 0.5) dominantCommand = 'ATTACK';            else if (this.lastDecision.behaviors.retreatUrgency > 0.5) dominantCommand = 'RETREAT';
+            else if (this.lastDecision.behaviors.throttle < -0.3) dominantCommand = 'RETREAT';
+        }
+        
         return {
             mode: this.mode, weapon: this.weapon.icon + ' ' + this.weapon.name,
             target: `${Math.round(this.target.x)},${Math.round(this.target.y)}`,
@@ -2779,8 +3308,12 @@ class Agent {
             attackValid: this._attackValid ? 'YES' : 'NO',
             exposure: this._exposure.type, inCombat: this._inCombatRange ? 'YES' : 'NO',
             reverse: this._isReversing ? 'YES' : 'NO',
-            frustration: emotions.frustration.toFixed(2),
-            confidence: emotions.confidence.toFixed(2)
+            emotion: emotionalState ? `${emotionalState.name} (${emotionalState.remainingFrames})` : 'NONE',
+            satisfaction: emotionalState ? emotionalState.satisfaction.toFixed(2) : '0.00',
+            grudge: grudge.toFixed(2),
+            command: dominantCommand,
+            decisionPhase: this.actionState.phase,
+            committed: this.decisionCommitment.current ? `${this.decisionCommitment.current.type} (${(this.world?.step || 0) - this.decisionCommitment.current.startFrame} frames)` : 'NONE'
         };
     }
     
@@ -2797,8 +3330,7 @@ class Agent {
                 lastFoodPos: this.permanent.memory.lastFoodPos ? { ...this.permanent.memory.lastFoodPos } : null,
                 lastFoodStep: this.permanent.memory.lastFoodStep || 0,
                 visited: new Set(this.permanent.memory.visited),
-                unvisited: this.permanent.memory.unvisited.map(p => ({ ...p }))
-            }
+                unvisited: this.permanent.memory.unvisited.map(p => ({ ...p }))            }
         };
         agent.predictive = {
             shortTerm: { positions: [], actions: [], results: [], enemyHistory: [], foodHistory: [] },
@@ -2835,6 +3367,10 @@ class Agent {
         agent._wallDistance = this._wallDistance; agent._isFacingEnemy = this._isFacingEnemy;
         agent._attackValid = this._attackValid; agent._exposure = { ...this._exposure };
         agent._inCombatRange = this._inCombatRange; agent._isReversing = this._isReversing;
+        agent._combatEvents = [...this._combatEvents];
+        agent.decisionCommitment = Utils.deepClone(this.decisionCommitment);
+        agent.actionState = { ...this.actionState };
+        agent.world = this.world;
         return agent;
     }
     
@@ -2843,8 +3379,7 @@ class Agent {
             id: this.id, seed: this.seed, x: this.x, y: this.y, health: this.health, stats: this.stats,
             lastMutationType: this.lastMutationType, cumulativeReward: this.cumulativeReward,
             wins: this.wins, totalKills: this.totalKills, deaths: this.deaths, mutations: this.mutations,
-            generation: this.generation, weaponType: this.weaponType, net: this.net.toJSON(),
-            critic: this.critic.toJSON(), policySelector: this.policySelector.toJSON(),
+            generation: this.generation, weaponType: this.weaponType, net: this.net.toJSON(),            critic: this.critic.toJSON(), policySelector: this.policySelector.toJSON(),
             permanent: {
                 skills: this.permanent.skills, strategies: this.permanent.strategies,
                 preferences: this.permanent.preferences, muscleMemory: Array.from(this.permanent.muscleMemory),
@@ -2879,7 +3414,9 @@ class Agent {
             _angleToEnemy: this._angleToEnemy, _steeringAssist: this._steeringAssist,
             _wallDistance: this._wallDistance, _isFacingEnemy: this._isFacingEnemy,
             _attackValid: this._attackValid, _exposure: this._exposure,
-            _inCombatRange: this._inCombatRange, _isReversing: this._isReversing
+            _inCombatRange: this._inCombatRange, _isReversing: this._isReversing,
+            decisionCommitment: Utils.deepClone(this.decisionCommitment),
+            actionState: { ...this.actionState }
         };
     }
     
@@ -2891,8 +3428,7 @@ class Agent {
         agent.health = data.health ?? 100;
         agent.stats = data.stats || { maxHealth: 100, damage: 3, fireRate: 15, dodgeChance: 0.0 };
         agent.lastMutationType = data.lastMutationType || null;
-        agent.cumulativeReward = data.cumulativeReward ?? 0;
-        agent.wins = data.wins ?? 0; agent.totalKills = data.totalKills ?? 0;
+        agent.cumulativeReward = data.cumulativeReward ?? 0;        agent.wins = data.wins ?? 0; agent.totalKills = data.totalKills ?? 0;
         agent.deaths = data.deaths ?? 0; agent.mutations = data.mutations ?? 0;
         agent.generation = data.generation ?? 1;
         if (data.permanent) {
@@ -2941,8 +3477,7 @@ class Agent {
         if (data._totalAttacks !== undefined) agent._totalAttacks = data._totalAttacks;
         if (data._successfulHits !== undefined) agent._successfulHits = data._successfulHits;
         if (data._tacticalHits !== undefined) agent._tacticalHits = data._tacticalHits;
-        if (data._frontalHits !== undefined) agent._frontalHits = data._frontalHits;
-        if (data.facingAngle !== undefined) agent.facingAngle = data.facingAngle;
+        if (data._frontalHits !== undefined) agent._frontalHits = data._frontalHits;        if (data.facingAngle !== undefined) agent.facingAngle = data.facingAngle;
         if (data.angularVelocity !== undefined) agent.angularVelocity = data.angularVelocity;
         if (data.turnRate !== undefined) agent.turnRate = data.turnRate;
         if (data.throttle !== undefined) agent.throttle = data.throttle;
@@ -2957,6 +3492,8 @@ class Agent {
         if (data._exposure) agent._exposure = { ...data._exposure };
         if (data._inCombatRange !== undefined) agent._inCombatRange = data._inCombatRange;
         if (data._isReversing !== undefined) agent._isReversing = data._isReversing;
+        if (data.decisionCommitment) agent.decisionCommitment = Utils.deepClone(data.decisionCommitment);
+        if (data.actionState) agent.actionState = { ...data.actionState };
         return agent;
     }
 }
@@ -2989,8 +3526,7 @@ class World {
     spawnAgents(count = 2, blueWeapon = 'hammer', redWeapon = 'hammer') {
         this.enemies = [];
         const spawnPositions = [
-            { x: 150, y: 150 }, { x: 670, y: 450 },
-            { x: 150, y: 450 }, { x: 670, y: 150 },
+            { x: 150, y: 150 }, { x: 670, y: 450 },            { x: 150, y: 450 }, { x: 670, y: 150 },
             { x: 100, y: 300 }, { x: 720, y: 300 }
         ];
         for (let i = 0; i < count; i++) {
@@ -3039,8 +3575,7 @@ class World {
                     agentB.vy = Utils.clamp(agentB.vy, -MAX_V, MAX_V);
                 }
             }
-        }
-    }
+        }    }
     
     update(dt) {
         this.step++;
@@ -3050,6 +3585,7 @@ class World {
         }
         for (const agent of this.enemies) {
             if (!agent || !agent.alive) continue;
+            agent.world = this;  // Set world reference for step tracking
             if (agent._heavyHit > 0) agent._heavyHit--;
             if (agent._pierced > 0) agent._pierced--;
             if (agent._pulseEffect > 0) agent._pulseEffect--;
@@ -3075,18 +3611,20 @@ class World {
                             Logger.log(`${agent.id.toUpperCase()} промахнулся: цель вне сектора ${agent.weapon.name}`, 'warn');
                             agent.attackCooldown = Math.floor(agent.stats.fireRate * 0.4);
                             attacked = true;
+                            agent._combatEvents.push({ type: 'hit_missed' });
                         } else {
                             this.totalFights++;
                             const aggression = agent.lastDecision?.behaviors?.aggression || 0.5, skill = agent.permanent?.skills?.combat || 0.3, baseDmg = agent.stats.damage;
                             const directionalMult = enemy.calculateDirectionalDamageMultiplier(agent);
                             const damage = Math.floor(Utils.clamp(baseDmg * (0.8 + aggression * 0.4) * (0.7 + skill * 0.6) * directionalMult, 1, 15));
                             const dodgeRoll = Math.random();
-                            if (dodgeRoll < enemy.stats.dodgeChance) Logger.log(`🛡️ ${enemy.id.toUpperCase()} уклонился!`, 'warn');
-                            else {
+                            if (dodgeRoll < enemy.stats.dodgeChance) {
+                                Logger.log(`🛡️ ${enemy.id.toUpperCase()} уклонился!`, 'warn');
+                                agent._combatEvents.push({ type: 'hit_missed' });
+                            } else {
                                 enemy.health -= damage;
                                 enemy._lastHitReceived = damage;
-                                agent._lastHitDealt = damage;
-                                agent._totalAttacks++;
+                                agent._lastHitDealt = damage;                                agent._totalAttacks++;
                                 agent._totalDamageDealt += damage;
                                 agent._successfulHits++;
                                 if (directionalMult >= 1.5) agent._tacticalHits++;
@@ -3095,6 +3633,8 @@ class World {
                                 agent._applyKnockback(enemy, aggression, agent.weapon);
                                 const hitType = directionalMult >= 1.5 ? '🔙 СПИНА' : (directionalMult <= 0.7 ? '🎯 ЛОБ' : '🔄 ФЛАНГ');
                                 Logger.log(`${agent.id.toUpperCase()} ${hitType}→ ${enemy.id.toUpperCase()} -${damage} HP [x${directionalMult.toFixed(2)}]`, 'info');
+                                agent._combatEvents.push({ type: 'hit_dealt', damage });
+                                enemy._combatEvents.push({ type: 'damage_received', damage, attacker: agent.id });
                             }
                             agent.attackCooldown = agent.stats.fireRate;
                             attacked = true;
@@ -3102,6 +3642,8 @@ class World {
                                 enemy.health = 0;
                                 enemy.alive = false;
                                 Logger.log(`🏳️ ${enemy.id.toUpperCase()} повержен ${agent.id.toUpperCase()}`, 'success');
+                                agent._combatEvents.push({ type: 'enemy_defeated', target: enemy.id });
+                                enemy._combatEvents.push({ type: 'killed_by', killer: agent.id });
                             }
                         }
                     } else if (arenaConfig.enableRanged && (agent.attackCooldown || 0) <= 0) {
@@ -3131,8 +3673,7 @@ class World {
                 const validInputs = nextInputs.every(v => isFinite(v));
                 if (validInputs) {
                     agent.learn(safeReward, decision, nextInputs);
-                } else {
-                    console.warn(`[Agent ${agent.id}] Invalid inputs, skipping learn`);
+                } else {                    console.warn(`[Agent ${agent.id}] Invalid inputs, skipping learn`);
                 }
             }
         }
@@ -3153,12 +3694,14 @@ class World {
                         e.health -= p.damage;
                         e._lastHitReceived = p.damage;
                         Logger.log(`🎯 ${p.owner.toUpperCase()} → ${e.id.toUpperCase()} -${p.damage} HP`, 'info');
+                        e._combatEvents.push({ type: 'damage_received', damage: p.damage, attacker: p.owner });
                     }
                     p.alive = false;
                     if (e.health <= 0) {
                         e.health = 0;
                         e.alive = false;
                         Logger.log(`🏳️ ${e.id.toUpperCase()} убит ${p.owner.toUpperCase()}`, 'success');
+                        e._combatEvents.push({ type: 'killed_by', killer: p.owner });
                     }
                     break;
                 }
@@ -3179,8 +3722,7 @@ class World {
                     winner.net.updateDiagnostics({ kill: true });
                     Logger.log(`🏆 ${winner.id.toUpperCase()} Gen${winner.generation} wins! Total Wins: ${winner.wins}`, 'success');
                     deadAgent.deaths++;
-                    deadAgent._lastKiller = winner.id;
-                    deadAgent._deathMode = deadAgent.mode;
+                    deadAgent._lastKiller = winner.id;                    deadAgent._deathMode = deadAgent.mode;
                     deadAgent.net.updateDiagnostics({ death: true });
                     deadAgent.learnFromWinner(winner);
                     deadAgent.net.mutate(arenaConfig.EVOLUTION.MUTATION_ON_DEATH, 0.2);
@@ -3223,14 +3765,13 @@ class World {
 // ============================================================================
 
 const Logger = Object.freeze({
-    _escape: (str) => String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])),
+    _escape: (str) => String(str).replace(/[&<>"']/g, m => ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": '&#039;' }[m])),
     _truncate: (str, max = 180) => str.length > max ? str.slice(0, max) + '…' : str,
     log: (msg, type = 'info') => {
         const safeMsg = Logger._escape(Logger._truncate(msg));
         const safeType = ['info', 'success', 'warn', 'error', 'learning'].includes(type) ? type : 'info';
         const logEl = document.getElementById('eventLog');
-        if (!logEl) { console.log(`[${safeType}] ${safeMsg}`); return; }
-        const entry = document.createElement('div');
+        if (!logEl) { console.log(`[${safeType}] ${safeMsg}`); return; }        const entry = document.createElement('div');
         entry.className = `log-entry ${safeType}`;
         entry.textContent = `[${new Date().toLocaleTimeString()}] ${safeMsg}`;
         logEl.insertBefore(entry, logEl.firstChild);
@@ -3279,8 +3820,7 @@ class GameEngine {
         const parent = this.canvas?.parentElement;
         if (!parent) return;
         this.canvas.width = parent.clientWidth;
-        this.canvas.height = parent.clientHeight;
-        this.scaleX = this.canvas.width / this.logicalWidth;
+        this.canvas.height = parent.clientHeight;        this.scaleX = this.canvas.width / this.logicalWidth;
         this.scaleY = this.canvas.height / this.logicalHeight;
     }
     
@@ -3329,8 +3869,7 @@ class GameEngine {
             const slider = document.getElementById(id);
             const display = document.getElementById(displayId);
             if (!slider) { console.error(`[UI Error] Slider #${id} not found in DOM`); return; }
-            if (!display) { console.error(`[UI Error] Display #${displayId} not found in DOM`); return; }
-            slider.oninput = (e) => {
+            if (!display) { console.error(`[UI Error] Display #${displayId} not found in DOM`); return; }            slider.oninput = (e) => {
                 const value = parseFloat(e.target.value);
                 if (!isFinite(value)) { console.warn(`[UI Error] Invalid value for ${configKey}: ${value}`); return; }
                 if (window.arenaConfig) window.arenaConfig[configKey] = value;
@@ -3379,8 +3918,7 @@ class GameEngine {
     }
     
     _onClick({ x, y }) {
-        if (!this.debug) return;
-        const lx = x / this.scaleX, ly = y / this.scaleY;
+        if (!this.debug) return;        const lx = x / this.scaleX, ly = y / this.scaleY;
         let nearest = null, minD = 25;
         for (const a of this.world?.enemies || []) {
             if (!a) continue;
@@ -3414,7 +3952,7 @@ class GameEngine {
         this.updateStats();
         this.updateMetrics();
         if (this.world.enemies[0] && this.world.enemies[1]) this.world.draw(this.ctx, false, true);
-        Logger.log('🚀 AI ARENA v5.0.2 EMOTION инициализирована', 'success');
+        Logger.log('🚀 AI ARENA v5.0.4 COMMITTED инициализирована', 'success');
         Logger.log(`🚗 Базовая скорость: ${baseSpeedValue}`, 'info');
     }
     
@@ -3429,8 +3967,7 @@ class GameEngine {
     reset() {
         this.running = false;
         const btn = document.getElementById('btnStart');
-        if (btn) { btn.textContent = '▶ Старт'; btn.className = 'btn-primary'; btn.setAttribute('aria-pressed', 'false'); }
-        this.world = new World(this.logicalWidth, this.logicalHeight);
+        if (btn) { btn.textContent = '▶ Старт'; btn.className = 'btn-primary'; btn.setAttribute('aria-pressed', 'false'); }        this.world = new World(this.logicalWidth, this.logicalHeight);
         this.world.reset();
         const blueWeapon = document.getElementById('blueWeaponSelect')?.value || 'hammer';
         const redWeapon = document.getElementById('redWeaponSelect')?.value || 'hammer';
@@ -3479,8 +4016,7 @@ class GameEngine {
         if (!state) {
             if (!this.world?.enemies?.length || this.world.enemies.length < 2 || !this.world.enemies[0] || !this.world.enemies[1]) return;
             state = { blue: this.world.enemies[0], red: this.world.enemies[1], episode: this.world.episode, totalFights: this.world.totalFights };
-        }
-        const { blue, red, episode, totalFights } = state;
+        }        const { blue, red, episode, totalFights } = state;
         if (!blue || !red) return;
         const updateHealth = (el, agent) => { if (el) { const healthPercent = (agent.health / agent.stats.maxHealth) * 100; el.style.width = `${isFinite(healthPercent) ? healthPercent : 100}%`; el.setAttribute('aria-valuenow', String(Math.round(isFinite(healthPercent) ? healthPercent : 100))); } };
         updateHealth(document.getElementById('blue-health'), blue);
@@ -3529,13 +4065,14 @@ class GameEngine {
         panel.hidden = !isActive;
         if (!isActive || !this.selectedAgent) return;
         const info = this.selectedAgent.getDebugInfo();
-        const setDebugValue = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
-        setDebugValue('dbgMode', info.mode); setDebugValue('dbgWeapon', info.weapon);
+        const setDebugValue = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };        setDebugValue('dbgMode', info.mode); setDebugValue('dbgWeapon', info.weapon);
         setDebugValue('dbgHealth', info.health); setDebugValue('dbgWins', info.wins);
         setDebugValue('dbgSpeed', info.speed); setDebugValue('dbgThrottle', info.throttle);
         setDebugValue('dbgSteering', info.steering); setDebugValue('dbgFacingEnemy', info.facingEnemy);
-        setDebugValue('dbgWallDist', info.wallDist); setDebugValue('dbgAttackValid', info.attackValid);
-        setDebugValue('dbgFrustration', info.frustration); setDebugValue('dbgConfidence', info.confidence);
+        setDebugValue('dbgEmotion', info.emotion); setDebugValue('dbgSatisfaction', info.satisfaction);
+        setDebugValue('dbgGrudge', info.grudge); setDebugValue('dbgCommand', info.command);
+        setDebugValue('dbgDecisionPhase', info.decisionPhase);
+        setDebugValue('dbgCommitted', info.committed);
     }
     
     toggleDebug() {
@@ -3553,18 +4090,18 @@ class GameEngine {
     
     save() {
         try {
-            const data = { version: '5.0.2-EMOTION', timestamp: Date.now(), settings: this.settings, world: { episode: this.world.episode, step: this.world.step, totalFights: this.world.totalFights, walls: this.world.walls.map(w => ({ x: w.x, y: w.y })) }, agents: this.world.enemies.map(a => a ? a.toJSON() : null).filter(a => a) };
-            localStorage.setItem('aiArenaV5Emotion', JSON.stringify(data));
-            Logger.log('💾 Сохранено (v5.0.2 Emotion)', 'success');
+            const data = { version: '5.0.4-COMMITTED', timestamp: Date.now(), settings: this.settings, world: { episode: this.world.episode, step: this.world.step, totalFights: this.world.totalFights, walls: this.world.walls.map(w => ({ x: w.x, y: w.y })) }, agents: this.world.enemies.map(a => a ? a.toJSON() : null).filter(a => a) };
+            localStorage.setItem('aiArenaV5Committed', JSON.stringify(data));
+            Logger.log('💾 Сохранено (v5.0.4 Committed)', 'success');
         } catch (e) { if (e.name === 'QuotaExceededError') Logger.log('💾 Сохранение отклонено: превышен лимит хранилища', 'error'); else Logger.log(`❌ Ошибка сохранения: ${e.message}`, 'error'); }
     }
     
     load() {
         try {
-            const raw = localStorage.getItem('aiArenaV5Emotion');
-            if (!raw) { Logger.log('❌ Нет сохранений v5.0.2 Emotion', 'error'); return; }
+            const raw = localStorage.getItem('aiArenaV5Committed');
+            if (!raw) { Logger.log('❌ Нет сохранений v5.0.4 Committed', 'error'); return; }
             const data = JSON.parse(raw);
-            if (data.version !== '5.0.2-EMOTION') { Logger.log('⚠️ Требуется сохранение v5.0.2-EMOTION', 'warn'); return; }
+            if (data.version !== '5.0.4-COMMITTED') { Logger.log('⚠️ Требуется сохранение v5.0.4-COMMITTED', 'warn'); return; }
             this.settings = { ...this.settings, ...data.settings };
             document.getElementById('learningRate').value = this.settings.learningRate;
             document.getElementById('lambda').value = this.settings.lambda;
@@ -3577,16 +4114,14 @@ class GameEngine {
             this.world.episode = data.world?.episode || 0;
             this.world.step = data.world?.step || 0;
             this.world.totalFights = data.world?.totalFights || 0;
-            this.world.walls = data.world?.walls || [];
-            this.world.enemies = data.agents?.map((a, i) => a ? Agent.fromJSON(a, i === 0 ? '#00d4ff' : '#ff5577') : null).filter(a => a) || [];
+            this.world.walls = data.world?.walls || [];            this.world.enemies = data.agents?.map((a, i) => a ? Agent.fromJSON(a, i === 0 ? '#00d4ff' : '#ff5577') : null).filter(a => a) || [];
             this.world.enemies.forEach(a => {
                 if (!a) return;
                 if (a.net) { a.net.lr = this.settings.learningRate; a.net.lambda = this.settings.lambda; a.net.gamma = this.settings.gamma; }
                 if (a.critic) a.critic.lr = this.settings.learningRate;
                 if (a.policySelector) a.policySelector.lr = this.settings.learningRate * 0.6;
-                if (a.PHYSICS_CAR) a.PHYSICS_CAR.MAX_SPEED = arenaConfig.baseSpeed;
             });
-            Logger.log('📂 Загружено сохранение v5.0.2 Emotion', 'success');
+            Logger.log('📂 Загружено сохранение v5.0.4 Committed', 'success');
             this.updateStats({ blue: this.world.enemies[0], red: this.world.enemies[1], episode: this.world.episode, totalFights: this.world.totalFights });
             this.updateMetrics();
         } catch (e) { Logger.log(`❌ Ошибка загрузки: ${e.message}`, 'error'); }
@@ -3594,10 +4129,10 @@ class GameEngine {
     
     exportWeights() {
         try {
-            const data = { version: '5.0.2-EMOTION', timestamp: Date.now(), blue: this.world.enemies[0]?.toJSON() || null, red: this.world.enemies[1]?.toJSON() || null };
+            const data = { version: '5.0.4-COMMITTED', timestamp: Date.now(), blue: this.world.enemies[0]?.toJSON() || null, red: this.world.enemies[1]?.toJSON() || null };
             const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `arena-v5.0.2-emotion-${Date.now()}.json`; a.click();
+            const a = document.createElement('a'); a.href = url; a.download = `arena-v5.0.4-committed-${Date.now()}.json`; a.click();
             URL.revokeObjectURL(url);
             Logger.log('📤 Агенты экспортированы', 'success');
         } catch (e) { Logger.log(`❌ Ошибка экспорта: ${e.message}`, 'error'); }
@@ -3612,7 +4147,7 @@ class GameEngine {
                 const result = ev.target?.result;
                 if (typeof result !== 'string') throw new Error('Invalid file content');
                 const data = JSON.parse(result);
-                if (data.version !== '5.0.2-EMOTION') throw new Error('Требуется формат v5.0.2-EMOTION');
+                if (data.version !== '5.0.4-COMMITTED') throw new Error('Требуется формат v5.0.4-COMMITTED');
                 if (!data.blue || !data.red) throw new Error('Неверная структура файла');
                 if (data.blue && this.world.enemies[0]) this.world.enemies[0] = Agent.fromJSON(data.blue, '#00d4ff');
                 if (data.red && this.world.enemies[1]) this.world.enemies[1] = Agent.fromJSON(data.red, '#ff5577');
@@ -3663,7 +4198,7 @@ class GameEngine {
 
 window.arenaGame = null;
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initArena); else initArena();
-function initArena() { try { window.arenaGame = new GameEngine(); if (window.arenaGame) console.log('✅ AI Arena v5.0.2 Emotion initialized'); } catch (e) { console.error('❌ Init error:', e); console.error('Stack:', e.stack); alert('Ошибка инициализации: ' + e.message); } }
+function initArena() { try { window.arenaGame = new GameEngine(); if (window.arenaGame) console.log('✅ AI Arena v5.0.4 Committed initialized'); } catch (e) { console.error('❌ Init error:', e); console.error('Stack:', e.stack); alert('Ошибка инициализации: ' + e.message); } }
 window.addEventListener('beforeunload', () => { if (window.arenaGame) { window.arenaGame.destroy(); window.arenaGame = null; } });
 </script>
 </body>
