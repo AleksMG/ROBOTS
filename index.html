@@ -197,7 +197,6 @@
         </header>
         <canvas id="gameCanvas"></canvas>
         <aside class="sidebar">
-            <!-- AGENTS -->
             <section class="panel">
                 <h2 class="panel-title">👥 АГЕНТЫ</h2>
                 <article class="agent-card blue">
@@ -239,8 +238,6 @@
                     </div>
                 </article>
             </section>
-
-            <!-- WEAPONS -->
             <section class="panel">
                 <h2 class="panel-title">⚔️ ОРУЖИЕ</h2>
                 <div class="control-group">
@@ -274,8 +271,6 @@
                     <button class="btn-secondary" id="btnRandomWeapons">🎲 Случайно</button>
                 </div>
             </section>
-
-            <!-- STATS -->
             <section class="panel">
                 <h2 class="panel-title">📊 СТАТИСТИКА</h2>
                 <div class="stat-grid">
@@ -286,8 +281,6 @@
                 </div>
                 <div class="progress-bar"><div class="progress-fill" id="episodeProgress" style="width: 0%"></div></div>
             </section>
-
-            <!-- LEARNING -->
             <section class="panel">
                 <h2 class="panel-title">🧠 ОБУЧЕНИЕ</h2>
                 <div class="control-group">
@@ -310,8 +303,6 @@
                 <label class="toggle"><input type="checkbox" id="enableWeightInheritance" checked> Наследование весов</label>
                 <label class="toggle"><input type="checkbox" id="enableTactical" checked> Тактическое движение</label>
             </section>
-
-            <!-- METRICS -->
             <section class="panel">
                 <h2 class="panel-title">📈 METRICS</h2>
                 <div class="learning-metrics">
@@ -325,8 +316,6 @@
                     <div class="progress-row"><span class="progress-label">Combat</span><div class="progress-track pred"><div class="progress-fill" id="progressPred" style="width: 50%"></div></div></div>
                 </div>
             </section>
-
-            <!-- CONTROLS -->
             <section class="panel">
                 <h2 class="panel-title">🎮 УПРАВЛЕНИЕ</h2>
                 <div class="btn-group">
@@ -342,14 +331,10 @@
                 </div>
                 <input type="file" id="fileImport" accept=".json">
             </section>
-
-            <!-- LOG -->
             <section class="panel">
                 <h2 class="panel-title">📝 ЛОГ</h2>
                 <div class="log" id="eventLog"></div>
             </section>
-
-            <!-- DEBUG -->
             <section class="debug-panel" id="debugPanel">
                 <h3 style="margin-bottom: 0.25rem; font-weight: 600; color: var(--primary); font-size: 0.625rem;">🔍 INSPECTOR</h3>
                 <div class="debug-grid" id="debugGrid">
@@ -369,9 +354,6 @@
 <script>
 'use strict';
 
-// ============================================================================
-// WEAPONS — DIRECTIONAL COMBAT PROPERTIES
-// ============================================================================
 const WEAPONS = Object.freeze({
     hammer:   { name: 'Hammer', icon: '🔨', damage: 1.0, speed: 1.0, range: 45, type: 'melee', 
                 knockback: 8.0, knockbackType: 'impact', color: '#ffaa00', stunTime: 5,
@@ -399,9 +381,6 @@ const WEAPONS = Object.freeze({
                 arcAngle: Math.PI * 1.1, mountOffset: { x: 17, y: 0 }, recoil: { x: -1, y: 0 } }
 });
 
-// ============================================================================
-// CONFIGURATION
-// ============================================================================
 window.arenaConfig = Object.freeze({
     enableTraining: true, enableCritic: true, enablePolicySelector: true,
     enableEvolution: true, enableSkillEvolution: true, enableMoE: true,
@@ -424,17 +403,12 @@ window.arenaConfig = Object.freeze({
         KNOCKBACK_MASS: 1.0, FRICTION_GROUND: 0.92
     }),
     EVOLUTION: Object.freeze({
-        DEATH_PENALTY: 0,
-        FLEE_PENALTY: -0.5,
-        WIN_BONUS: 50,
-        LEARN_FROM_WINNER_RATE: 0.85,
-        FORCED_COMBAT_AFTER_DEATH: 30,
-        MUTATION_ON_DEATH: 0.2,
-        COMBAT_SKILL_GROWTH: 0.15
+        DEATH_PENALTY: 0, FLEE_PENALTY: -0.5, WIN_BONUS: 50,
+        LEARN_FROM_WINNER_RATE: 0.85, FORCED_COMBAT_AFTER_DEATH: 30,
+        MUTATION_ON_DEATH: 0.2, COMBAT_SKILL_GROWTH: 0.15
     }),
     TACTICAL: Object.freeze({
-        FLANK_BONUS: 0.30, FRONT_PENALTY: 0.20,
-        MIN_FLANK_COMMIT: 0.4, CIRCLE_STRENGTH: 0.25,
+        FLANK_BONUS: 0.30, FRONT_PENALTY: 0.20, MIN_FLANK_COMMIT: 0.4, CIRCLE_STRENGTH: 0.25,
         RETREAT_HP_THRESHOLD: 0.4, THREAT_BUFFER_ANGLE: Math.PI * 0.1,
         DAMAGE_FRONT: 0.6, DAMAGE_FLANK: 1.0, DAMAGE_BACK: 1.8
     }),
@@ -445,9 +419,6 @@ window.arenaConfig = Object.freeze({
     })
 });
 
-// ============================================================================
-// UTILITIES — PROFESSIONAL MATH
-// ============================================================================
 const Utils = Object.freeze({
     clamp: (v, min, max) => Math.max(min, Math.min(max, v)),
     lerp: (a, b, t) => a + (b - a) * Utils.clamp(t, 0, 1),
@@ -575,9 +546,6 @@ const Utils = Object.freeze({
     }
 });
 
-// ============================================================================
-// SEEDED RNG
-// ============================================================================
 class SeededRNG {
     constructor(seed) { this._baseSeed = String(seed || 'default').split('').reduce((a, c, i) => { return ((a * 31 + c.charCodeAt(0)) ^ (i * 17)) % 2147483647; }, String(seed || 'default').length) || 12345; this._state = this._baseSeed; }
     next() { let x = this._state; x ^= x << 13; x ^= x >>> 17; x ^= x << 5; this._state = x >>> 0; return (x * 0x2545F4914F6CDD1D) >>> 0 / 4294967296; }
@@ -587,14 +555,9 @@ class SeededRNG {
     getSeed() { return String(this._baseSeed); }
 }
 
-// ============================================================================
-// ✅ CORTEX-2 BRAIN — FIXED ARCHITECTURE
-// Исправлена ошибка транспонирования матриц Attention (W_A)
-// ============================================================================
 class Cortex2Brain {
     constructor(config = {}) {
         this.DIM = arenaConfig.CORTEX;
-        
         this.seed = config.seed ?? arenaConfig.seed;
         this._rng = new SeededRNG(this.seed);
         this.lr = config.lr ?? arenaConfig.learningRate;
@@ -602,14 +565,10 @@ class Cortex2Brain {
         this.lambda = config.lambda ?? arenaConfig.lambda;
         this.hebbianRate = config.hebbianRate ?? arenaConfig.hebbianRate;
         
-        // === FIX: W_P [352 input -> 32 output] ===
-        // matrixMultiply требует: mat.length === vec.length (input)
-        // Значит строки = input (352), столбцы = output (32)
-        this.W_P = this._initMatrix(352, this.DIM.DIM_P, 0.3);
+        // FIX: W_P увеличен с 352 до 400 для M_perm feedback
+        this.W_P = this._initMatrix(400, this.DIM.DIM_P, 0.3);
         this.b_P = this._initVector(this.DIM.DIM_P, 0.1);
         
-        // === FIX: W_A [160 input -> 16 output] per head ===
-        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: строки = 160, столбцы = 16
         this.W_A = [];
         this.b_A = [];
         for (let h = 0; h < this.DIM.NUM_HEADS; h++) {
@@ -617,37 +576,33 @@ class Cortex2Brain {
             this.b_A.push(this._initVector(this.DIM.HEAD_DIM, 0.1));
         }
         
-        // === Memory Blocks ===
-        // W_M_work: [160 input -> 48 output]
+        // FIX: Attention gating
+        this.W_gate = this._initVector(this.DIM.NUM_HEADS, 0.25);
+        
+        // FIX: Learnable reflex parameters
+        this.W_reflex = this._initVector(4, 0.5);
+        
         this.W_M_work = this._initMatrix(160, 48, 0.3);
         this.b_M_work = this._initVector(48, 0.1);
-        // W_M_perm: [304 input -> 48 output]
         this.W_M_perm = this._initMatrix(304, 48, 0.3);
         this.b_M_perm = this._initVector(48, 0.1);
-        // W_M_pred: [192 input -> 48 output]
         this.W_M_pred = this._initMatrix(192, 48, 0.3);
         this.b_M_pred = this._initVector(48, 0.1);
         
-        // === W_C: [289 input -> 256 output] ===
         this.W_C = this._initMatrix(289, this.DIM.DIM_C, 0.25);
         this.b_C = this._initVector(this.DIM.DIM_C, 0.1);
         
-        // === W_S: [128 input -> 32 output] ===
         this.W_S = this._initMatrix(128, this.DIM.DIM_S, 0.3);
-        this.b_S = this._initVector(this.DIM.DIM_S, 0.1);        
-        // === W_D: [336 input -> 16 output] ===
+        this.b_S = this._initVector(this.DIM.DIM_S, 0.1);
         this.W_D = this._initMatrix(336, this.DIM.DIM_D, 0.2);
         this.b_D = this._initVector(this.DIM.DIM_D, 0.1);
         
-        // === W_pred: [48 input -> 64 output] ===
         this.W_pred = this._initMatrix(48, this.DIM.DIM_SENSOR, 0.15);
         this.b_pred = this._initVector(this.DIM.DIM_SENSOR, 0.05);
         
-        // === Value Head ===
         this.W_V = this._initVector(this.DIM.DIM_C, 0.1);
         this.b_V = 0;
         
-        // === State Vectors ===
         this.P = new Float32Array(this.DIM.DIM_P);
         this.A = new Float32Array(this.DIM.DIM_A);
         this.M = new Float32Array(this.DIM.DIM_M);
@@ -663,7 +618,6 @@ class Cortex2Brain {
         this.D_prev = new Float32Array(this.DIM.DIM_D);
         
         this._initEligibilityTraces();
-        
         this.predictionErrors = new Float32Array(48);
         this.consolidationBuffer = [];
         this.maxBuffer = 32;
@@ -671,7 +625,7 @@ class Cortex2Brain {
         this._stats = {
             tdErrorHistory: [], predictionErrorHistory: [],
             totalSteps: 0, avgReward: 0, kills: 0, deaths: 0,
-            reflexTriggers: 0, consolidationEvents: 0
+            reflexTriggers: 0, consolidationEvents: 0, gradientClips: 0
         };
         
         this._lastInputs = null;
@@ -703,8 +657,7 @@ class Cortex2Brain {
     }
     
     _initEligibilityTraces() {
-        // Traces matching matrix dimensions (rows * cols flattened)
-        this.trace_P = new Float32Array(352 * this.DIM.DIM_P);
+        this.trace_P = new Float32Array(400 * this.DIM.DIM_P);
         this.trace_C = new Float32Array(289 * this.DIM.DIM_C);
         this.trace_D = new Float32Array(336 * this.DIM.DIM_D);
         this.trace_pred = new Float32Array(48 * this.DIM.DIM_SENSOR);
@@ -723,12 +676,14 @@ class Cortex2Brain {
         this.b_V += alpha * tdErr;
     }
     
-    // === INPUT BUILDERS (Verified Dimensions) ===
-    _buildPInput(x_t, C_prev, S_prev) {
-        const input = new Float32Array(352); let idx = 0;
+    // FIX: M_perm добавлен во вход P
+    _buildPInput(x_t, C_prev, S_prev, M_perm_prev) {
+        const input = new Float32Array(400); let idx = 0;
         for (let i = 0; i < this.DIM.DIM_SENSOR; i++) input[idx++] = x_t[i];
         for (let i = 0; i < this.DIM.DIM_C; i++) input[idx++] = C_prev[i];
         for (let i = 0; i < this.DIM.DIM_S; i++) input[idx++] = S_prev[i];
+        // FIX: 48 входов из долгосрочной памяти
+        for (let i = 0; i < 48; i++) input[idx++] = M_perm_prev[i];
         return input;
     }
     
@@ -799,8 +754,7 @@ class Cortex2Brain {
         const r_t = Utils.safeNumber(reward, 0);
         this._lastInputs = { x_t: Array.from(x_t), r_t };
         
-        // Build inputs from t-1
-        const P_input = this._buildPInput(x_t, this.C_prev, this.S_prev);
+        const P_input = this._buildPInput(x_t, this.C_prev, this.S_prev, this._getMPerm(this.M_prev));
         const A_inputs = [];
         for (let h = 0; h < this.DIM.NUM_HEADS; h++) { A_inputs.push(this._buildAInput(this.P_prev, this._getMWork(this.M_prev), this.C_prev, this.D_prev, h)); }
         const M_work_input = this._buildMWorkInput(this.P_prev, this.A_prev, this.C_prev);
@@ -810,19 +764,20 @@ class Cortex2Brain {
         const S_input = this._buildSInput(this.P_prev, this._getMPerm(this.M_prev), this.C_prev, this.D_prev);
         const D_input = this._buildDInput(this.C_prev, this.S_prev, this._getMPred(this.M_prev));
         
-        // === PARALLEL COMPUTATION ===
-        // P: [352] -> [32]
         const P_new = Utils.matrixMultiply(P_input, this.W_P, 'relu');
         for (let i = 0; i < this.DIM.DIM_P; i++) P_new[i] = Utils.leakyRelu(P_new[i] + this.b_P[i]);
         
-        // A: 4 heads, [160] -> [16] each
+        // FIX: Attention gating
         const A_new = new Float32Array(this.DIM.DIM_A);
+        const gateProbs = Utils.softmax(this.W_gate, 1.0);
         for (let h = 0; h < this.DIM.NUM_HEADS; h++) {
             const headOut = Utils.matrixMultiply(A_inputs[h], this.W_A[h], 'relu');
-            for (let i = 0; i < this.DIM.HEAD_DIM; i++) { A_new[h * this.DIM.HEAD_DIM + i] = Utils.leakyRelu(headOut[i] + this.b_A[h][i]); }
+            const gateWeight = gateProbs[h];
+            for (let i = 0; i < this.DIM.HEAD_DIM; i++) { 
+                A_new[h * this.DIM.HEAD_DIM + i] = Utils.leakyRelu(headOut[i] + this.b_A[h][i]) * gateWeight; 
+            }
         }
         
-        // Memory
         const M_work_new = Utils.matrixMultiply(M_work_input, this.W_M_work, 'relu');
         for (let i = 0; i < 48; i++) M_work_new[i] = Utils.leakyRelu(M_work_new[i] + this.b_M_work[i]);
         const M_perm_new = Utils.matrixMultiply(M_perm_input, this.W_M_perm, 'relu');
@@ -835,19 +790,15 @@ class Cortex2Brain {
         for (let i = 0; i < 48; i++) M_new[48 + i] = M_perm_new[i];
         for (let i = 0; i < 48; i++) M_new[96 + i] = M_pred_new[i];
         
-        // Cortex
         const C_new = Utils.matrixMultiply(C_input, this.W_C, 'relu');
         for (let i = 0; i < this.DIM.DIM_C; i++) C_new[i] = Utils.leakyRelu(C_new[i] + this.b_C[i]);
         
-        // Subcortex
         const S_new = Utils.matrixMultiply(S_input, this.W_S, 'relu');
         for (let i = 0; i < this.DIM.DIM_S; i++) S_new[i] = Utils.leakyRelu(S_new[i] + this.b_S[i]);
         
-        // Action
         const D_new = Utils.matrixMultiply(D_input, this.W_D, 'tanh');
         for (let i = 0; i < this.DIM.DIM_D; i++) D_new[i] = Utils.tanh(D_new[i] + this.b_D[i]);
         
-        // Atomic swap
         this.P_prev.set(this.P); this.A_prev.set(this.A); this.M_prev.set(this.M);
         this.C_prev.set(this.C); this.S_prev.set(this.S); this.D_prev.set(this.D);
         this.P.set(P_new); this.A.set(A_new); this.M.set(M_new);
@@ -868,7 +819,7 @@ class Cortex2Brain {
     _updatePrediction(M_pred, x_t) {
         const x_pred = Utils.linearMultiply(M_pred, this.W_pred);
         for (let i = 0; i < this.DIM.DIM_SENSOR; i++) x_pred[i] += this.b_pred[i];
-        for (let i = 0; i < 48; i++) { const error = Math.abs(x_pred[i % this.DIM.DIM_SENSOR] - x_t[i % this.DIM.DIM_SENSOR]); this.predictionErrors[i] = Utils.lerp(this.predictionErrors[i], error, 0.1); }
+        for (let i = 0; i < 48; i++) { const error = Math.abs(x_pred[i] - x_t[i]); this.predictionErrors[i] = Utils.lerp(this.predictionErrors[i], error, 0.1); }
         if (arenaConfig.enableTraining) {
             const lr = this.lr * 0.1;
             for (let i = 0; i < 48; i++) {
@@ -882,13 +833,17 @@ class Cortex2Brain {
     
     _computeAvgPredError() { let sum = 0; for (let i = 0; i < 48; i++) sum += this.predictionErrors[i]; return sum / 48; }
     
+    // FIX: Learnable reflex parameters
     _checkReflexPath(x_t, S_new, D_new) {
         let maxS = -Infinity, maxIdx = -1;
         for (let i = 0; i < this.DIM.DIM_S; i++) { if (S_new[i] > maxS) { maxS = S_new[i]; maxIdx = i; } }
-        if (maxS > 0.9) {
+        const threshold = Utils.sigmoid(this.W_reflex[0]) * 0.7 + 0.2;
+        if (maxS > threshold) {
             this._stats.reflexTriggers++;
             const reflexVec = new Float32Array(this.DIM.DIM_D);
-            reflexVec[0] = -0.8; reflexVec[1] = maxIdx % 2 === 0 ? 0.9 : -0.9; reflexVec[2] = 0.7;
+            reflexVec[0] = Utils.tanh(this.W_reflex[1]);
+            reflexVec[1] = Utils.tanh(this.W_reflex[2]);
+            reflexVec[2] = Utils.tanh(this.W_reflex[3]);
             const γ = 0.6;
             for (let i = 0; i < this.DIM.DIM_D; i++) this.D[i] = (1 - γ) * D_new[i] + γ * reflexVec[i];
         }
@@ -909,30 +864,43 @@ class Cortex2Brain {
         const tdErr = Utils.tdError(reward, currentValue, nextVal, this.gamma);
         this._stats.tdErrorHistory.push(Math.abs(tdErr)); if (this._stats.tdErrorHistory.length > 100) this._stats.tdErrorHistory.shift();
         this._updateValueHead(tdErr); this._updateEligibilityTraces(inputs, outputs, tdErr); this._applyTDError(tdErr);
+        
+        // FIX: Update attention gates
+        if (arenaConfig.enableTraining && actionLogProbs?.length) {
+            const avgAdvantage = -actionLogProbs.reduce((a,b) => a+b, 0) / actionLogProbs.length;
+            for (let h = 0; h < this.DIM.NUM_HEADS; h++) {
+                this.W_gate[h] += this.lr * 0.3 * avgAdvantage * (this._attentionHeadNorms?.[h] || 0.25);
+                this.W_gate[h] = Utils.clamp(this.W_gate[h], -2, 2);
+            }
+        }
+        
         if (arenaConfig.enableConsolidation && reward > 3) this._consolidateMemories(reward);
-        if (arenaConfig.enableHebbian && reward > 1) { const corr = Math.sign(reward); this._hebbianUpdate(this.P_prev, this.A_prev, corr, 'P→A'); this._hebbianUpdate(this.A_prev, this.C_prev, corr, 'A→C'); this._hebbianUpdate(this.C_prev, this.D_prev, corr, 'C→D'); }
+        if (arenaConfig.enableHebbian && reward > 1) { 
+            // FIX: Hebbian with magnitude
+            const rewardMagnitude = Utils.clamp(Math.abs(reward) / 5.0, 0, 1);
+            const correlation = Math.sign(reward) * (0.5 + 0.5 * rewardMagnitude);
+            this._hebbianUpdate(this.P_prev, this.A_prev, correlation, 'P→A'); 
+            this._hebbianUpdate(this.A_prev, this.C_prev, correlation, 'A→C'); 
+            this._hebbianUpdate(this.C_prev, this.D_prev, correlation, 'C→D'); 
+        }
         this._stats.totalSteps++; this._stats.avgReward = Utils.lerp(this._stats.avgReward, reward, 0.01);
         return { tdError: tdErr, avgTDError: this._stats.tdErrorHistory.reduce((a,b)=>a+b,0)/Math.max(1,this._stats.tdErrorHistory.length), avgPredictionError: this._computeAvgPredError() };
     }
     
     _updateEligibilityTraces(inputs, outputs, tdErr) {
         const decay = this.gamma * this.lambda;
-        // P: 352 rows * 32 cols
-        for (let i = 0; i < 352; i++) { for (let j = 0; j < this.DIM.DIM_P; j++) { const idx = i * this.DIM.DIM_P + j; this.trace_P[idx] = decay * this.trace_P[idx] + inputs[i] * this.P[j]; this.trace_P[idx] = Utils.clamp(this.trace_P[idx], -10, 10); } }
-        // C: 289 rows * 256 cols
+        for (let i = 0; i < 400; i++) { for (let j = 0; j < this.DIM.DIM_P; j++) { const idx = i * this.DIM.DIM_P + j; this.trace_P[idx] = decay * this.trace_P[idx] + inputs[i] * this.P[j]; this.trace_P[idx] = Utils.clamp(this.trace_P[idx], -10, 10); } }
         for (let i = 0; i < 289; i++) { for (let j = 0; j < this.DIM.DIM_C; j++) { const idx = i * this.DIM.DIM_C + j; this.trace_C[idx] = decay * this.trace_C[idx] + inputs[i] * this.C[j]; this.trace_C[idx] = Utils.clamp(this.trace_C[idx], -10, 10); } }
-        // D: 336 rows * 16 cols
         for (let i = 0; i < 336; i++) { for (let j = 0; j < this.DIM.DIM_D; j++) { const idx = i * this.DIM.DIM_D + j; this.trace_D[idx] = decay * this.trace_D[idx] + inputs[i] * this.D[j]; this.trace_D[idx] = Utils.clamp(this.trace_D[idx], -10, 10); } }
     }
     
+    // FIX: Gradient clipping
     _applyTDError(tdErr) {
         const alpha = this.lr * Math.sign(tdErr) * 0.1;
-        // P: 352 * 32
-        for (let i = 0; i < 352 * this.DIM.DIM_P; i++) { const row = Math.floor(i / this.DIM.DIM_P); const col = i % this.DIM.DIM_P; if (this.W_P[row] && this.W_P[row][col] !== undefined) { this.W_P[row][col] += alpha * this.trace_P[i]; this.W_P[row][col] = Utils.clamp(this.W_P[row][col], -2, 2); } }
-        // C: 289 * 256
-        for (let i = 0; i < 289 * this.DIM.DIM_C; i++) { const row = Math.floor(i / this.DIM.DIM_C); const col = i % this.DIM.DIM_C; if (this.W_C[row] && this.W_C[row][col] !== undefined) { this.W_C[row][col] += alpha * this.trace_C[i] * 0.5; this.W_C[row][col] = Utils.clamp(this.W_C[row][col], -2, 2); } }
-        // D: 336 * 16
-        for (let i = 0; i < 336 * this.DIM.DIM_D; i++) { const row = Math.floor(i / this.DIM.DIM_D); const col = i % this.DIM.DIM_D; if (this.W_D[row] && this.W_D[row][col] !== undefined) { this.W_D[row][col] += alpha * this.trace_D[i]; this.W_D[row][col] = Utils.clamp(this.W_D[row][col], -2, 2); } }
+        const MAX_GRAD = 0.3;
+        for (let i = 0; i < 400 * this.DIM.DIM_P; i++) { const row = Math.floor(i / this.DIM.DIM_P); const col = i % this.DIM.DIM_P; if (this.W_P[row] && this.W_P[row][col] !== undefined) { const delta = Utils.clamp(alpha * this.trace_P[i], -MAX_GRAD, MAX_GRAD); this.W_P[row][col] += delta; this.W_P[row][col] = Utils.clamp(this.W_P[row][col], -2, 2); } }
+        for (let i = 0; i < 289 * this.DIM.DIM_C; i++) { const row = Math.floor(i / this.DIM.DIM_C); const col = i % this.DIM.DIM_C; if (this.W_C[row] && this.W_C[row][col] !== undefined) { const delta = Utils.clamp(alpha * this.trace_C[i] * 0.5, -MAX_GRAD, MAX_GRAD); this.W_C[row][col] += delta; this.W_C[row][col] = Utils.clamp(this.W_C[row][col], -2, 2); } }
+        for (let i = 0; i < 336 * this.DIM.DIM_D; i++) { const row = Math.floor(i / this.DIM.DIM_D); const col = i % this.DIM.DIM_D; if (this.W_D[row] && this.W_D[row][col] !== undefined) { const delta = Utils.clamp(alpha * this.trace_D[i], -MAX_GRAD, MAX_GRAD); this.W_D[row][col] += delta; this.W_D[row][col] = Utils.clamp(this.W_D[row][col], -2, 2); } }
     }
     
     _hebbianUpdate(pre, post, correlation, label) {
@@ -972,6 +940,8 @@ class Cortex2Brain {
         if (!arenaConfig.enableEvolution) return 0; let mutations = 0;
         const mutateMat = (mat) => { if (!mat?.length) return; for (let i = 0; i < mat.length; i++) { if (!mat[i]?.length) continue; for (let j = 0; j < mat[i].length; j++) { if (this._rng.next() < rate) { mat[i][j] += (this._rng.next() * 2 - 1) * strength; mat[i][j] = Utils.clamp(mat[i][j], -2, 2); mutations++; } } } };
         mutateMat(this.W_P); mutateMat(this.W_C); mutateMat(this.W_D); for (const W of this.W_A) mutateMat(W); mutateMat(this.W_M_work); mutateMat(this.W_M_perm); mutateMat(this.W_M_pred); mutateMat(this.W_S); mutateMat(this.W_pred);
+        for (let i = 0; i < this.W_gate.length; i++) { if (this._rng.next() < rate) { this.W_gate[i] += (this._rng.next() * 2 - 1) * strength; this.W_gate[i] = Utils.clamp(this.W_gate[i], -2, 2); mutations++; } }
+        for (let i = 0; i < this.W_reflex.length; i++) { if (this._rng.next() < rate) { this.W_reflex[i] += (this._rng.next() * 2 - 1) * strength; this.W_reflex[i] = Utils.clamp(this.W_reflex[i], -2, 2); mutations++; } }
         return mutations;
     }
     
@@ -979,6 +949,7 @@ class Cortex2Brain {
         const clone = new Cortex2Brain({ seed: this.seed + '_clone_' + Date.now(), lr: this.lr, gamma: this.gamma, lambda: this.lambda });
         const copyMat = (src) => src.map(r => new Float32Array(r));
         clone.W_P = copyMat(this.W_P); clone.b_P = new Float32Array(this.b_P); clone.W_A = this.W_A.map(copyMat); clone.b_A = this.b_A.map(b => new Float32Array(b));
+        clone.W_gate = new Float32Array(this.W_gate); clone.W_reflex = new Float32Array(this.W_reflex);
         clone.W_M_work = copyMat(this.W_M_work); clone.b_M_work = new Float32Array(this.b_M_work); clone.W_M_perm = copyMat(this.W_M_perm); clone.b_M_perm = new Float32Array(this.b_M_perm);
         clone.W_M_pred = copyMat(this.W_M_pred); clone.b_M_pred = new Float32Array(this.b_M_pred); clone.W_C = copyMat(this.W_C); clone.b_C = new Float32Array(this.b_C);
         clone.W_S = copyMat(this.W_S); clone.b_S = new Float32Array(this.b_S); clone.W_D = copyMat(this.W_D); clone.b_D = new Float32Array(this.b_D);
@@ -992,7 +963,8 @@ class Cortex2Brain {
     
     toJSON() {
         return { type: 'Cortex2Brain', version: '2.0', config: { seed: this.seed, lr: this.lr, gamma: this.gamma, lambda: this.lambda, dims: { P: this.DIM.DIM_P, A: this.DIM.DIM_A, M: this.DIM.DIM_M, C: this.DIM.DIM_C, S: this.DIM.DIM_S, D: this.DIM.DIM_D } },
-            weights: { W_P: this.W_P.map(r => Array.from(r)), b_P: Array.from(this.b_P), W_A: this.W_A.map(m => m.map(r => Array.from(r))), b_A: this.b_A.map(b => Array.from(b)), W_M_work: this.W_M_work.map(r => Array.from(r)), b_M_work: Array.from(this.b_M_work),
+            weights: { W_P: this.W_P.map(r => Array.from(r)), b_P: Array.from(this.b_P), W_A: this.W_A.map(m => m.map(r => Array.from(r))), b_A: this.b_A.map(b => Array.from(b)), W_gate: Array.from(this.W_gate), W_reflex: Array.from(this.W_reflex),
+                W_M_work: this.W_M_work.map(r => Array.from(r)), b_M_work: Array.from(this.b_M_work),
                 W_M_perm: this.W_M_perm.map(r => Array.from(r)), b_M_perm: Array.from(this.b_M_perm), W_M_pred: this.W_M_pred.map(r => Array.from(r)), b_M_pred: Array.from(this.b_M_pred), W_C: this.W_C.map(r => Array.from(r)), b_C: Array.from(this.b_C),
                 W_S: this.W_S.map(r => Array.from(r)), b_S: Array.from(this.b_S), W_D: this.W_D.map(r => Array.from(r)), b_D: Array.from(this.b_D), W_pred: this.W_pred.map(r => Array.from(r)), b_pred: Array.from(this.b_pred), W_V: Array.from(this.W_V), b_V: this.b_V },
             state: { P: Array.from(this.P), A: Array.from(this.A), M: Array.from(this.M), C: Array.from(this.C), S: Array.from(this.S), D: Array.from(this.D), P_prev: Array.from(this.P_prev), A_prev: Array.from(this.A_prev), M_prev: Array.from(this.M_prev), C_prev: Array.from(this.C_prev), S_prev: Array.from(this.S_prev), D_prev: Array.from(this.D_prev), predictionErrors: Array.from(this.predictionErrors) },
@@ -1005,6 +977,8 @@ class Cortex2Brain {
         try {
             const w = data.weights; brain.W_P = w.W_P.map(r => new Float32Array(r)); brain.b_P = new Float32Array(w.b_P);
             brain.W_A = w.W_A.map(m => m.map(r => new Float32Array(r))); brain.b_A = w.b_A.map(b => new Float32Array(b));
+            if (w.W_gate) brain.W_gate = new Float32Array(w.W_gate);
+            if (w.W_reflex) brain.W_reflex = new Float32Array(w.W_reflex);
             brain.W_M_work = w.W_M_work.map(r => new Float32Array(r)); brain.b_M_work = new Float32Array(w.b_M_work);
             brain.W_M_perm = w.W_M_perm.map(r => new Float32Array(r)); brain.b_M_perm = new Float32Array(w.b_M_perm);
             brain.W_M_pred = w.W_M_pred.map(r => new Float32Array(r)); brain.b_M_pred = new Float32Array(w.b_M_pred);
@@ -1034,9 +1008,6 @@ class Cortex2Brain {
     updateDiagnostics(metrics) { if (!metrics) return; if (metrics.win !== undefined) this._stats.kills += metrics.win ? 1 : 0; if (metrics.reward !== undefined) this._stats.avgReward = Utils.lerp(this._stats.avgReward, Utils.safeNumber(metrics.reward, 0), 0.01); }
 }
 
-// ============================================================================
-// CRITIC NETWORK
-// ============================================================================
 class CriticNetwork {
     constructor(config = {}) {
         this.inputDim = config.inputDim ?? (arenaConfig.compactInputs ? arenaConfig.ARCH.INPUT_DIM_COMPACT : arenaConfig.ARCH.INPUT_DIM);
@@ -1062,9 +1033,6 @@ class CriticNetwork {
     static fromJSON(data) { if (!data?.config) return new CriticNetwork({}); const c = new CriticNetwork(data.config); c._W1 = (data.W1 || []).map(r => (r || []).slice()); c._W2 = (data.W2 || []).map(r => (r || []).slice()); c._b1 = (data.b1 || []).slice(); c._b2 = data.b2 ?? 0; return c; }
 }
 
-// ============================================================================
-// POLICY SELECTOR
-// ============================================================================
 class PolicySelector {
     constructor(config = {}) {
         this.contextDim = config.contextDim ?? arenaConfig.ARCH.POLICY_CONTEXT_DIM;
@@ -1093,19 +1061,10 @@ class PolicySelector {
     static fromJSON(data) { if (!data?.config) return new PolicySelector({}); const ps = new PolicySelector(data.config); ps._W1 = (data.W1 || []).map(r => (r || []).slice()); ps._W2 = (data.W2 || []).map(r => (r || []).slice()); ps._b1 = (data.b1 || []).slice(); return ps; }
 }
 
-// ============================================================================
-// BEHAVIOR ARBITER
-// ============================================================================
 class BehaviorArbiter { constructor() { this.modes = ['combat']; } select(agent, world) { return 'combat'; } calculateTarget(mode, agent, world) { const { enemies, walls } = world || {}; const targets = (enemies || []).filter(e => e && e.id !== agent?.id && e.alive); if (!targets.length) return { x: agent?.x || 400, y: agent?.y || 300 }; return targets.reduce((n, e) => Utils.dist(agent, e) < Utils.dist(agent, n) ? e : n); } }
 
-// ============================================================================
-// PROJECTILE
-// ============================================================================
 class Projectile { constructor(x, y, vx, vy, owner, damage = 3, life = 80) { this.x = x; this.y = y; this.vx = vx; this.vy = vy; this.owner = owner; this.damage = damage; this.life = life; this.alive = true; this.radius = 3; } update(dt) { this.x += this.vx * dt * 8; this.y += this.vy * dt * 8; this.life -= dt; if (this.life <= 0) this.alive = false; } draw(ctx) { if (!this.alive) return; ctx.fillStyle = '#ffdd44'; ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fill(); } }
 
-// ============================================================================
-// AGENT — TACTICAL DIRECTIONAL COMBAT WITH CORTEX-2
-// ============================================================================
 class Agent {
     static get VISUAL_RADIUS() { return 22; } static get COLLISION_RADIUS() { return 20; } static get ATTACK_RANGE() { return 45; }
     constructor(id, x, y, color, seed, weaponType = 'hammer') {
@@ -1113,7 +1072,6 @@ class Agent {
         this.stats = { maxHealth: 100, damage: 3, fireRate: 15, dodgeChance: 0.0 };
         this.health = this.stats.maxHealth; this.lastMutationType = null; this.seed = seed;
         this.weaponType = weaponType; this.weapon = WEAPONS[weaponType] || WEAPONS.hammer; this._applyWeaponStats();
-        // ✅ ЗАМЕНА: NeuralNetwork → Cortex2Brain
         this.net = new Cortex2Brain({ seed: seed + '_CORTEX2_' + id, lr: arenaConfig.learningRate, gamma: arenaConfig.gamma, lambda: arenaConfig.lambda, hebbianRate: arenaConfig.hebbianRate });
         this.critic = new CriticNetwork({ inputDim: arenaConfig.compactInputs ? arenaConfig.ARCH.INPUT_DIM_COMPACT : arenaConfig.ARCH.INPUT_DIM, hidden: arenaConfig.ARCH.CRITIC_HIDDEN, seed: seed + '_CRITIC_' + id, lr: arenaConfig.learningRate, gamma: arenaConfig.gamma });
         this.policySelector = new PolicySelector({ contextDim: arenaConfig.ARCH.POLICY_CONTEXT_DIM, skillEmbeddingDim: arenaConfig.ARCH.POLICY_SKILL_DIM, hidden: arenaConfig.ARCH.POLICY_HIDDEN, numModes: arenaConfig.ARCH.POLICY_MODES, seed: seed + '_POLICY_' + id, lr: arenaConfig.learningRate * 0.6 });
@@ -1137,19 +1095,50 @@ class Agent {
     calculateDirectionalDamageMultiplier(attacker) { if (!attacker) return 1.0; const toAttacker = Math.atan2(attacker.y - this.y, attacker.x - this.x); const myFacing = this.getWeaponFacing(); let angleDiff = Utils.normalizeAngle(toAttacker - myFacing); const absAngle = Math.abs(angleDiff); const weaponArc = (this.weapon.arcAngle || Math.PI) / 2; if (absAngle <= weaponArc * 0.5) return arenaConfig.TACTICAL.DAMAGE_FRONT; else if (absAngle <= weaponArc) return arenaConfig.TACTICAL.DAMAGE_FLANK; else return arenaConfig.TACTICAL.DAMAGE_BACK; }
     assessThreatFromEnemy(enemy) { if (!enemy?.alive) return { threatLevel: 0, safeApproachAngle: 0, flankVector: {x:0, y:0} }; const inArc = enemy.isPointInWeaponArc(this, arenaConfig.TACTICAL.THREAT_BUFFER_ANGLE); const distance = Utils.dist(this, enemy); const inRange = distance <= (enemy.weapon.range || 50); let threatLevel = inRange ? (inArc ? 0.9 : 0.3) : (inArc ? 0.4 : 0.1); threatLevel *= Utils.lerp(0.6, 1.0, enemy.health / enemy.stats.maxHealth); const enemyFacing = enemy.getWeaponFacing(); const safeAngle = enemyFacing + Math.PI + Utils.rand(-0.4, 0.4); const toEnemy = Utils.normalize(enemy.x - this.x, enemy.y - this.y); const flankDir = { x: -toEnemy.y * Math.sign(Math.sin(safeAngle - Math.atan2(toEnemy.y, toEnemy.x))), y: toEnemy.x * Math.sign(Math.sin(safeAngle - Math.atan2(toEnemy.y, toEnemy.x))) }; this._lastThreatAssessment = { threatLevel, safeAngle, flankVector: flankDir }; return { threatLevel: Utils.clamp(threatLevel, 0, 1), safeApproachAngle: safeAngle, flankVector: Utils.normalize(flankDir.x, flankDir.y) }; }
     interpretAttention() { const cortexInterp = this.net.interpret?.() || {}; return { threat: cortexInterp.threat || '—', flank: cortexInterp.flank || '—', distance: '—', prediction: cortexInterp.memoryConf || '—' }; }
-    predictEnemyIntent(enemy) { if (!enemy?.alive) return { intent: 'none', confidence: 1.0 }; const enemyHealth = enemy.health / enemy.stats.maxHealth; const distance = Utils.dist(this, enemy); const inArc = enemy.isPointInWeaponArc(this); const inRange = distance <= (enemy.weapon.range || 50); const enemyAggression = enemy.lastDecision?.behaviors?.aggression || 0.5; if (enemyHealth < 0.3 && inRange && enemyAggression > 0.6) return { intent: 'desperate_attack', confidence: 0.85 }; if (inArc && inRange && enemyAggression > 0.4) return { intent: 'attack', confidence: 0.75 }; if (enemyHealth < 0.4 && enemyAggression < 0.3) return { intent: 'flee', confidence: 0.8 }; if (distance < 80 && enemyAggression > 0.5 && !inArc) return { intent: 'flank', confidence: 0.65 }; return { intent: 'unknown', confidence: 0.5 }; }
+    
+    // FIX: NO CHEATING - только наблюдаемые параметры
+    predictEnemyIntent(enemy, worldHistory) {
+        if (!enemy?.alive) return { intent: 'none', confidence: 1.0 };
+        const dist = Utils.dist(this, enemy);
+        const prevDist = worldHistory?.lastDist ?? dist;
+        const approachSpeed = (prevDist - dist) / (worldHistory?.dt ?? 1);
+        const enemyVel = Math.hypot(enemy.vx ?? 0, enemy.vy ?? 0);
+        const inArc = enemy.isPointInWeaponArc(this);
+        const inRange = dist <= (enemy.weapon.range || 50);
+        const enemyHealthRatio = enemy.health / enemy.stats.maxHealth;
+        
+        if (enemyHealthRatio < 0.3 && inRange && approachSpeed > 3) {
+            return { intent: 'desperate_attack', confidence: 0.85 };
+        }
+        if (inArc && inRange && (approachSpeed > 2 || enemyVel > 8)) {
+            return { intent: 'attack', confidence: 0.75 };
+        }
+        if (enemyHealthRatio < 0.4 && approachSpeed < -2) {
+            return { intent: 'flee', confidence: 0.8 };
+        }
+        if (dist < 80 && approachSpeed > 4 && !inArc) {
+            return { intent: 'flank', confidence: 0.65 };
+        }
+        return { intent: 'unknown', confidence: 0.5 };
+    }
+    
     getInputs(world) { const inputs = [], maxDist = Math.sqrt(820 ** 2 + 600 ** 2); const enemiesWithDist = (world?.enemies || []).filter(e => e && e.id !== this.id && e.alive).map(e => ({ agent: e, d: Utils.dist(this, e) })).sort((a, b) => a.d - b.d); const enemies = enemiesWithDist.slice(0, 3); const primaryEnemy = enemiesWithDist[0]?.agent; for (const e of enemies) { inputs.push(Utils.clamp((e.agent.x - this.x) / maxDist, -1, 1)); inputs.push(Utils.clamp((e.agent.y - this.y) / maxDist, -1, 1)); inputs.push(Utils.clamp((150 - e.d) / 150, 0, 1)); inputs.push(e.agent.health / e.agent.stats.maxHealth); } while (inputs.length < 12) inputs.push(0, 0, 0, 0); const walls = (world?.walls || []).map(w => ({ ...w, d: Utils.dist(this, w) })).sort((a, b) => a.d - b.d)[0]; if (walls) { inputs.push(Utils.clamp((walls.x - this.x) / maxDist, -1, 1)); inputs.push(Utils.clamp((walls.y - this.y) / maxDist, -1, 1)); inputs.push(Utils.clamp((60 - walls.d) / 60, 0, 1)); } else { inputs.push(0, 0, 0); } inputs.push(Utils.clamp((400 - this.x) / 400, -1, 1)); inputs.push(Utils.clamp((300 - this.y) / 300, -1, 1)); inputs.push(this.health / this.stats.maxHealth); inputs.push(Utils.clamp(this.cumulativeReward / 50, -1, 1)); inputs.push(this.stats.damage / 15); inputs.push(this.stats.dodgeChance); inputs.push(this.stats.fireRate / 60); inputs.push(Utils.clamp((world?.step || 0) / 2000, 0, 1)); const weaponTypes = Object.keys(WEAPONS); for (const wt of weaponTypes) inputs.push(this.weaponType === wt ? 1 : 0); inputs.push(this.deaths > 0 ? Math.min(1, this.deaths / 10) : 0); inputs.push(this._forcedCombatTimer > 0 ? 1 : 0); if (primaryEnemy && arenaConfig.enableTactical) { const toEnemy = Math.atan2(primaryEnemy.y - this.y, primaryEnemy.x - this.x); const myFacing = this.getWeaponFacing(); let angleToEnemy = Utils.normalizeAngle(toEnemy - myFacing); inputs.push(Utils.clamp(angleToEnemy / Math.PI, -1, 1)); inputs.push(primaryEnemy.isPointInWeaponArc(this) ? 1 : 0); const threat = this.assessThreatFromEnemy(primaryEnemy); inputs.push(threat.threatLevel); inputs.push(Utils.clamp(threat.flankVector.x, -1, 1)); inputs.push(Utils.clamp(threat.flankVector.y, -1, 1)); const enemyFacing = primaryEnemy.getWeaponFacing(); let angleFromEnemy = Utils.normalizeAngle(Math.atan2(this.y - primaryEnemy.y, this.x - primaryEnemy.x) - enemyFacing); inputs.push(Utils.clamp(angleFromEnemy / Math.PI, -1, 1)); const arcEdgeAngle = enemyFacing + (primaryEnemy.weapon.arcAngle || Math.PI) / 2; const distToArcEdge = Math.abs(angleFromEnemy) - (primaryEnemy.weapon.arcAngle || Math.PI) / 2; inputs.push(Utils.clamp(distToArcEdge / Math.PI, -1, 1)); inputs.push(Utils.clamp(1 - this.health / this.stats.maxHealth, 0, 1)); const predictedEnemyX = primaryEnemy.x + primaryEnemy.vx * 8; const predictedEnemyY = primaryEnemy.y + primaryEnemy.vy * 8; inputs.push(Utils.clamp((predictedEnemyX - this.x) / 820, -1, 1)); inputs.push(Utils.clamp((predictedEnemyY - this.y) / 600, -1, 1)); const flankTarget = { x: this.x + threat.flankVector.x * 60, y: this.y + threat.flankVector.y * 60 }; const pathBlocked = (world?.walls || []).some(w => Utils._pointSegDist(this.x, this.y, flankTarget.x, flankTarget.y, w.x, w.y) < 20); inputs.push(pathBlocked ? 1 : 0); const recentExposure = (this._recentArcExposure || []).filter(t => (world.step || 0) - t < 30).length / 30; inputs.push(Utils.clamp(recentExposure, 0, 1)); if (!this._recentArcExposure) this._recentArcExposure = []; if (primaryEnemy.isPointInWeaponArc(this)) this._recentArcExposure.push(world.step || 0); } else { for (let i = 0; i < 12; i++) inputs.push(0); } while (inputs.length < arenaConfig.ARCH.INPUT_DIM) inputs.push(0); if (inputs.length > arenaConfig.ARCH.INPUT_DIM) inputs.length = arenaConfig.ARCH.INPUT_DIM; return inputs.map(v => Utils.safeNumber(v, 0)); }
     selectBehavior(world, networkOutput) { return { mode: 'combat', modeProbs: [1, 0, 0, 0, 0] }; }
     decide(world) {
         this._lastWorld = { enemies: (world?.enemies || []).map(e => e ? { id: e.id, x: e.x, y: e.y, alive: e.alive, health: e.health, stats: { ...e.stats }, agent: e } : null).filter(e => e), walls: (world?.walls || []).map(w => w ? { x: w.x, y: w.y } : null).filter(w => w), step: world?.step || 0 };
         this.updatePredictiveMemory(world); const inputs = this.getInputs(world);
-        // ✅ ВЫЗОВ CORTEX-2 FORWARD
         const cortexRes = this.net.forward(inputs, this.cumulativeReward * 0.01); let output = cortexRes.output;
         const mode = 'combat'; this.mode = mode;
         const behaviors = { speed: Utils.clamp(Utils.safeNumber(output?.[4], 0), 0, 1), curiosity: Utils.clamp(Utils.safeNumber(output?.[5], 0), 0, 1), aggression: Utils.clamp(Utils.safeNumber(output?.[6], 0), 0, 1), memoryWeight: Utils.clamp(Utils.safeNumber(output?.[7], 0), 0, 1), lateralBias: Utils.clamp(Utils.safeNumber(output?.[8], 0), -1, 1), circularBias: Utils.clamp(Utils.safeNumber(output?.[9], 0), -1, 1), retreatUrgency: Utils.clamp(Utils.safeNumber(output?.[10], 0), 0, 1), flankCommit: Utils.clamp(Utils.safeNumber(output?.[11], 0), 0, 1) };
         const enemies = (world?.enemies || []).filter(e => e && e.id !== this.id && e.alive); const enemy = enemies.length > 0 ? enemies[0] : null; const context = { enemyDistance: enemy ? Utils.dist(this, enemy) : 999, wallDistance: (world?.walls || []).length ? Math.min(...world.walls.map(w => Utils.dist(this, w))) : 999, health: this.health / this.stats.maxHealth };
-        // ✅ ИНТЕГРАЦИЯ: Theory of Mind влияет на output Cortex2Brain
-        if (enemy) { const enemyIntent = this.predictEnemyIntent(enemy); const cortexInterp = this.net.interpret?.() || {}; if (enemyIntent.intent === 'desperate_attack' && enemyIntent.confidence > 0.7) { output[6] = Utils.clamp(output[6] * 0.5, -1, 1); output[4] = Utils.clamp(output[4] * 1.4, -1, 1); output[8] = Utils.clamp(output[8] + 0.3, -1, 1); } else if (enemyIntent.intent === 'flee' && enemyIntent.confidence > 0.7) { output[6] = Utils.clamp(output[6] * 1.5, -1, 1); output[4] = Utils.clamp(output[4] * 1.2, -1, 1); } if (cortexInterp.threat === 'HIGH' && cortexInterp.flank === 'IGNORE') { output[8] = Utils.clamp(output[8] + 0.4, -1, 1); output[9] = Utils.clamp(output[9] + 0.3, -1, 1); } }
+        if (enemy) { 
+            const worldHist = { lastDist: Utils.dist(this, enemy), dt: 1 };
+            const enemyIntent = this.predictEnemyIntent(enemy, worldHist);
+            const cortexInterp = this.net.interpret?.() || {}; 
+            if (enemyIntent.intent === 'desperate_attack' && enemyIntent.confidence > 0.7) { output[6] = Utils.clamp(output[6] * 0.5, -1, 1); output[4] = Utils.clamp(output[4] * 1.4, -1, 1); output[8] = Utils.clamp(output[8] + 0.3, -1, 1); } 
+            else if (enemyIntent.intent === 'flee' && enemyIntent.confidence > 0.7) { output[6] = Utils.clamp(output[6] * 1.5, -1, 1); output[4] = Utils.clamp(output[4] * 1.2, -1, 1); } 
+            if (cortexInterp.threat === 'HIGH' && cortexInterp.flank === 'IGNORE') { output[8] = Utils.clamp(output[8] + 0.4, -1, 1); output[9] = Utils.clamp(output[9] + 0.3, -1, 1); } 
+        }
         let target = this.arbiter.calculateTarget(mode, this, { enemies: world?.enemies || [], walls: world?.walls || [] }); if (!target || typeof target.x !== 'number' || !isFinite(target.x) || typeof target.y !== 'number' || !isFinite(target.y)) { target = { x: Utils.clamp(this.x + Utils.rand(-50, 50), 30, 790), y: Utils.clamp(this.y + Utils.rand(-50, 50), 30, 570) }; } this.target = target;
         const confidenceMod = this.predictive.confidence > 0.7 ? 1.1 : (this.predictive.confidence < 0.4 ? 0.9 : 1); this.speed = Utils.lerp(this.speed, behaviors.speed * 2.5 * confidenceMod + 1.0, 0.08);
         if (mode === 'combat' && behaviors.memoryWeight > 0.5 && enemy) { this.permanent.memory.lastEnemyPos = { ...enemy }; this.permanent.memory.lastEnemyStep = world?.step || 0; }
@@ -1240,24 +1229,12 @@ class Agent {
     static fromJSON(data, color) { const agent = new Agent(data.id, data.x, data.y, color, data.seed, data.weaponType || 'hammer'); agent.net = Cortex2Brain.fromJSON(data.net); if (data.critic) agent.critic = CriticNetwork.fromJSON(data.critic); if (data.policySelector) agent.policySelector = PolicySelector.fromJSON(data.policySelector); agent.health = data.health ?? 100; agent.stats = data.stats || { maxHealth: 100, damage: 3, fireRate: 15, dodgeChance: 0.0 }; agent.lastMutationType = data.lastMutationType || null; agent.cumulativeReward = data.cumulativeReward ?? 5; agent.wins = data.wins ?? 0; agent.totalKills = data.totalKills ?? 0; agent.deaths = data.deaths ?? 0; agent.mutations = data.mutations ?? 0; agent.generation = data.generation ?? 1; if (data.permanent) { agent.permanent.skills = { ...(data.permanent.skills || agent.permanent.skills) }; agent.permanent.strategies = { ...(data.permanent.strategies || agent.permanent.strategies) }; agent.permanent.preferences = { ...(data.permanent.preferences || agent.permanent.preferences) }; if (data.permanent.muscleMemory) agent.permanent.muscleMemory = new Float32Array(data.permanent.muscleMemory); if (data.permanent.memory) { agent.permanent.memory.lastFoodPos = data.permanent.memory.lastFoodPos; agent.permanent.memory.lastFoodStep = data.permanent.memory.lastFoodStep || 0; agent.permanent.memory.visited = new Set(data.permanent.memory.visited || []); agent.permanent.memory.unvisited = data.permanent.memory.unvisited || []; } } if (data.strategyMemory) { agent.strategyMemory.winningStrategies = data.strategyMemory.winningStrategies || []; agent.strategyMemory.fightHistory = data.strategyMemory.fightHistory || {}; } if (data.predictive) { agent.predictive.confidence = data.predictive.confidence ?? 0.5; agent.predictive.predictionError = data.predictive.predictionError ?? 0; } if (data.skillEmbedding) agent.skillEmbedding = data.skillEmbedding.slice(); if (data.trainingStats) agent.net._stats = { ...data.trainingStats }; if (data.socialMemory) { agent.socialMemory.interactions = new Map(data.socialMemory.interactions || []); agent.socialMemory.reputation = data.socialMemory.reputation ?? 0; agent.socialMemory.lastAggressor = data.socialMemory.lastAggressor || null; agent.socialMemory.allies = data.socialMemory.allies || []; agent.socialMemory.killerHistory = data.socialMemory.killerHistory || []; } if (data.evolutionPoints !== undefined) agent.evolutionPoints = data.evolutionPoints; if (data.statChoices) agent.statChoices = [...data.statChoices]; if (data._lastHitDealt !== undefined) agent._lastHitDealt = data._lastHitDealt; if (data._knockbackVelocity) agent._knockbackVelocity = { ...data._knockbackVelocity }; if (data._stunTimer !== undefined) agent._stunTimer = data._stunTimer; if (data._forcedCombatTimer !== undefined) agent._forcedCombatTimer = data._forcedCombatTimer; if (data._learnFromWinner !== undefined) agent._learnFromWinner = data._learnFromWinner; if (data._lastKiller) agent._lastKiller = data._lastKiller; if (data._deathMode) agent._deathMode = data._deathMode; if (data._lastAttackDir !== undefined) agent._lastAttackDir = data._lastAttackDir; if (data._recentArcExposure) agent._recentArcExposure = [...data._recentArcExposure]; if (data._inEnemyArc !== undefined) agent._inEnemyArc = data._inEnemyArc; if (data._lastThreatAssessment) agent._lastThreatAssessment = { ...data._lastThreatAssessment }; if (data._totalDamageDealt !== undefined) agent._totalDamageDealt = data._totalDamageDealt; if (data._totalAttacks !== undefined) agent._totalAttacks = data._totalAttacks; if (data._successfulHits !== undefined) agent._successfulHits = data._successfulHits; if (data._tacticalHits !== undefined) agent._tacticalHits = data._tacticalHits; if (data._frontalHits !== undefined) agent._frontalHits = data._frontalHits; return agent; }
 }
 
-// ============================================================================
-// WORLD
-// ============================================================================
 class World { constructor(width, height) { this.logicalWidth = width; this.logicalHeight = height; this.step = 0; this.episode = 0; this.totalFights = 0; this.walls = []; this.enemies = []; this.projectiles = []; } reset() { this.step = 0; this.walls = []; for (let i = 0; i < 12; i++) this.walls.push({ x: 60 + Utils.rand(0, 700), y: 60 + Utils.rand(0, 460) }); this.projectiles = []; } spawnAgents(count = 2, blueWeapon = 'hammer', redWeapon = 'hammer') { this.enemies = []; const spawnPositions = [{ x: 150, y: 150 }, { x: 670, y: 450 }, { x: 150, y: 450 }, { x: 670, y: 150 }, { x: 100, y: 300 }, { x: 720, y: 300 }]; for (let i = 0; i < count; i++) { const uniqueSeed = `${arenaConfig.seed}_AGENT${i}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`; const weapon = i === 0 ? blueWeapon : redWeapon; const basePos = spawnPositions[i % spawnPositions.length]; const spawnX = Utils.clamp(basePos.x + Utils.rand(-30, 30), 40, 780); const spawnY = Utils.clamp(basePos.y + Utils.rand(-30, 30), 40, 560); const agent = new Agent(i === 0 ? 'blue' : 'red', spawnX, spawnY, i === 0 ? '#00d4ff' : '#ff5577', uniqueSeed, weapon); agent.stats.maxHealth = 100; agent.stats.damage = 3; agent.stats.fireRate = 15; agent.stats.dodgeChance = 0.0; const archetype = Utils.randInt(0, 4); if (archetype === 0) { agent.permanent.skills.combat = 0.7; agent.permanent.skills.exploring = 0.5; } else if (archetype === 1) { agent.permanent.skills.fleeing = 0.7; agent.permanent.skills.avoiding = 0.5; } else if (archetype === 2) { agent.permanent.skills.exploring = 0.7; agent.permanent.skills.combat = 0.4; } else { agent.permanent.skills.combat = 0.7; agent.permanent.skills.fleeing = 0.4; } this.enemies.push(agent); } } _resolveAgentCollisions(dt) { const COLLISION_RADIUS = Agent.COLLISION_RADIUS, REPULSION_STRENGTH = arenaConfig.PHYSICS.AGENT_REPULSION_STRENGTH, MIN_SEPARATION = COLLISION_RADIUS * 2 + 4, MAX_V = arenaConfig.PHYSICS.MAX_VELOCITY; for (let i = 0; i < this.enemies.length; i++) { const agentA = this.enemies[i]; if (!agentA || !agentA.alive) continue; for (let j = i + 1; j < this.enemies.length; j++) { const agentB = this.enemies[j]; if (!agentB || !agentB.alive) continue; const dx = agentB.x - agentA.x, dy = agentB.y - agentA.y, dist = Math.hypot(dx, dy); if (dist < MIN_SEPARATION && dist > 0) { const overlap = MIN_SEPARATION - dist, pushX = (dx / dist) * overlap * 0.5, pushY = (dy / dist) * overlap * 0.5; agentA.x -= pushX; agentA.y -= pushY; agentB.x += pushX; agentB.y += pushY; const repulseX = (dx / dist) * REPULSION_STRENGTH, repulseY = (dy / dist) * REPULSION_STRENGTH; agentA.vx -= repulseX * dt; agentA.vy -= repulseY * dt; agentB.vx += repulseX * dt; agentB.vy += repulseY * dt; agentA.vx = Utils.clamp(agentA.vx, -MAX_V, MAX_V); agentA.vy = Utils.clamp(agentA.vy, -MAX_V, MAX_V); agentB.vx = Utils.clamp(agentB.vx, -MAX_V, MAX_V); agentB.vy = Utils.clamp(agentB.vy, -MAX_V, MAX_V); } } } } update(dt) { this.step++; if (!this.enemies?.length || this.enemies.length < 2 || !this.enemies[0] || !this.enemies[1]) { console.error('World.update: Invalid agents array'); return { blue: null, red: null, episode: this.episode, totalFights: this.totalFights }; } for (const agent of this.enemies) { if (!agent || !agent.alive) continue; if (agent._heavyHit > 0) agent._heavyHit--; if (agent._pierced > 0) agent._pierced--; if (agent._pulseEffect > 0) agent._pulseEffect--; if (agent._continuousKB > 0) agent._continuousKB = Math.max(0, agent._continuousKB - 0.03); const enemies = this.enemies.filter(e => e && e.id !== agent.id && e.alive); if (enemies.length > 0) { const enemy = enemies[0], distance = Utils.dist(agent, enemy); if (distance < 150) { agent.enemyPredictor.recordMove(agent.lastDecision?.behaviors || {}, distance, enemy.health / enemy.stats.maxHealth, agent.lastDecision?.behaviors?.aggression || 0.5); if (distance < 100) agent.decideCombatAction(enemy, this); } } const decision = agent.decide(this); agent.move(decision.target, decision.speed, this.walls, dt, decision.output); agent.attackCooldown = Math.max(0, (agent.attackCooldown || 0) - 1); if (arenaConfig.enableFighting) { const opponents = this.enemies.filter(e => e && e.id !== agent.id && e.alive); if (opponents.length > 0) { const enemy = opponents[0], dist = Utils.dist(agent, enemy), range = agent.attackRange || Agent.ATTACK_RANGE; if (dist <= range && (agent.attackCooldown || 0) <= 0) { if (!agent.isPointInWeaponArc(enemy)) { Logger.log(`${agent.id.toUpperCase()} промахнулся: цель вне сектора ${agent.weapon.name}`, 'warn'); agent.attackCooldown = Math.floor(agent.stats.fireRate * 0.4); continue; } this.totalFights++; const aggression = agent.lastDecision?.behaviors?.aggression || 0.5, skill = agent.permanent?.skills?.combat || 0.3, baseDmg = agent.stats.damage; const directionalMult = enemy.calculateDirectionalDamageMultiplier(agent); const damage = Math.floor(Utils.clamp(baseDmg * (0.8 + aggression * 0.4) * (0.7 + skill * 0.6) * directionalMult, 1, 15)); const dodgeRoll = Math.random(); if (dodgeRoll < enemy.stats.dodgeChance) Logger.log(`🛡️ ${enemy.id.toUpperCase()} уклонился!`, 'warn'); else { enemy.health -= damage; enemy._lastHitReceived = damage; agent._lastHitDealt = damage; agent._totalAttacks++; agent._totalDamageDealt += damage; agent._successfulHits++; if (directionalMult >= 1.5) agent._tacticalHits++; else if (directionalMult <= 0.7) agent._frontalHits++; agent._lastAttackDir = Math.atan2(enemy.y - agent.y, enemy.x - agent.x); agent._applyKnockback(enemy, aggression, agent.weapon); const hitType = directionalMult >= 1.5 ? '🔙 СПИНА' : (directionalMult <= 0.7 ? '🎯 ЛОБ' : '🔄 ФЛАНГ'); Logger.log(`${agent.id.toUpperCase()} ${hitType}→ ${enemy.id.toUpperCase()} -${damage} HP [x${directionalMult.toFixed(2)}]`, 'info'); } agent.attackCooldown = agent.stats.fireRate; if (enemy.health <= 0) { enemy.health = 0; enemy.alive = false; Logger.log(`🏳️ ${enemy.id.toUpperCase()} повержен ${agent.id.toUpperCase()}`, 'success'); } } else if (arenaConfig.enableRanged && (agent.attackCooldown || 0) <= 0) { if (agent.weapon.type === 'ranged') { const aggr = agent.lastDecision?.behaviors?.aggression || 0.4; if (aggr > 0.3 && dist > range && dist <= 200) { const dir = Utils.normalize(enemy.x - agent.x, enemy.y - agent.y); const speed = 10 + Math.random() * 4; const dmg = Math.floor(Utils.clamp(agent.stats.damage * 0.5 * (0.8 + aggr * 0.8), 1, 5)); const p = new Projectile(agent.x + dir.x * 12, agent.y + dir.y * 12, dir.x * speed, dir.y * speed, agent.id, dmg, 80); this.projectiles.push(p); agent.attackCooldown = agent.stats.fireRate + 5; Logger.log(`${agent.id.toUpperCase()} стреляет → ${enemy.id.toUpperCase()} (-${dmg} HP)`, 'info'); } } } } } const reward = agent.calculateReward(this, decision), nextInputs = agent.getInputs(this); agent.learn(reward, decision, nextInputs); } this._resolveAgentCollisions(dt); for (const p of this.projectiles) { if (!p?.alive) continue; p.update(dt); for (const w of this.walls) { if (Utils.dist(p, w) < 14 + p.radius) { p.alive = false; break; } } if (!p.alive) continue; for (const e of this.enemies) { if (!e || !e.alive || e.id === p.owner) continue; if (Utils.dist(p, e) < 15) { const dodgeRoll = Math.random(); if (dodgeRoll < e.stats.dodgeChance) Logger.log(`🛡️ ${e.id.toUpperCase()} уклонился от пули!`, 'warn'); else { e.health -= p.damage; e._lastHitReceived = p.damage; Logger.log(`🎯 ${p.owner.toUpperCase()} → ${e.id.toUpperCase()} -${p.damage} HP`, 'info'); } p.alive = false; if (e.health <= 0) { e.health = 0; e.alive = false; Logger.log(`🏳️ ${e.id.toUpperCase()} убит ${p.owner.toUpperCase()}`, 'success'); } break; } } } this.projectiles = this.projectiles.filter(p => p?.alive); const deadAgents = this.enemies.filter(a => a && !a.alive); if (deadAgents.length > 0) { this.episode++; Logger.log(`📊 Эпизод ${this.episode} завершен`, 'info'); for (const deadAgent of deadAgents) { const winner = this.enemies.find(e => e && e.id !== deadAgent.id && e.alive); if (winner && arenaConfig.enableEvolution) { winner.wins++; winner.totalKills++; winner.generation++; winner.evolutionPoints = 2; winner.applyEvolutionPoints(); winner.cumulativeReward += arenaConfig.EVOLUTION.WIN_BONUS; winner.net.updateDiagnostics({ kill: true }); Logger.log(`🏆 ${winner.id.toUpperCase()} Gen${winner.generation} wins! Total Wins: ${winner.wins}`, 'success'); deadAgent.deaths++; deadAgent._lastKiller = winner.id; deadAgent._deathMode = deadAgent.mode; deadAgent.net.updateDiagnostics({ death: true }); deadAgent.learnFromWinner(winner); deadAgent.net.mutate(arenaConfig.EVOLUTION.MUTATION_ON_DEATH, 0.2); const respawnPositions = [{ x: 150, y: 150 }, { x: 670, y: 450 }, { x: 150, y: 450 }, { x: 670, y: 150 }]; const basePos = respawnPositions[Utils.randInt(0, 3)]; deadAgent.reset(Utils.clamp(basePos.x + Utils.rand(-20, 20), 40, 780), Utils.clamp(basePos.y + Utils.rand(-20, 20), 40, 560)); deadAgent.alive = true; Logger.log(`🔄 ${deadAgent.id.toUpperCase()} Gen${deadAgent.generation} died (${deadAgent.deaths} deaths) — LEARNING FROM ${winner.id.toUpperCase()}`, 'warn'); } } } return { blue: this.enemies[0] || null, red: this.enemies[1] || null, episode: this.episode, totalFights: this.totalFights }; } resetEpisode() { this.enemies.forEach(a => { if (a) { a.reset(a.id === 'blue' ? 150 : 670, a.id === 'blue' ? 150 : 450); a.alive = true; } }); Logger.log(`🔄 Новый эпизод ${this.episode}`, 'info'); } draw(ctx, vision = false, trail = true) { if (!ctx) return; ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); const grad = ctx.createLinearGradient(0, 0, this.logicalWidth, this.logicalHeight); grad.addColorStop(0, '#0a0a15'); grad.addColorStop(1, '#1a1a2e'); ctx.fillStyle = grad; ctx.fillRect(0, 0, this.logicalWidth, this.logicalHeight); ctx.strokeStyle = 'rgba(50,50,90,0.25)'; ctx.lineWidth = 1; for (let x = 0; x < this.logicalWidth; x += 50) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, this.logicalHeight); ctx.stroke(); } for (let y = 0; y < this.logicalHeight; y += 50) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(this.logicalWidth, y); ctx.stroke(); } ctx.fillStyle = '#4a4a7a'; for (const w of this.walls) { ctx.beginPath(); ctx.arc(w.x, w.y, 14, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#6a6a9a'; ctx.lineWidth = 2; ctx.stroke(); } for (const pr of this.projectiles || []) if (pr) pr.draw(ctx); for (const a of this.enemies) if (a) a.draw(ctx, vision, trail); ctx.fillStyle = 'rgba(100,100,140,0.5)'; ctx.font = '10px monospace'; ctx.fillText(`Step: ${this.step} | Ep: ${this.episode} | Fights: ${this.totalFights}`, 12, this.logicalHeight - 12); } }
 
-// ============================================================================
-// LOGGER
-// ============================================================================
 const Logger = Object.freeze({ _escape: (str) => String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])), _truncate: (str, max = 180) => str.length > max ? str.slice(0, max) + '…' : str, log: (msg, type = 'info') => { const safeMsg = Logger._escape(Logger._truncate(msg)), safeType = ['info', 'success', 'warn', 'error', 'learning'].includes(type) ? type : 'info'; const logEl = document.getElementById('eventLog'); if (!logEl) { console.log(`[${safeType}] ${safeMsg}`); return; } const entry = document.createElement('div'); entry.className = `log-entry ${safeType}`; entry.textContent = `[${new Date().toLocaleTimeString()}] ${safeMsg}`; logEl.insertBefore(entry, logEl.firstChild); while (logEl.children.length > 60) logEl.removeChild(logEl.lastChild); logEl.scrollTop = 0; } });
 
-// ============================================================================
-// GAME ENGINE
-// ============================================================================
 class GameEngine { constructor() { this.canvas = document.getElementById('gameCanvas'); if (!this.canvas) { console.error('Canvas element not found'); alert('Ошибка: Canvas элемент не найден!'); return; } this.ctx = this.canvas.getContext('2d'); if (!this.ctx) { console.error('Failed to get canvas context'); alert('Ошибка: Не удалось получить контекст canvas!'); return; } this.settings = { ...arenaConfig }; this.logicalWidth = arenaConfig.ARCH.LOGICAL_WIDTH; this.logicalHeight = arenaConfig.ARCH.LOGICAL_HEIGHT; this.resize(); this.scaleX = this.canvas.width / this.logicalWidth; this.scaleY = this.canvas.height / this.logicalHeight; this.world = new World(this.logicalWidth, this.logicalHeight); this.running = false; this.lastTime = 0; this.fps = 60; this.vision = false; this.debug = false; this.showMetrics = true; this.selectedAgent = null; this.rafId = null; this._onResize = this._onResize.bind(this); this._onClick = this._onClick.bind(this); this._onKey = this._onKey.bind(this); this.setupEvents(); this.init(); } resize() { const parent = this.canvas?.parentElement; if (!parent) return; this.canvas.width = parent.clientWidth; this.canvas.height = parent.clientHeight; this.scaleX = this.canvas.width / this.logicalWidth; this.scaleY = this.canvas.height / this.logicalHeight; } _onResize() { this.resize(); } setupEvents() { window.addEventListener('resize', this._onResize); const handlePointer = (e) => { const rect = this.canvas.getBoundingClientRect(), scaleX = this.canvas.width / rect.width, scaleY = this.canvas.height / rect.height, clientX = e.touches?.[0]?.clientX ?? e.clientX, clientY = e.touches?.[0]?.clientY ?? e.clientY, x = (clientX - rect.left) * scaleX, y = (clientY - rect.top) * scaleY; this._onClick({ x, y }); }; this.canvas.addEventListener('click', handlePointer); this.canvas.addEventListener('touchend', handlePointer); this.canvas.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false }); document.addEventListener('keydown', this._onKey); this.canvas.setAttribute('tabindex', '0'); this.canvas.setAttribute('role', 'application'); this.canvas.setAttribute('aria-label', 'AI Arena simulation canvas'); const bindClick = (id, handler) => { const btn = document.getElementById(id); if (btn) btn.onclick = handler; }; bindClick('btnStart', () => this.toggle()); bindClick('btnReset', () => this.reset()); bindClick('btnSave', () => this.save()); bindClick('btnLoad', () => this.load()); bindClick('btnExport', () => this.exportWeights()); bindClick('btnImport', () => document.getElementById('fileImport')?.click()); bindClick('btnPretrain', () => document.getElementById('filePretrain')?.click()); bindClick('btnDebug', () => this.toggleDebug()); bindClick('btnVision', () => { this.vision = !this.vision; this.updateBtns(); }); bindClick('btnMetrics', () => { this.showMetrics = !this.showMetrics; this.updateBtns(); }); bindClick('btnApplyWeapons', () => this.applyWeapons()); bindClick('btnRandomWeapons', () => this.randomWeapons()); const fileImport = document.getElementById('fileImport'), filePretrain = document.getElementById('filePretrain'); if (fileImport) fileImport.onchange = (e) => this.importWeights(e); if (filePretrain) filePretrain.onchange = (e) => this.importPretrained(e); const bindSlider = (id, key, displayId) => { const slider = document.getElementById(id), display = document.getElementById(displayId); if (!slider || !display) return; slider.oninput = (e) => { const value = parseFloat(e.target.value); this.settings[key] = value; display.textContent = value; if (this.world?.enemies) { this.world.enemies.forEach(a => { if (a?.net) { a.net.lr = this.settings.learningRate; a.net.lambda = this.settings.lambda; a.net.gamma = this.settings.gamma; } if (a?.critic) a.critic.lr = this.settings.learningRate; if (a?.policySelector) a.policySelector.lr = this.settings.learningRate * 0.6; }); } }; }; bindSlider('learningRate', 'learningRate', 'learningRateValue'); bindSlider('lambda', 'lambda', 'lambdaValue'); bindSlider('mutationRate', 'mutationRate', 'mutationRateValue'); const bindToggle = (id, key) => { const toggle = document.getElementById(id); if (toggle) toggle.onchange = (e) => { this.settings[key] = e.target.checked; }; }; bindToggle('enableTraining', 'enableTraining'); bindToggle('enableCritic', 'enableCritic'); bindToggle('enablePolicySelector', 'enablePolicySelector'); bindToggle('enableEvolution', 'enableEvolution'); bindToggle('enableSkillEvolution', 'enableSkillEvolution'); bindToggle('enableMoE', 'enableMoE'); bindToggle('enableConsolidation', 'enableConsolidation'); bindToggle('enableFighting', 'enableFighting'); bindToggle('enableRanged', 'enableRanged'); bindToggle('enableVisualization', 'enableVisualization'); bindToggle('enableHebbian', 'enableHebbian'); bindToggle('compactInputs', 'compactInputs'); bindToggle('enableWeightInheritance', 'enableWeightInheritance'); bindToggle('enableTactical', 'enableTactical'); } _onKey(e) { if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault(); switch (e.key) { case ' ': e.preventDefault(); this.toggle(); break; case '1': this.selectedAgent = this.world?.enemies?.[0]; this.updateDebugPanel(); break; case '2': this.selectedAgent = this.world?.enemies?.[1]; this.updateDebugPanel(); break; case 'Tab': e.preventDefault(); const focusable = document.querySelectorAll('button, input, [tabindex="0"]'), idx = Array.from(focusable).indexOf(document.activeElement); focusable[(idx + 1) % focusable.length]?.focus(); break; case 'Escape': if (this.debug) { this.debug = false; this.updateDebugPanel(); } break; } } _onClick({ x, y }) { if (!this.debug) return; const lx = x / this.scaleX, ly = y / this.scaleY; let nearest = null, minD = 25; for (const a of this.world?.enemies || []) { if (!a) continue; const d = Math.hypot(a.x - lx, a.y - ly); if (d < minD) { minD = d; nearest = a; } } this.selectedAgent = nearest; if (nearest) Logger.log(`🔍 Выбран агент ${nearest.id}`, 'info'); this.updateDebugPanel(); } init() { this.world.reset(); const blueWeapon = document.getElementById('blueWeaponSelect')?.value || 'hammer'; const redWeapon = document.getElementById('redWeaponSelect')?.value || 'hammer'; this.world.spawnAgents(2, blueWeapon, redWeapon); if (!this.world.enemies?.length || this.world.enemies.length < 2) { console.error('Failed to initialize agents'); alert('Ошибка: не удалось создать агентов!'); return; } this.world.enemies.forEach(a => { if (!a) return; a.net.lr = this.settings.learningRate; a.net.lambda = this.settings.lambda; a.net.gamma = this.settings.gamma; if (a.critic) a.critic.lr = this.settings.learningRate; if (a.policySelector) a.policySelector.lr = this.settings.learningRate * 0.6; }); this.updateStats(); this.updateMetrics(); if (this.world.enemies[0] && this.world.enemies[1]) this.world.draw(this.ctx, false, true); Logger.log('🚀 AI ARENA v4.0.2 TACTICAL инициализирована', 'success'); Logger.log('🧠 CORTEX-2: P(32)→A(64)→M(144)→C(256)→S(32)→D(16)', 'success'); Logger.log('🔑 Детерминированная инициализация от ключа', 'success'); Logger.log('⚔️ Directional combat + Theory of Mind', 'success'); } toggle() { this.running = !this.running; const btn = document.getElementById('btnStart'); if (btn) { btn.textContent = this.running ? '⏸ Пауза' : '▶ Старт'; btn.className = this.running ? 'btn-danger' : 'btn-primary'; btn.setAttribute('aria-pressed', String(this.running)); } Logger.log(this.running ? '▶ Симуляция запущена' : '⏸ Пауза', 'info'); if (this.running) { this.lastTime = performance.now(); this.loop(); } } reset() { this.running = false; const btn = document.getElementById('btnStart'); if (btn) { btn.textContent = '▶ Старт'; btn.className = 'btn-primary'; btn.setAttribute('aria-pressed', 'false'); } this.world = new World(this.logicalWidth, this.logicalHeight); this.world.reset(); const blueWeapon = document.getElementById('blueWeaponSelect')?.value || 'hammer'; const redWeapon = document.getElementById('redWeaponSelect')?.value || 'hammer'; this.world.spawnAgents(2, blueWeapon, redWeapon); this.world.enemies?.forEach(a => { if (!a) return; a.net.lr = this.settings.learningRate; a.net.lambda = this.settings.lambda; a.net.gamma = this.settings.gamma; if (a.critic) a.critic.lr = this.settings.learningRate; if (a.policySelector) a.policySelector.lr = this.settings.learningRate * 0.6; }); Logger.log('🔄 Симуляция сброшена', 'warn'); this.updateStats(); this.updateMetrics(); } loop() { if (!this.running) return; if (!this.ctx || !this.world) { console.error('Context or world lost'); this.running = false; return; } if (!this.world.enemies?.length || this.world.enemies.length < 2 || !this.world.enemies[0] || !this.world.enemies[1]) { console.error('Invalid agents in world'); this.running = false; Logger.log('❌ Ошибка: агенты отсутствуют или невалидны', 'error'); return; } const now = performance.now(), dt = Math.min((now - this.lastTime) / 16.67, 3), fps = Math.round(1000 / (now - this.lastTime + 0.001)); this.fps = fps; this.lastTime = now; const fpsEl = document.getElementById('fpsCounter'); if (fpsEl) fpsEl.textContent = `FPS: ${this.fps}`; try { const state = this.world.update(dt); this.world.draw(this.ctx, this.vision); this.updateStats(state); if (this.showMetrics) this.updateMetrics(); if (this.debug) this.updateDebugPanel(); } catch (e) { console.error('Loop error:', e); Logger.log(`❌ Ошибка в цикле: ${e.message}`, 'error'); this.running = false; return; } this.rafId = requestAnimationFrame(() => this.loop()); } updateStats(state = null) { if (!state) { if (!this.world?.enemies?.length || this.world.enemies.length < 2 || !this.world.enemies[0] || !this.world.enemies[1]) return; state = { blue: this.world.enemies[0], red: this.world.enemies[1], episode: this.world.episode, totalFights: this.world.totalFights }; } const { blue, red, episode, totalFights } = state; if (!blue || !red) return; const updateHealth = (el, agent) => { if (el) { el.style.width = `${(agent.health / agent.stats.maxHealth) * 100}%`; el.setAttribute('aria-valuenow', String(Math.round(agent.health / agent.stats.maxHealth * 100))); } }; updateHealth(document.getElementById('blue-health'), blue); updateHealth(document.getElementById('red-health'), red); const updateText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = typeof val === 'number' ? val.toFixed(2) : val; }; updateText('blue-reward', blue.cumulativeReward); updateText('red-reward', red.cumulativeReward); updateText('blue-wins', blue.wins); updateText('red-wins', red.wins); updateText('blue-gen', blue.generation); updateText('red-gen', red.generation); const updateMode = (el, mode) => { if (el) { el.className = `mode-badge mode-${mode}`; el.textContent = mode.toUpperCase(); } }; updateMode(document.getElementById('blue-mode'), blue.mode); updateMode(document.getElementById('red-mode'), red.mode); updateText('episodeStat', episode); updateText('stepStat', this.world.step); updateText('totalFightsStat', totalFights); updateText('obstaclesStat', this.world.walls.length); const avgFit = (blue.cumulativeReward + red.cumulativeReward) / 2, bestFit = Math.max(blue.cumulativeReward, red.cumulativeReward), fitnessEl = document.getElementById('fitnessStat'), bestFitnessEl = document.getElementById('bestFitnessStat'); if (fitnessEl) fitnessEl.textContent = avgFit.toFixed(1); if (bestFitnessEl) bestFitnessEl.textContent = bestFit.toFixed(1); const progressEl = document.getElementById('episodeProgress'); if (progressEl) { progressEl.style.width = `${(episode % 10) * 10}%`; progressEl.setAttribute('aria-valuenow', String(Math.round((episode % 10) * 10))); } const updateAgentStats = (agent, prefix) => { const hp = document.getElementById(`${prefix}-stat-hp`), dmg = document.getElementById(`${prefix}-stat-dmg`), spd = document.getElementById(`${prefix}-stat-spd`), dod = document.getElementById(`${prefix}-stat-dod`), weapon = document.getElementById(`${prefix}-weapon`); if (hp) hp.textContent = `HP:${agent.stats.maxHealth}`; if (dmg) dmg.textContent = `DMG:${agent.stats.damage}`; if (spd) spd.textContent = `SPD:${agent.stats.fireRate}`; if (dod) dod.textContent = `DOD:${Math.round(agent.stats.dodgeChance * 100)}%`; if (weapon) weapon.textContent = `${agent.weapon.icon} ${agent.weapon.name.toUpperCase()}`; const skills = ['hunting', 'fleeing', 'combat', 'exploring', 'avoiding'], container = document.getElementById(`${prefix}-skills`); if (container) { skills.forEach((skill, i) => { const bar = container.children[i]?.querySelector('.skill-fill'); if (bar) bar.style.width = `${(agent.permanent.skills[skill] || 0) * 100}%`; }); } }; updateAgentStats(blue, 'blue'); updateAgentStats(red, 'red'); } updateMetrics() { if (!this.showMetrics || !this.world?.enemies?.length || this.world.enemies.length < 2 || !this.world.enemies[0] || !this.world.enemies[1]) return; const blue = this.world.enemies[0], red = this.world.enemies[1], blueMetrics = blue.getLearningMetrics(), redMetrics = red.getLearningMetrics(), avgTD = (blueMetrics.avgTDError + redMetrics.avgTDError) / 2, avgPred = (blueMetrics.avgPredictionError + redMetrics.avgPredictionError) / 2, avgWin = (blueMetrics.winRate + redMetrics.winRate) / 2, avgDmg = (blueMetrics.avgDamage + redMetrics.avgDamage) / 2, avgAcc = (blueMetrics.accuracy + redMetrics.accuracy) / 2; const tdEl = document.getElementById('metricTDError'), winEl = document.getElementById('metricWinRate'), dmgEl = document.getElementById('metricDamage'), accEl = document.getElementById('metricAccuracy'); if (tdEl) { tdEl.textContent = avgTD.toFixed(4); tdEl.className = `metric-value${avgTD < 0.5 ? ' good' : avgTD > 2 ? ' degrading' : ''}`; } if (winEl) winEl.textContent = avgWin.toFixed(2); if (dmgEl) dmgEl.textContent = avgDmg.toFixed(2); if (accEl) accEl.textContent = avgAcc.toFixed(2); const progressTDEl = document.getElementById('progressTD'), progressPredEl = document.getElementById('progressPred'); if (progressTDEl) { const w = Utils.clamp(100 - avgTD * 20, 0, 100); progressTDEl.style.width = `${w}%`; progressTDEl.setAttribute('aria-valuenow', String(Math.round(w))); } if (progressPredEl) { const w = Utils.clamp(100 - avgPred * 100, 0, 100); progressPredEl.style.width = `${w}%`; progressPredEl.setAttribute('aria-valuenow', String(Math.round(w))); } } updateDebugPanel() { const panel = document.getElementById('debugPanel'), isActive = this.debug && this.selectedAgent; panel.classList.toggle('active', isActive); panel.hidden = !isActive; if (!isActive || !this.selectedAgent) return; const info = this.selectedAgent.getDebugInfo(), setDebugValue = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; }; setDebugValue('dbgMode', info.mode); setDebugValue('dbgWeapon', info.weapon); setDebugValue('dbgHealth', info.health); setDebugValue('dbgWins', info.wins); setDebugValue('dbgTDErr', info.tdError); setDebugValue('dbgPredErr', info.predError); setDebugValue('dbgThreat', info.threat); setDebugValue('dbgFlank', info.flank); setDebugValue('dbgEnemyIntent', info.enemyIntent); setDebugValue('dbgIntentConf', info.intentConf); } toggleDebug() { this.debug = !this.debug; const btn = document.getElementById('btnDebug'); if (btn) { btn.classList.toggle('active', this.debug); btn.setAttribute('aria-pressed', String(this.debug)); } this.updateDebugPanel(); Logger.log(`🔍 Debug ${this.debug ? 'включён' : 'выключен'}`, this.debug ? 'success' : 'info'); } updateBtns() { const visionBtn = document.getElementById('btnVision'), metricsBtn = document.getElementById('btnMetrics'); if (visionBtn) { visionBtn.classList.toggle('active', this.vision); visionBtn.setAttribute('aria-pressed', String(this.vision)); } if (metricsBtn) { metricsBtn.classList.toggle('active', this.showMetrics); metricsBtn.setAttribute('aria-pressed', String(this.showMetrics)); } } save() { try { const data = { version: '4.0.2', timestamp: Date.now(), settings: this.settings, world: { episode: this.world.episode, step: this.world.step, totalFights: this.world.totalFights, walls: this.world.walls.map(w => ({ x: w.x, y: w.y })) }, agents: this.world.enemies.map(a => a ? a.toJSON() : null).filter(a => a) }; localStorage.setItem('aiArenaV4Tactical', JSON.stringify(data)); Logger.log('💾 Сохранено (v4.0.2 Tactical)', 'success'); } catch (e) { if (e.name === 'QuotaExceededError') Logger.log('💾 Сохранение отклонено: превышен лимит хранилища', 'error'); else Logger.log(`❌ Ошибка сохранения: ${e.message}`, 'error'); } } load() { try { const raw = localStorage.getItem('aiArenaV4Tactical'); if (!raw) { Logger.log('❌ Нет сохранений v4.0.2', 'error'); return; } const data = JSON.parse(raw); if (data.version !== '4.0.2') { Logger.log('⚠️ Требуется сохранение v4.0.2', 'warn'); return; } this.settings = { ...this.settings, ...data.settings }; document.getElementById('learningRate').value = this.settings.learningRate; document.getElementById('lambda').value = this.settings.lambda; document.getElementById('learningRateValue').textContent = this.settings.learningRate; document.getElementById('lambdaValue').textContent = this.settings.lambda; document.getElementById('mutationRate').value = this.settings.mutationRate; document.getElementById('mutationRateValue').textContent = this.settings.mutationRate; this.world.episode = data.world?.episode || 0; this.world.step = data.world?.step || 0; this.world.totalFights = data.world?.totalFights || 0; this.world.walls = data.world?.walls || []; this.world.enemies = data.agents?.map((a, i) => a ? Agent.fromJSON(a, i === 0 ? '#00d4ff' : '#ff5577') : null).filter(a => a) || []; this.world.enemies.forEach(a => { if (!a) return; a.net.lr = this.settings.learningRate; a.net.lambda = this.settings.lambda; a.net.gamma = this.settings.gamma; if (a.critic) a.critic.lr = this.settings.learningRate; if (a.policySelector) a.policySelector.lr = this.settings.learningRate * 0.6; }); Logger.log('📂 Загружено сохранение v4.0.2', 'success'); this.updateStats({ blue: this.world.enemies[0], red: this.world.enemies[1], episode: this.world.episode, totalFights: this.world.totalFights }); this.updateMetrics(); } catch (e) { Logger.log(`❌ Ошибка загрузки: ${e.message}`, 'error'); } } exportWeights() { try { const data = { version: '4.0.2', timestamp: Date.now(), blue: this.world.enemies[0]?.toJSON() || null, red: this.world.enemies[1]?.toJSON() || null }, blob = new Blob([JSON.stringify(data)], { type: 'application/json' }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = `arena-v4.0.2-tactical-${Date.now()}.json`; a.click(); URL.revokeObjectURL(url); Logger.log('📤 Агенты экспортированы', 'success'); } catch (e) { Logger.log(`❌ Ошибка экспорта: ${e.message}`, 'error'); } } importWeights(e) { const file = e.target.files?.[0]; if (!file) return; if (file.size > 10 * 1024 * 1024) { Logger.log('❌ Файл слишком большой (макс. 10MB)', 'error'); e.target.value = ''; return; } const reader = new FileReader(); reader.onload = (ev) => { try { const result = ev.target?.result; if (typeof result !== 'string') throw new Error('Invalid file content'); const data = JSON.parse(result); if (data.version !== '4.0.2') throw new Error('Требуется формат v4.0.2'); if (!data.blue || !data.red) throw new Error('Неверная структура файла'); if (data.blue && this.world.enemies[0]) this.world.enemies[0] = Agent.fromJSON(data.blue, '#00d4ff'); if (data.red && this.world.enemies[1]) this.world.enemies[1] = Agent.fromJSON(data.red, '#ff5577'); this.world.enemies.forEach(a => { if (!a) return; a.net.lr = this.settings.learningRate; a.net.lambda = this.settings.lambda; a.net.gamma = this.settings.gamma; if (a.critic) a.critic.lr = this.settings.learningRate; if (a.policySelector) a.policySelector.lr = this.settings.learningRate * 0.6; }); Logger.log('📥 Агенты импортированы', 'success'); } catch (err) { Logger.log(`❌ Ошибка импорта: ${err.message}`, 'error'); } finally { e.target.value = ''; } }; reader.readAsText(file); } importPretrained(e) { const file = e.target.files?.[0]; if (!file) return; if (file.size > 10 * 1024 * 1024) { Logger.log('❌ Файл слишком большой (макс. 10MB)', 'error'); e.target.value = ''; return; } const reader = new FileReader(); reader.onload = (ev) => { try { const result = ev.target?.result; if (typeof result !== 'string') throw new Error('Invalid file content'); const data = JSON.parse(result); if (data.blue && this.world.enemies[0]) { const b = data.blue; if (b.net) this.world.enemies[0].net = Cortex2Brain.fromJSON(b.net); if (b.critic) this.world.enemies[0].critic = CriticNetwork.fromJSON(b.critic); if (b.policySelector) this.world.enemies[0].policySelector = PolicySelector.fromJSON(b.policySelector); } if (data.red && this.world.enemies[1]) { const r = data.red; if (r.net) this.world.enemies[1].net = Cortex2Brain.fromJSON(r.net); if (r.critic) this.world.enemies[1].critic = CriticNetwork.fromJSON(r.critic); if (r.policySelector) this.world.enemies[1].policySelector = PolicySelector.fromJSON(r.policySelector); } this.world.enemies.forEach(a => { if (!a) return; a.net.lr = this.settings.learningRate; a.net.lambda = this.settings.lambda; a.net.gamma = this.settings.gamma; if (a.critic) a.critic.lr = this.settings.learningRate; if (a.policySelector) a.policySelector.lr = this.settings.learningRate * 0.6; }); Logger.log('📥 Pretrained weights загружены', 'success'); } catch (err) { Logger.log(`❌ Ошибка загрузки pretrain: ${err.message}`, 'error'); } finally { e.target.value = ''; } }; reader.readAsText(file); } destroy() { if (this.rafId) { cancelAnimationFrame(this.rafId); this.rafId = null; } window.removeEventListener('resize', this._onResize); document.removeEventListener('keydown', this._onKey); if (this.canvas) { this.canvas.removeEventListener('click', this._onClick); this.canvas.removeEventListener('touchend', this._onClick); } this.running = false; } applyWeapons() { const blueWeapon = document.getElementById('blueWeaponSelect')?.value || 'hammer'; const redWeapon = document.getElementById('redWeaponSelect')?.value || 'hammer'; if (this.world.enemies[0]) { this.world.enemies[0].setWeapon(blueWeapon); Logger.log(`🔵 BLUE weapon changed to ${WEAPONS[blueWeapon].icon} ${WEAPONS[blueWeapon].name} (arc:${(WEAPONS[blueWeapon].arcAngle/Math.PI*180).toFixed(0)}°)`, 'success'); } if (this.world.enemies[1]) { this.world.enemies[1].setWeapon(redWeapon); Logger.log(`🔴 RED weapon changed to ${WEAPONS[redWeapon].icon} ${WEAPONS[redWeapon].name} (arc:${(WEAPONS[redWeapon].arcAngle/Math.PI*180).toFixed(0)}°)`, 'success'); } this.updateStats(); } randomWeapons() { const weaponTypes = Object.keys(WEAPONS); const blueWeapon = weaponTypes[Utils.randInt(0, weaponTypes.length - 1)]; const redWeapon = weaponTypes[Utils.randInt(0, weaponTypes.length - 1)]; document.getElementById('blueWeaponSelect').value = blueWeapon; document.getElementById('redWeaponSelect').value = redWeapon; this.applyWeapons(); Logger.log(`🎲 Random weapons: BLUE=${blueWeapon}(arc:${(WEAPONS[blueWeapon].arcAngle/Math.PI*180).toFixed(0)}°), RED=${redWeapon}(arc:${(WEAPONS[redWeapon].arcAngle/Math.PI*180).toFixed(0)}°)`, 'info'); } }
 
-// ============================================================================
-// GLOBAL INITIALIZATION
-// ============================================================================
 window.arenaGame = null;
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initArena); else initArena();
 function initArena() { try { window.arenaGame = new GameEngine(); if (window.arenaGame) console.log('✅ AI Arena v4.0.2 Tactical initialized'); } catch (e) { console.error('❌ Failed to initialize AI Arena:', e); console.error('Stack:', e.stack); alert('Ошибка инициализации: ' + e.message); } }
