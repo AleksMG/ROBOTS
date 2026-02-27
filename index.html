@@ -382,8 +382,8 @@ window.arenaConfig = {
     enableTactical: true, enableReflexPath: true, enableVehiclePhysics: true,
     enableSmartSteering: true,
     learningRate: 0.015, lambda: 0.95, gamma: 0.99, entropyCoeff: 0.01,
-    mutationRate: 0.15, skillGrowthRate: 0.04, hebbianRate: 0.002,
-    baseSpeed: 22,
+    mutationRate: 0.10, skillGrowthRate: 0.04, hebbianRate: 0.002,
+    baseSpeed: 10,
     seed: 'ARENA_V5_COMMITTED_' + Date.now().toFixed(0),
     timestamp: Date.now(), version: '5.0.4-COMMITTED',
     ARCH: Object.freeze({
@@ -396,11 +396,11 @@ window.arenaConfig = {
         MAX_VELOCITY: 25, VELOCITY_DAMPING: 0.88,
         KNOCKBACK_MASS: 1.0, FRICTION_GROUND: 0.92,
         VEHICLE: Object.freeze({
-            MAX_SPEED: 22, MAX_REVERSE_SPEED: 6, ACCELERATION: 0.25, BRAKING: 0.45,
-            FRICTION: 0.98, MAX_TURN_RATE: 18.0, TURN_SPEED_FACTOR: 1.0,
-            MIN_TURN_SPEED: 0.05, DRIFT_FACTOR: 0.00, COLLISION_RADIUS: 22,
+            MAX_SPEED: 10, MAX_REVERSE_SPEED: 2, ACCELERATION: 0.25, BRAKING: 0.75,
+            FRICTION: 0.98, MAX_TURN_RATE: 18.0, TURN_SPEED_FACTOR: 0.7,
+            MIN_TURN_SPEED: 0.02, DRIFT_FACTOR: 0.00, COLLISION_RADIUS: 22,
             WEAPON_MOUNT: { x: 24, y: 0 },
-            STEER_ASSIST_STRENGTH: 1.00, STEER_DEADZONE: 0.00, STEER_PROPORTIONAL_GAIN: 40.0,
+            STEER_ASSIST_STRENGTH: 1.00, STEER_DEADZONE: 0.01, STEER_PROPORTIONAL_GAIN: 40.0,
             WALL_AVOIDANCE_DIST: 120, WALL_AVOIDANCE_STRENGTH: 0.95,
             REVERSE_PENALTY: 0.40
         })
@@ -408,16 +408,16 @@ window.arenaConfig = {
     EVOLUTION: Object.freeze({
         DEATH_PENALTY: 0, FLEE_PENALTY: -0.5, WIN_BONUS: 200,
         LEARN_FROM_WINNER_RATE: 0.50, FORCED_COMBAT_AFTER_DEATH: 30,
-        MUTATION_ON_DEATH: 0.2, COMBAT_SKILL_GROWTH: 0.05
+        MUTATION_ON_DEATH: 0.1, COMBAT_SKILL_GROWTH: 0.05
     }),
     TACTICAL: Object.freeze({
         FLANK_BONUS: 0.05, FRONT_PENALTY: 0.00, MIN_FLANK_COMMIT: 0.4, CIRCLE_STRENGTH: 0.25,
         RETREAT_HP_THRESHOLD: 0.20, THREAT_BUFFER_ANGLE: Math.PI * 0.1,
         DAMAGE_FRONT: 0.6, DAMAGE_FLANK: 1.0, DAMAGE_BACK: 1.8,
         VICTORY_FOCUS_REWARD: 0.00, EXPOSURE_PENALTY: 0.08,
-        COMBAT_STAY_REWARD: 0.06, REVERSE_ONLY_TACTICAL: false,
+        COMBAT_STAY_REWARD: 0.15, REVERSE_ONLY_TACTICAL: false,
         FACING_ENEMY_REWARD: 0.00, WALL_PENALTY: 0.05,
-        BACKPEDAL_PENALTY: 0.40, AGGRESSIVE_APPROACH_REWARD: 0.35
+        BACKPEDAL_PENALTY: 0.40, AGGRESSIVE_APPROACH_REWARD: 0.45
     }),
     CORTEX: Object.freeze({
         DIM_P: 32, DIM_A: 64, DIM_M: 144, DIM_C: 256, DIM_S: 32, DIM_D: 16,
