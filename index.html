@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self'; font-src 'self';">
-    <meta name="description" content="AI Arena v6.0.8 Professional — Fixed Intercept Logic + Visualization">
+    <meta name="description" content="AI Arena v6.0.8 Professional — Direct Aim + Intercept Vector">
     <meta name="theme-color" content="#0a0a15">
     <meta name="robots" content="noindex">
     <title>🎮 AI Arena v6.0.8 Professional</title>
@@ -1907,7 +1907,7 @@ class Projectile {
 }
 
 // ============================================================================
-// SECTION 8: AGENT CLASS — FIXED INTERCEPT LOGIC + VISUALIZATION
+// SECTION 8: AGENT CLASS — DIRECT AIM + INTERCEPT VECTOR
 // ============================================================================
 
 class Agent {
@@ -2053,6 +2053,7 @@ class Agent {
         this.explorationTarget = null;
         this._combatTimer = 0;
         this.predictedIntercept = null;
+        this._moveAngle = null;
     }
 
     _applyWeaponStats() {
@@ -2279,7 +2280,7 @@ class Agent {
         return bestTarget;
     }
 
-    // 🔥 ИСПРАВЛЕНИЕ: ПРАВИЛЬНАЯ ЛОГИКА ПЕРЕХВАТА
+    // 🔥 DIRECT AIM + INTERCEPT VECTOR
     decide(world) {
         this.world = world;
         this._updateMentalMap(world);
@@ -2300,13 +2301,13 @@ class Agent {
         const visibleEnemies = (world?.enemies || []).filter(e => e?.alive && e.team !== this.team);
         const allies = (world?.enemies || []).filter(e => e?.alive && e.team === this.team && e.id !== this.id);
         
-        // 🔥 1. КОММИТМЕНТ: Берём цель ИЗ mentalMap (не прыгает)
+        // 🔥 1. TARGET COMMITMENT
         let selectedTarget = null;
         if (this.mentalMap.targetPriority) {
             selectedTarget = visibleEnemies.find(e => e.id === this.mentalMap.targetPriority.id);
         }
         
-        // 🔥 2. Если цели нет — выбираем новую
+        // 🔥 2. SELECT NEW TARGET
         if (!selectedTarget && visibleEnemies.length > 0) {
             if (D[9] > 0.3) {
                 selectedTarget = visibleEnemies.sort((a,b) => 
@@ -2318,7 +2319,6 @@ class Agent {
                 )[0];
             }
             
-            // Координация
             const targetCount = new Map();
             allies.forEach(a => {
                 if (a.mentalMap?.targetPriority) {
@@ -2337,7 +2337,6 @@ class Agent {
                 }
             }
             
-            // Сохраняем в mentalMap
             if (selectedTarget) {
                 this.mentalMap.targetPriority = {
                     id: selectedTarget.id,
@@ -2347,7 +2346,6 @@ class Agent {
             }
         }
         
-        // Если цель умерла — сброс
         if (selectedTarget && !selectedTarget.alive) {
             this.mentalMap.targetPriority = null;
             selectedTarget = null;
@@ -2357,39 +2355,40 @@ class Agent {
             const dist = Utils.dist(this, selectedTarget);
             const inArc = this.isPointInWeaponArc(selectedTarget);
             
-            // 🔥 3. АВТОНАВЕДЕНИЕ: базовый поворот к ТЕКУЩЕЙ позиции цели
-            const angleToTarget = Math.atan2(selectedTarget.y - this.y, selectedTarget.x - this.x);
-            const angleError = Utils.normalizeAngle(angleToTarget - this.facingAngle);
-            const baseTurn = angleError / Math.PI;
+            // 🔥 3. INTERCEPT POINT (on ENEMY'S green line)
+            const timeAhead = dist / (arenaConfig.agentMaxVelocity * 0.8);
+            const enemyFutureX = selectedTarget.x + (selectedTarget.vx || 0) * timeAhead;
+            const enemyFutureY = selectedTarget.y + (selectedTarget.vy || 0) * timeAhead;
             
-            // 🔥 4. ПРЕДСКАЗАНИЕ: где будет ЦЕЛЬ (не агент!)
-            const interceptTime = dist / (arenaConfig.agentMaxVelocity * 0.8);
-            const predictedX = selectedTarget.x + (selectedTarget.vx || 0) * interceptTime;
-            const predictedY = selectedTarget.y + (selectedTarget.vy || 0) * interceptTime;
+            const blendFactor = 0.5;
+            const interceptX = selectedTarget.x * (1 - blendFactor) + enemyFutureX * blendFactor;
+            const interceptY = selectedTarget.y * (1 - blendFactor) + enemyFutureY * blendFactor;
             
-            // Сохраняем для отрисовки
             this.predictedIntercept = {
-                x: predictedX,
-                y: predictedY,
+                x: interceptX,
+                y: interceptY,
                 targetX: selectedTarget.x,
-                targetY: selectedTarget.y
+                targetY: selectedTarget.y,
+                futureX: enemyFutureX,
+                futureY: enemyFutureY
             };
             
-            // 🔥 5. КОРРЕКЦИЯ ДВИЖЕНИЯ: поворот к ТОЧКЕ ПЕРЕХВАТА
-            const angleToIntercept = Math.atan2(predictedY - this.y, predictedX - this.x);
-            const interceptAngleError = Utils.normalizeAngle(angleToIntercept - this.facingAngle);
+            // 🔥 4. LOOK AT ENEMY (red line)
+            const angleToTarget = Math.atan2(selectedTarget.y - this.y, selectedTarget.x - this.x);
+            const angleError = Utils.normalizeAngle(angleToTarget - this.facingAngle);
             
-            // Блендим: 70% к текущей позиции + 30% к точке перехвата
             const confidence = Math.max(0, Math.min(1, (D[8] || 0.5)));
             const turnMod = D[1] * confidence * 0.5;
             const trajectoryMod = D[9] * confidence * 0.3;
             
             behaviors.turn = Utils.clamp(
-                baseTurn * 0.7 +  // 70% к текущей позиции цели
-                (interceptAngleError / Math.PI) * 0.3 +  // 30% к точке перехвата
-                turnMod + trajectoryMod,
+                (angleError / Math.PI) + turnMod + trajectoryMod,
                 -1, 1
             );
+            
+            // 🔥 5. MOVE TO INTERCEPT POINT (yellow line)
+            const angleToIntercept = Math.atan2(interceptY - this.y, interceptX - this.x);
+            this._moveAngle = angleToIntercept;
             
             behaviors.forward = dist > 40 ? 0.9 : 0.3;
             behaviors.attack = inArc && dist < this.attackRange && this.attackCooldown <= 0 ? 1.0 : 0;
@@ -2397,6 +2396,7 @@ class Agent {
             behaviors.forward = 0.7;
             behaviors.turn = Math.sin(world?.step * 0.02 || 0) * 0.3;
             this.predictedIntercept = null;
+            this._moveAngle = null;
         }
         
         const turnForce = behaviors.turn * 0.15;
@@ -2456,8 +2456,13 @@ class Agent {
     move(decision, walls, dt, otherAgents) {
         const b = decision.behaviors;
         const moveForce = Math.max(0, b.forward) * arenaConfig.agentAcceleration * arenaConfig.agentSpeed;
-        const moveX = Math.cos(this.facingAngle) * moveForce * dt;
-        const moveY = Math.sin(this.facingAngle) * moveForce * dt;
+        
+        // 🔥 MOVE TO INTERCEPT POINT (yellow), not where facing (red)
+        const moveAngle = this._moveAngle || this.facingAngle;
+        
+        const moveX = Math.cos(moveAngle) * moveForce * dt;
+        const moveY = Math.sin(moveAngle) * moveForce * dt;
+        
         this.vx += moveX;
         this.vy += moveY;
         const turnForce = b.turn * 0.15;
@@ -2877,6 +2882,7 @@ class Agent {
         this.explorationTarget = null;
         this._combatTimer = 0;
         this.predictedIntercept = null;
+        this._moveAngle = null;
     }
 
     learnFromWinner(winner) {
@@ -2966,11 +2972,8 @@ class Agent {
                 const target = this.lastDecision.selectedTarget;
                 const pred = this.predictedIntercept;
                 
-                // 🔴 ЛИНИЯ К ЦЕЛИ (цвет команды)
-                const targetLineColor = this.team === 'blue' 
-                    ? 'rgba(0, 212, 255, 0.95)'
-                    : 'rgba(255, 85, 119, 0.95)';
-                ctx.strokeStyle = targetLineColor;
+                // 🔴 1. RED/BLUE: Agent → Current enemy position (where agent LOOKS)
+                ctx.strokeStyle = this.team === 'blue' ? '#00d4ff' : '#ff5577';
                 ctx.lineWidth = 5;
                 ctx.setLineDash([8, 4]);
                 ctx.beginPath();
@@ -2979,43 +2982,31 @@ class Agent {
                 ctx.stroke();
                 ctx.setLineDash([]);
                 
-                // 🔴 ТОЧКА ЦЕЛИ
-                ctx.fillStyle = targetLineColor;
-                ctx.beginPath();
-                ctx.arc(target.x, target.y, 12, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = '#fff';
-                ctx.font = 'bold 10px monospace';
-                ctx.textAlign = 'center';
-                ctx.fillText('TARGET', target.x, target.y - 20);
-                
-                // 🟢 ЛИНИЯ ТРАЕКТОРИИ ВРАГА (от врага к предсказанию)
+                // 🟢 2. GREEN: ENEMY'S trajectory ONLY (current → future enemy)
                 ctx.strokeStyle = 'rgba(0, 255, 157, 0.7)';
                 ctx.lineWidth = 2;
                 ctx.setLineDash([3, 3]);
                 ctx.beginPath();
-                ctx.moveTo(pred.targetX, pred.targetY);  // ← ОТ ВРАГА!
-                ctx.lineTo(pred.x, pred.y);               // ← КУДА ВРАГ БУДЕТ!
+                ctx.moveTo(target.x, target.y);  // ← From ENEMY
+                ctx.lineTo(pred.futureX, pred.futureY);  // ← To ENEMY's future
                 ctx.stroke();
                 ctx.setLineDash([]);
-                ctx.fillStyle = 'rgba(0, 255, 157, 0.7)';
+                
+                // 🟡 3. YELLOW POINT: On ENEMY'S green line (intercept point)
+                ctx.fillStyle = 'rgba(255, 255, 0, 0.9)';
                 ctx.beginPath();
-                ctx.arc(pred.x, pred.y, 6, 0, Math.PI * 2);
+                ctx.arc(pred.x, pred.y, 8, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // 🟡 ЛИНИЯ ПЕРЕХВАТА (от агента к точке перехвата)
+                // 🟡 4. YELLOW LINE: Agent's path ONLY (agent → intercept point)
                 ctx.strokeStyle = 'rgba(255, 255, 0, 0.8)';
                 ctx.lineWidth = 2;
                 ctx.setLineDash([5, 3]);
                 ctx.beginPath();
-                ctx.moveTo(this.x, this.y);        // ← ОТ АГЕНТА!
-                ctx.lineTo(pred.x, pred.y);        // ← К ТОЧКЕ ПЕРЕХВАТА!
+                ctx.moveTo(this.x, this.y);  // ← From AGENT
+                ctx.lineTo(pred.x, pred.y);  // ← To intercept point on ENEMY'S green
                 ctx.stroke();
                 ctx.setLineDash([]);
-                ctx.fillStyle = 'rgba(255, 255, 0, 0.8)';
-                ctx.beginPath();
-                ctx.arc(pred.x, pred.y, 8, 0, Math.PI * 2);
-                ctx.fill();
             }
             
             ctx.save();
@@ -3185,6 +3176,7 @@ class Agent {
         agent.explorationTarget = this.explorationTarget ? {...this.explorationTarget} : null;
         agent._combatTimer = this._combatTimer;
         agent.predictedIntercept = this.predictedIntercept ? {...this.predictedIntercept} : null;
+        agent._moveAngle = this._moveAngle;
         return agent;
     }
 
@@ -3237,7 +3229,8 @@ class Agent {
             assignedRole: this.assignedRole,
             explorationTarget: this.explorationTarget,
             _combatTimer: this._combatTimer,
-            predictedIntercept: this.predictedIntercept
+            predictedIntercept: this.predictedIntercept,
+            _moveAngle: this._moveAngle
         };
     }
 
@@ -3321,6 +3314,7 @@ class Agent {
         if (data.explorationTarget) agent.explorationTarget = {...data.explorationTarget};
         if (data._combatTimer !== undefined) agent._combatTimer = data._combatTimer;
         if (data.predictedIntercept) agent.predictedIntercept = {...data.predictedIntercept};
+        if (data._moveAngle !== undefined) agent._moveAngle = data._moveAngle;
         return agent;
     }
 }
@@ -3905,3 +3899,4 @@ window.addEventListener('beforeunload', () => { if (window.arenaGame) window.are
 </script>
 </body>
 </html>
+
