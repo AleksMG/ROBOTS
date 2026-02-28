@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self'; font-src 'self';">
-    <meta name="description" content="AI Arena v6.0.7 Professional — CORTEX-2 Collective Intelligence with Team Coordination">
+    <meta name="description" content="AI Arena v6.0.8 Professional — Fixed Intercept Logic + Visualization">
     <meta name="theme-color" content="#0a0a15">
     <meta name="robots" content="noindex">
-    <title>🎮 AI Arena v6.0.7 Professional</title>
+    <title>🎮 AI Arena v6.0.8 Professional</title>
     <style>
         :root {
             --bg: #0a0a15; --bg-gradient-start: #0a0a15; --bg-gradient-end: #1a1a2e;
@@ -192,7 +192,7 @@
     <a href="#gameCanvas" class="skip-link">Перейти к симуляции</a>
     <div class="container">
         <header class="header">
-            <h1>🎮 AI ARENA <span class="version-badge">v6.0.7 PRO</span></h1>
+            <h1>🎮 AI ARENA <span class="version-badge">v6.0.8 PRO</span></h1>
             <div class="fps-counter" id="fpsCounter">FPS: 0</div>
         </header>
         <canvas id="gameCanvas"></canvas>
@@ -349,7 +349,7 @@ window.arenaConfig = {
     agentCollisionRadius: 22, agentMaxVelocity: 15,
     viewRadius: 250,
     seed: 'ARENA_V6_PRO_' + Date.now().toFixed(0),
-    timestamp: Date.now(), version: '6.0.7-PROFESSIONAL',
+    timestamp: Date.now(), version: '6.0.8-PROFESSIONAL',
     ARCH: Object.freeze({
         INPUT_DIM: 64, INPUT_DIM_COMPACT: 25, EMBEDDING_DIM: 24, EMBEDDING_DIM_COMPACT: 16,
         HIDDEN1: 48, HIDDEN2: 36, OUTPUT_DIM: 16, MEMORY_DIM: 16, NUM_HEADS: 4,
@@ -408,15 +408,15 @@ window.arenaConfig = {
     }),
     OUTPUT: Object.freeze({
         D0_FORWARD: 'forward [0-1]',
-        D1_TURN: 'turn [-1 to 1]',
+        D1_TURN: 'turn [-1 to 1] + prediction',
         D2_ATTACK: 'attack [0-1]',
         D3_DODGE: 'dodge [0-1]',
         D4_AGGRESSION: 'aggression [0-1]',
         D5_FOCUS: 'focus [0-1]',
         D6_DEFENSE: 'defense [0-1]',
         D7_COORDINATION: 'coordination [0-1]',
-        D8_MOVE_VAR: 'move_variance [0-1]',
-        D9_TARGET_SEL: 'target_select [-1 to 1]',
+        D8_CONFIDENCE: 'prediction confidence [0-1]',
+        D9_TRAJECTORY: 'trajectory bias [-1 to 1]',
         D10_ENGAGE_RANGE: 'engage_range [0-1]',
         D11_RETREAT_HP: 'retreat_threshold [0-1]',
         D12_STAT_HP: 'upgrade_HP [0-1]',
@@ -637,7 +637,7 @@ class SeededRNG {
 }
 
 // ============================================================================
-// SECTION 4: CORTEX-2 BRAIN (FULL PROFESSIONAL ARCHITECTURE)
+// SECTION 4: CORTEX-2 BRAIN
 // ============================================================================
 
 class Cortex2Brain {
@@ -759,6 +759,10 @@ class Cortex2Brain {
         this.health = 100;
         this.stats = { maxHealth: 100 };
         this._lastKiller = null;
+        
+        this.predictedPos60 = { x: 0, y: 0 };
+        this.predictionError60 = 0;
+        this.predictedTrajectory = { angle: 0, confidence: 0 };
     }
 
     _initMatrix(rows, cols, scale) {
@@ -907,10 +911,39 @@ class Cortex2Brain {
         for (let i = 0; i < this.DIM.DIM_SENSOR; i++) {
             x_pred[i] += this.b_pred[i];
         }
+        
         for (let i = 0; i < 48; i++) {
             const error = Math.abs(x_pred[i] - x_t[i]);
             this.predictionErrors[i] = Utils.lerp(this.predictionErrors[i], error, 0.1);
         }
+        
+        const enemyVx = x_t[4] || 0;
+        const enemyVy = x_t[5] || 0;
+        
+        this.predictedPos60 = {
+            x: x_t[0] + enemyVx * 60,
+            y: x_t[1] + enemyVy * 60
+        };
+        
+        this.predictedPos120 = {
+            x: x_t[0] + enemyVx * 120,
+            y: x_t[1] + enemyVy * 120
+        };
+        
+        this.predictedPos240 = {
+            x: x_t[0] + enemyVx * 240,
+            y: x_t[1] + enemyVy * 240
+        };
+        
+        const actualX = this._lastInputs?.x_t[0] || x_t[0];
+        const actualY = this._lastInputs?.x_t[1] || x_t[1];
+        this.predictionError60 = Math.abs(this.predictedPos60.x - actualX) + 
+                                  Math.abs(this.predictedPos60.y - actualY);
+        
+        const predictedAngle = Math.atan2(this.predictedPos60.y - actualY, this.predictedPos60.x - actualX);
+        const confidence = 1 - Utils.clamp(this.predictionError60 / 100, 0, 1);
+        this.predictedTrajectory = { angle: predictedAngle, confidence: confidence };
+        
         if (arenaConfig.enableTraining) {
             const lr = this.lr * 0.1;
             for (let i = 0; i < 48; i++) {
@@ -1274,7 +1307,7 @@ class Cortex2Brain {
         }
         const M_work_input = this._buildMWorkInput(this.P_prev, this.A_prev, this.C_prev);
         const M_perm_input = this._buildMPermInput(this.C_prev, this._getMPerm(this.M_prev));
-        const M_pred_input = this._buildMPredInput(this.A_prev, this.C_prev, this._getMWork(this.M_prev), this.D_prev);
+        const M_pred_input = this._buildMPredInput(this.P_prev, this.C_prev, this._getMWork(this.M_prev), this.D_prev);
         const C_input = this._buildCInput(this.P_prev, this.A_prev, this.M_prev, this.S_prev, this.D_prev, r_t);
         const S_input = this._buildSInput(this.P_prev, this._getMPerm(this.M_prev), this.C_prev, this.D_prev);
         const D_input = this._buildDInput(this.C_prev, this.S_prev, this._getMPred(this.M_prev));
@@ -1309,7 +1342,24 @@ class Cortex2Brain {
         this.C_prev.set(this.C); this.S_prev.set(this.S); this.D_prev.set(this.D);
         this.P.set(P_new); this.A.set(A_new); this.M.set(M_new);
         this.C.set(C_new); this.S.set(S_new); this.D.set(D_new);
+        
         this._updatePrediction(M_pred_new, x_t);
+        
+        const x_pred = Utils.linearMultiply(M_pred_new, this.W_pred);
+        for (let i = 0; i < this.DIM.DIM_SENSOR; i++) {
+            x_pred[i] += this.b_pred[i];
+        }
+        
+        const predError = this._computeAvgPredError();
+        const predConfidence = 1 - Utils.clamp(predError / 0.5, 0, 1);
+        D_new[8] = Utils.lerp(D_new[8], predConfidence, 0.15);
+        
+        const predDx = x_pred[0] - x_t[0];
+        const predDy = x_pred[1] - x_t[1];
+        const predAngle = Math.atan2(predDy, predDx);
+        const desiredTrajectory = Utils.normalizeAngle(predAngle) / Math.PI;
+        D_new[9] = Utils.lerp(D_new[9], desiredTrajectory, 0.1);
+        
         this._updateEmotions(r_t, x_t, combatEvents);
         if (arenaConfig.enableReflexPath) {
             this._checkReflexPath(x_t, S_new, D_new);
@@ -1321,6 +1371,9 @@ class Cortex2Brain {
             output: Array.from(this.D),
             cortex: Array.from(this.C),
             predictionError: this._computeAvgPredError(),
+            predictionError60: this.predictionError60,
+            predictedPos60: { ...this.predictedPos60 },
+            predictedTrajectory: { ...this.predictedTrajectory },
             reflexTriggered: this.S.some(v => v > 0.9),
             emotions: { ...this.emotions },
             emotionalState: this.emotionalState.current ? { ...this.emotionalState.current } : null
@@ -1330,7 +1383,15 @@ class Cortex2Brain {
     tdLearn(inputs, outputs, reward, value, nextValue, actionLogProbs = null) {
         const currentValue = value !== undefined && value !== null ? Utils.safeNumber(value, 0) : this._estimateValue();
         const nextVal = nextValue !== undefined && nextValue !== null ? Utils.safeNumber(nextValue, 0) : this._estimateValue();
-        const tdErr = Utils.tdError(reward, currentValue, nextVal, this.gamma);
+        let tdErr = Utils.tdError(reward, currentValue, nextVal, this.gamma);
+        
+        const avgPredError = this._computeAvgPredError();
+        if (avgPredError > 0.5) {
+            tdErr *= 1.5;
+        } else if (avgPredError < 0.2) {
+            tdErr *= 0.8;
+        }
+        
         this._stats.tdErrorHistory.push(Math.abs(tdErr));
         if (this._stats.tdErrorHistory.length > 100) this._stats.tdErrorHistory.shift();
         this._updateValueHead(tdErr);
@@ -1356,7 +1417,8 @@ class Cortex2Brain {
         return {
             tdError: tdErr,
             avgTDError: this._stats.tdErrorHistory.reduce((a,b)=>a+b,0)/Math.max(1,this._stats.tdErrorHistory.length),
-            avgPredictionError: this._computeAvgPredError()
+            avgPredictionError: this._computeAvgPredError(),
+            predictionError60: this.predictionError60
         };
     }
 
@@ -1551,6 +1613,9 @@ class Cortex2Brain {
         clone.health = this.health;
         clone.stats = { ...this.stats };
         clone._lastKiller = this._lastKiller;
+        clone.predictedPos60 = { ...this.predictedPos60 };
+        clone.predictionError60 = this.predictionError60;
+        clone.predictedTrajectory = { ...this.predictedTrajectory };
         return clone;
     }
 
@@ -1592,7 +1657,10 @@ class Cortex2Brain {
             emotionConfig: Utils.deepClone(this.emotionConfig),
             emotionDecay: this.emotionDecay, emotionInfluence: this.emotionInfluence,
             step: this.step, cumulativeReward: this.cumulativeReward,
-            health: this.health, stats_copy: { ...this.stats }, _lastKiller: this._lastKiller
+            health: this.health, stats_copy: { ...this.stats }, _lastKiller: this._lastKiller,
+            predictedPos60: this.predictedPos60,
+            predictionError60: this.predictionError60,
+            predictedTrajectory: this.predictedTrajectory
         };
     }
 
@@ -1637,6 +1705,9 @@ class Cortex2Brain {
             if (data.health) brain.health = data.health;
             if (data.stats_copy) brain.stats = { ...data.stats_copy };
             if (data._lastKiller) brain._lastKiller = data._lastKiller;
+            if (data.predictedPos60) brain.predictedPos60 = data.predictedPos60;
+            if (data.predictionError60 !== undefined) brain.predictionError60 = data.predictionError60;
+            if (data.predictedTrajectory) brain.predictedTrajectory = data.predictedTrajectory;
         } catch(e) { console.warn('Cortex2Brain.fromJSON error:', e); }
         return brain;
     }
@@ -1656,7 +1727,12 @@ class Cortex2Brain {
             threat, flank, memoryConf: memoryConf.toFixed(2), reflexActive,
             cortexEnergy: cortexEnergy.toFixed(3),
             emotions: { ...this.emotions },
-            emotionalState: this.emotionalState.current ? { ...this.emotionalState.current } : null
+            emotionalState: this.emotionalState.current ? { ...this.emotionalState.current } : null,
+            prediction: {
+                pos60: this.predictedPos60,
+                error60: this.predictionError60.toFixed(2),
+                trajectory: this.predictedTrajectory
+            }
         };
     }
 
@@ -1668,7 +1744,7 @@ class Cortex2Brain {
 }
 
 // ============================================================================
-// SECTION 5-7: (Critic, Policy, Projectile - стандартные)
+// SECTION 5-7: (Critic, Policy, Projectile)
 // ============================================================================
 
 class CriticNetwork {
@@ -1831,7 +1907,7 @@ class Projectile {
 }
 
 // ============================================================================
-// SECTION 8: AGENT CLASS (PROFESSIONAL WITH TEAM COORDINATION)
+// SECTION 8: AGENT CLASS — FIXED INTERCEPT LOGIC + VISUALIZATION
 // ============================================================================
 
 class Agent {
@@ -1975,6 +2051,8 @@ class Agent {
         this.assignedTargetId = null;
         this.assignedRole = 'assault';
         this.explorationTarget = null;
+        this._combatTimer = 0;
+        this.predictedIntercept = null;
     }
 
     _applyWeaponStats() {
@@ -2054,13 +2132,11 @@ class Agent {
         return { intent: 'unknown', confidence: 0.5 };
     }
 
-    // 🔥 ПРОФЕССИОНАЛЬНОЕ ПОЛУЧЕНИЕ ВХОДОВ С КООРДИНАЦИЕЙ
     getInputs(world) {
         const inputs = new Array(64).fill(0);
         const viewRadius = arenaConfig.viewRadius || 250;
         const now = world?.step || 0;
         
-        // 🔥 1. ВРАГИ (0-19) — топ-5 × 4 параметра
         const visibleEnemies = [];
         for (const entity of world?.enemies || []) {
             if (!entity?.alive || entity.id === this.id || entity.team === this.team) continue;
@@ -2074,6 +2150,8 @@ class Agent {
                     dy: dy / viewRadius,
                     dist: dist / viewRadius,
                     hp: entity.health / entity.stats.maxHealth,
+                    vx: entity.vx / 15,
+                    vy: entity.vy / 15,
                     threat: Utils.threatScore(this, entity)
                 });
             }
@@ -2087,17 +2165,13 @@ class Agent {
             inputs[i*4+3] = e.threat;
         }
         
-        // 🔥 2. СОЮЗНИКИ (20-29) — топ-3 × 3 параметра + флаги
         const allies = (world?.enemies || [])
             .filter(e => e?.alive && e.team === this.team && e.id !== this.id)
             .map(a => ({
-                id: a.id,
                 dx: (a.x - this.x) / viewRadius,
                 dy: (a.y - this.y) / viewRadius,
                 dist: Utils.dist(this, a) / viewRadius,
-                hp: a.health / a.stats.maxHealth,
-                targetId: a.mentalMap?.targetPriority?.id,
-                role: a.assignedRole || 'assault'
+                hp: a.health / a.stats.maxHealth
             }))
             .sort((a, b) => a.dist - b.dist)
             .slice(0, 3);
@@ -2105,17 +2179,20 @@ class Agent {
         for (let i = 0; i < 3; i++) {
             const offset = 20 + i * 3;
             if (i < allies.length) {
-                const a = allies[i];
-                inputs[offset] = a.dx;
-                inputs[offset+1] = a.dy;
-                inputs[offset+2] = a.dist;
+                inputs[offset] = allies[i].dx;
+                inputs[offset+1] = allies[i].dy;
+                inputs[offset+2] = allies[i].dist;
             } else {
                 inputs[offset] = 0; inputs[offset+1] = 0; inputs[offset+2] = 1;
             }
         }
         inputs[29] = allies.length > 0 ? 1 : 0;
         
-        // 🔥 3. КООРДИНАЦИЯ КОМАНДЫ (30-38)
+        if (visibleEnemies.length > 0) {
+            inputs[30] = visibleEnemies[0].vx;
+            inputs[31] = visibleEnemies[0].vy;
+        }
+        
         const targetDistribution = new Map();
         allies.forEach(a => {
             if (a.targetId) {
@@ -2123,17 +2200,14 @@ class Agent {
             }
         });
         
-        inputs[30] = allies.filter(a => a.role === 'assault').length / 4;
-        inputs[31] = allies.filter(a => a.role === 'support').length / 4;
-        inputs[32] = allies.filter(a => a.role === 'flank').length / 4;
-        inputs[33] = targetDistribution.size > 0 ? 1 : 0;
-        inputs[34] = targetDistribution.size > 1 ? 1 : 0;
-        inputs[35] = allies.length > 0 ? allies.reduce((s,a) => s + (a.hp < 0.3 ? 1 : 0), 0) / allies.length : 0;
-        inputs[36] = allies.length > 0 ? allies.reduce((s,a) => s + a.hp, 0) / allies.length : 0.5;
-        inputs[37] = allies.length > 0 ? Math.max(...allies.map(a => a.dist)) : 1;
-        inputs[38] = allies.length > 0 ? Math.min(...allies.map(a => a.dist)) : 1;
+        inputs[32] = allies.filter(a => a.role === 'assault').length / 4;
+        inputs[33] = allies.filter(a => a.role === 'support').length / 4;
+        inputs[34] = allies.filter(a => a.role === 'flank').length / 4;
+        inputs[35] = targetDistribution.size > 0 ? 1 : 0;
+        inputs[36] = targetDistribution.size > 1 ? 1 : 0;
+        inputs[37] = allies.length > 0 ? allies.reduce((s,a) => s + (a.hp < 0.3 ? 1 : 0), 0) / allies.length : 0;
+        inputs[38] = allies.length > 0 ? allies.reduce((s,a) => s + a.hp, 0) / allies.length : 0.5;
         
-        // 🔥 4. СВОЁ СОСТОЯНИЕ (39-45)
         inputs[39] = this.health / this.stats.maxHealth;
         inputs[40] = this.vx / 15;
         inputs[41] = this.vy / 15;
@@ -2142,13 +2216,11 @@ class Agent {
         inputs[44] = this.attackCooldown / this.stats.fireRate;
         inputs[45] = this.stuckCounter / 30;
         
-        // 🔥 5. ОРУЖИЕ (46-53)
         const weaponTypes = Object.keys(WEAPONS);
         for (let i = 0; i < 8; i++) {
             inputs[46+i] = this.weaponType === weaponTypes[i] ? 1 : 0;
         }
         
-        // 🔥 6. КОМАНДНЫЙ КОНТЕКСТ (54-60)
         const teamAlive = (world?.enemies || []).filter(a => a?.alive && a.team === this.team).length;
         const enemyAlive = (world?.enemies || []).filter(a => a?.alive && a.team !== this.team).length;
         inputs[54] = teamAlive / 4;
@@ -2159,10 +2231,9 @@ class Agent {
         inputs[59] = this._getLastTeamReward(world);
         inputs[60] = this._getTacticalUrgency(world);
         
-        // 🔥 7. РЕЗЕРВ (61-63)
-        inputs[61] = Utils.hashSeed(this.seed, now, 0) * 0.1;
-        inputs[62] = Utils.hashSeed(this.seed, now, 1) * 0.1;
-        inputs[63] = Utils.hashSeed(this.seed, now, 2) * 0.1;
+        inputs[61] = Utils.hashSeed(this.seed, this.id, 0);
+        inputs[62] = Utils.hashSeed(this.seed, this.id, 1);
+        inputs[63] = Utils.hashSeed(this.seed, this.id, 2);
         
         return inputs.map(v => Utils.safeNumber(v, 0));
     }
@@ -2208,7 +2279,7 @@ class Agent {
         return bestTarget;
     }
 
-    // 🔥 ПРОФЕССИОНАЛЬНОЕ ПРИНЯТИЕ РЕШЕНИЙ С КООРДИНАЦИЕЙ
+    // 🔥 ИСПРАВЛЕНИЕ: ПРАВИЛЬНАЯ ЛОГИКА ПЕРЕХВАТА
     decide(world) {
         this.world = world;
         this._updateMentalMap(world);
@@ -2219,7 +2290,6 @@ class Agent {
         this._combatEvents = [];
         const D = cortexRes.output;
         
-        // 🔥 D[0-3] = БАЗОВЫЕ ДЕЙСТВИЯ
         const behaviors = {
             forward: Utils.clamp(D[0], 0, 1),
             turn: Utils.clamp(D[1], -1, 1),
@@ -2227,103 +2297,108 @@ class Agent {
             dodge: D[3]
         };
         
-        // 🔥 D[4-11] = ТАКТИКА И КООРДИНАЦИЯ
-        const tactics = {
-            aggression: D[4],
-            focus: D[5],
-            defense: D[6],
-            coordination: D[7],
-            moveVar: D[8],
-            targetSelect: D[9],
-            engageRange: D[10],
-            retreatHP: D[11]
-        };
-        
-        // 🔥 КООРДИНАЦИЯ: выбираем цель с учётом команды
         const visibleEnemies = (world?.enemies || []).filter(e => e?.alive && e.team !== this.team);
         const allies = (world?.enemies || []).filter(e => e?.alive && e.team === this.team && e.id !== this.id);
         
-        const targetCount = new Map();
-        allies.forEach(a => {
-            if (a.mentalMap?.targetPriority) {
-                targetCount.set(a.mentalMap.targetPriority.id, (targetCount.get(a.mentalMap.targetPriority.id) || 0) + 1);
-            }
-        });
-        
+        // 🔥 1. КОММИТМЕНТ: Берём цель ИЗ mentalMap (не прыгает)
         let selectedTarget = null;
-        if (tactics.targetSelect > 0.3) {
-            selectedTarget = visibleEnemies.sort((a,b) => Utils.threatScore(this,b) - Utils.threatScore(this,a))[0];
-        } else {
-            selectedTarget = visibleEnemies.sort((a,b) => Utils.dist(this,a) - Utils.dist(this,b))[0];
+        if (this.mentalMap.targetPriority) {
+            selectedTarget = visibleEnemies.find(e => e.id === this.mentalMap.targetPriority.id);
         }
         
-        // 🔥 КООРДИНАЦИЯ: если цель уже под фокусом — берём другую
-        if (selectedTarget && tactics.coordination > 0.5) {
+        // 🔥 2. Если цели нет — выбираем новую
+        if (!selectedTarget && visibleEnemies.length > 0) {
+            if (D[9] > 0.3) {
+                selectedTarget = visibleEnemies.sort((a,b) => 
+                    Utils.threatScore(this,b) - Utils.threatScore(this,a)
+                )[0];
+            } else {
+                selectedTarget = visibleEnemies.sort((a,b) => 
+                    Utils.dist(this,a) - Utils.dist(this,b)
+                )[0];
+            }
+            
+            // Координация
+            const targetCount = new Map();
+            allies.forEach(a => {
+                if (a.mentalMap?.targetPriority) {
+                    targetCount.set(a.mentalMap.targetPriority.id, 
+                        (targetCount.get(a.mentalMap.targetPriority.id) || 0) + 1);
+                }
+            });
+            
             const countOnTarget = targetCount.get(selectedTarget.id) || 0;
             if (countOnTarget >= 2) {
-                const freeTargets = visibleEnemies.filter(e => !targetCount.has(e.id) || targetCount.get(e.id) < 2);
+                const freeTargets = visibleEnemies.filter(e => 
+                    !targetCount.has(e.id) || targetCount.get(e.id) < 2
+                );
                 if (freeTargets.length > 0) {
                     selectedTarget = freeTargets[0];
                 }
             }
+            
+            // Сохраняем в mentalMap
+            if (selectedTarget) {
+                this.mentalMap.targetPriority = {
+                    id: selectedTarget.id,
+                    confidence: 1.0,
+                    lastSeen: world?.step || 0
+                };
+            }
         }
         
-        // 🔥 ОПРЕДЕЛЕНИЕ РОЛИ через тактику
-        let role = 'assault';
-        const woundedAlly = allies.find(a => a.health/a.stats.maxHealth < 0.4);
-        
-        if (tactics.coordination > 0.6 && woundedAlly) {
-            role = 'support';
-        } else if (tactics.coordination > 0.7 && allies.length >= 2) {
-            role = 'flank';
+        // Если цель умерла — сброс
+        if (selectedTarget && !selectedTarget.alive) {
+            this.mentalMap.targetPriority = null;
+            selectedTarget = null;
         }
         
-        this.assignedRole = role;
-        
-        // 🔥 ВЫПОЛНЕНИЕ РОЛИ
         if (selectedTarget) {
             const dist = Utils.dist(this, selectedTarget);
             const inArc = this.isPointInWeaponArc(selectedTarget);
             
-            switch(role) {
-                case 'assault':
-                    const angle = Math.atan2(selectedTarget.y - this.y, selectedTarget.x - this.x);
-                    behaviors.turn = Utils.lerp(behaviors.turn, Utils.normalizeAngle(angle - this.facingAngle) / Math.PI, 0.85);
-                    behaviors.forward = dist > 40 ? 0.9 : 0.3;
-                    behaviors.attack = inArc && dist < this.attackRange && this.attackCooldown <= 0 ? 1.0 : 0;
-                    break;
-                    
-                case 'support':
-                    if (woundedAlly) {
-                        const defendX = (woundedAlly.x + selectedTarget.x) / 2;
-                        const defendY = (woundedAlly.y + selectedTarget.y) / 2;
-                        const angle = Math.atan2(defendY - this.y, defendX - this.x);
-                        behaviors.turn = Utils.lerp(behaviors.turn, Utils.normalizeAngle(angle - this.facingAngle) / Math.PI, 0.8);
-                        behaviors.forward = 0.7;
-                        behaviors.attack = inArc ? 1.0 : 0;
-                    } else {
-                        const angle = Math.atan2(selectedTarget.y - this.y, selectedTarget.x - this.x);
-                        behaviors.turn = Utils.normalizeAngle(angle - this.facingAngle) / Math.PI;
-                        behaviors.forward = 0.8;
-                        behaviors.attack = inArc ? 1.0 : 0;
-                    }
-                    break;
-                    
-                case 'flank':
-                    const baseAngle = Math.atan2(selectedTarget.y - this.y, selectedTarget.x - this.x);
-                    const flankSide = allies.length % 2 === 0 ? 1 : -1;
-                    const flankAngle = baseAngle + (Math.PI/3 * flankSide);
-                    behaviors.turn = Utils.lerp(behaviors.turn, Utils.normalizeAngle(flankAngle - this.facingAngle) / Math.PI, 0.7);
-                    behaviors.forward = 0.8;
-                    behaviors.attack = 0;
-                    break;
-            }
+            // 🔥 3. АВТОНАВЕДЕНИЕ: базовый поворот к ТЕКУЩЕЙ позиции цели
+            const angleToTarget = Math.atan2(selectedTarget.y - this.y, selectedTarget.x - this.x);
+            const angleError = Utils.normalizeAngle(angleToTarget - this.facingAngle);
+            const baseTurn = angleError / Math.PI;
+            
+            // 🔥 4. ПРЕДСКАЗАНИЕ: где будет ЦЕЛЬ (не агент!)
+            const interceptTime = dist / (arenaConfig.agentMaxVelocity * 0.8);
+            const predictedX = selectedTarget.x + (selectedTarget.vx || 0) * interceptTime;
+            const predictedY = selectedTarget.y + (selectedTarget.vy || 0) * interceptTime;
+            
+            // Сохраняем для отрисовки
+            this.predictedIntercept = {
+                x: predictedX,
+                y: predictedY,
+                targetX: selectedTarget.x,
+                targetY: selectedTarget.y
+            };
+            
+            // 🔥 5. КОРРЕКЦИЯ ДВИЖЕНИЯ: поворот к ТОЧКЕ ПЕРЕХВАТА
+            const angleToIntercept = Math.atan2(predictedY - this.y, predictedX - this.x);
+            const interceptAngleError = Utils.normalizeAngle(angleToIntercept - this.facingAngle);
+            
+            // Блендим: 70% к текущей позиции + 30% к точке перехвата
+            const confidence = Math.max(0, Math.min(1, (D[8] || 0.5)));
+            const turnMod = D[1] * confidence * 0.5;
+            const trajectoryMod = D[9] * confidence * 0.3;
+            
+            behaviors.turn = Utils.clamp(
+                baseTurn * 0.7 +  // 70% к текущей позиции цели
+                (interceptAngleError / Math.PI) * 0.3 +  // 30% к точке перехвата
+                turnMod + trajectoryMod,
+                -1, 1
+            );
+            
+            behaviors.forward = dist > 40 ? 0.9 : 0.3;
+            behaviors.attack = inArc && dist < this.attackRange && this.attackCooldown <= 0 ? 1.0 : 0;
         } else {
             behaviors.forward = 0.7;
             behaviors.turn = Math.sin(world?.step * 0.02 || 0) * 0.3;
+            this.predictedIntercept = null;
         }
         
-        // Применяем
         const turnForce = behaviors.turn * 0.15;
         this.facingAngle += turnForce;
         this.facingAngle = Utils.normalizeAngle(this.facingAngle);
@@ -2335,16 +2410,15 @@ class Agent {
         };
         
         this.lastDecision = {
-            mode: role,
+            mode: selectedTarget ? 'combat' : 'explore',
             behaviors,
             inputs,
             output: D,
-            tactics,
             selectedTarget,
-            role
+            prediction: cortexRes.predictedTrajectory
         };
         
-        return { target: this.target, speed: this.moveSpeed, mode: role, behaviors, inputs, output: D };
+        return { target: this.target, speed: this.moveSpeed, mode: selectedTarget ? 'combat' : 'explore', behaviors, inputs, output: D };
     }
 
     _updateMentalMap(world) {
@@ -2376,7 +2450,6 @@ class Agent {
                 this.mentalMap.enemies.delete(key);
             }
         });
-        this.mentalMap.targetPriority = this._selectPriorityTarget(world);
         this.mentalMap.lastUpdate = now;
     }
 
@@ -2548,10 +2621,43 @@ class Agent {
         }
         
         if (enemiesNearby) {
-            if (this._lastHitDealt > 0) { reward += this._lastHitDealt * 1.5; this._lastHitDealt = 0; }
-            if (this._lastHitReceived > 0) { reward -= this._lastHitReceived * 0.15; this._lastHitReceived = 0; }
-            if (decision.inWeaponArc && decision.nearestEnemy) {
-                reward += 0.05;
+            if (this._lastHitDealt > 0) {
+                reward += this._lastHitDealt * 1.5;
+                const predicted = this.net.predictedPos60;
+                const distToPredicted = Utils.dist(this, predicted);
+                if (distToPredicted < 40) {
+                    reward += 0.50;
+                }
+                this._lastHitDealt = 0;
+            }
+            if (this._lastHitReceived > 0) {
+                reward -= this._lastHitReceived * 0.15;
+                this._lastHitReceived = 0;
+            }
+            
+            const predError = this.net.predictionError60 || 0;
+            if (predError < 30) {
+                reward += 0.10;
+            } else {
+                reward -= 0.05;
+            }
+            
+            const allies = (world?.enemies || []).filter(a => 
+                a?.alive && a.team === this.team && a.id !== this.id
+            );
+            const alliesOnTarget = allies.filter(a => 
+                a.mentalMap?.targetPriority?.id === decision.selectedTarget?.id
+            ).length;
+            if (alliesOnTarget >= 3) {
+                reward -= 0.10;
+            }
+            
+            const allyD9 = allies.map(a => a.lastDecision?.output?.[9] || 0);
+            if (allyD9.length > 1) {
+                const d9Variance = allyD9.reduce((s,v) => s + Math.pow(v - allyD9[0], 2), 0) / allyD9.length;
+                if (d9Variance > 0.3) {
+                    reward += 0.05;
+                }
             }
         }
         
@@ -2769,6 +2875,8 @@ class Agent {
         this.assignedTargetId = null;
         this.assignedRole = 'assault';
         this.explorationTarget = null;
+        this._combatTimer = 0;
+        this.predictedIntercept = null;
     }
 
     learnFromWinner(winner) {
@@ -2854,9 +2962,15 @@ class Agent {
             );
             ctx.stroke();
             
-            if (this.lastDecision?.selectedTarget) {
+            if (this.lastDecision?.selectedTarget && this.predictedIntercept) {
                 const target = this.lastDecision.selectedTarget;
-                ctx.strokeStyle = 'rgba(255, 0, 0, 0.95)';
+                const pred = this.predictedIntercept;
+                
+                // 🔴 ЛИНИЯ К ЦЕЛИ (цвет команды)
+                const targetLineColor = this.team === 'blue' 
+                    ? 'rgba(0, 212, 255, 0.95)'
+                    : 'rgba(255, 85, 119, 0.95)';
+                ctx.strokeStyle = targetLineColor;
                 ctx.lineWidth = 5;
                 ctx.setLineDash([8, 4]);
                 ctx.beginPath();
@@ -2865,15 +2979,43 @@ class Agent {
                 ctx.stroke();
                 ctx.setLineDash([]);
                 
-                ctx.fillStyle = 'rgba(255, 0, 0, 0.9)';
+                // 🔴 ТОЧКА ЦЕЛИ
+                ctx.fillStyle = targetLineColor;
                 ctx.beginPath();
                 ctx.arc(target.x, target.y, 12, 0, Math.PI * 2);
                 ctx.fill();
-                
                 ctx.fillStyle = '#fff';
                 ctx.font = 'bold 10px monospace';
                 ctx.textAlign = 'center';
                 ctx.fillText('TARGET', target.x, target.y - 20);
+                
+                // 🟢 ЛИНИЯ ТРАЕКТОРИИ ВРАГА (от врага к предсказанию)
+                ctx.strokeStyle = 'rgba(0, 255, 157, 0.7)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.moveTo(pred.targetX, pred.targetY);  // ← ОТ ВРАГА!
+                ctx.lineTo(pred.x, pred.y);               // ← КУДА ВРАГ БУДЕТ!
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = 'rgba(0, 255, 157, 0.7)';
+                ctx.beginPath();
+                ctx.arc(pred.x, pred.y, 6, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 🟡 ЛИНИЯ ПЕРЕХВАТА (от агента к точке перехвата)
+                ctx.strokeStyle = 'rgba(255, 255, 0, 0.8)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 3]);
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);        // ← ОТ АГЕНТА!
+                ctx.lineTo(pred.x, pred.y);        // ← К ТОЧКЕ ПЕРЕХВАТА!
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = 'rgba(255, 255, 0, 0.8)';
+                ctx.beginPath();
+                ctx.arc(pred.x, pred.y, 8, 0, Math.PI * 2);
+                ctx.fill();
             }
             
             ctx.save();
@@ -2966,6 +3108,8 @@ class Agent {
             D5_focus: D[5]?.toFixed(2) || '—',
             D6_defense: D[6]?.toFixed(2) || '—',
             D7_coordination: D[7]?.toFixed(2) || '—',
+            D8_confidence: D[8]?.toFixed(2) || '—',
+            D9_trajectory: D[9]?.toFixed(2) || '—',
             role: this.assignedRole || 'assault',
             health: `${Math.round(this.health)}/${this.stats.maxHealth}`,
             mutations: this.mutations, generation: this.generation,
@@ -2977,7 +3121,12 @@ class Agent {
             facing: (this.facingAngle * 180 / Math.PI).toFixed(0) + '°',
             visitedCells: this.permanent.memory.visited.size,
             mentalMapEnemies: this.mentalMap.enemies.size,
-            priorityTarget: this.mentalMap.targetPriority ? `${this.mentalMap.targetPriority.id?.substring(0,8)}...` : 'none'
+            priorityTarget: this.mentalMap.targetPriority ? `${this.mentalMap.targetPriority.id?.substring(0,8)}...` : 'none',
+            prediction: this.lastDecision?.prediction ? 
+                `angle:${(this.lastDecision.prediction.angle*180/Math.PI).toFixed(0)}°,conf:${this.lastDecision.prediction.confidence.toFixed(2)}` : '—',
+            predError60: this.net.predictionError60?.toFixed(1) || '—',
+            intercept: this.predictedIntercept ? 
+                `x:${this.predictedIntercept.x.toFixed(0)},y:${this.predictedIntercept.y.toFixed(0)}` : '—'
         };
     }
 
@@ -3034,6 +3183,8 @@ class Agent {
         agent.assignedTargetId = this.assignedTargetId;
         agent.assignedRole = this.assignedRole;
         agent.explorationTarget = this.explorationTarget ? {...this.explorationTarget} : null;
+        agent._combatTimer = this._combatTimer;
+        agent.predictedIntercept = this.predictedIntercept ? {...this.predictedIntercept} : null;
         return agent;
     }
 
@@ -3084,7 +3235,9 @@ class Agent {
             },
             assignedTargetId: this.assignedTargetId,
             assignedRole: this.assignedRole,
-            explorationTarget: this.explorationTarget
+            explorationTarget: this.explorationTarget,
+            _combatTimer: this._combatTimer,
+            predictedIntercept: this.predictedIntercept
         };
     }
 
@@ -3166,12 +3319,14 @@ class Agent {
         if (data.assignedTargetId !== undefined) agent.assignedTargetId = data.assignedTargetId;
         if (data.assignedRole) agent.assignedRole = data.assignedRole;
         if (data.explorationTarget) agent.explorationTarget = {...data.explorationTarget};
+        if (data._combatTimer !== undefined) agent._combatTimer = data._combatTimer;
+        if (data.predictedIntercept) agent.predictedIntercept = {...data.predictedIntercept};
         return agent;
     }
 }
 
 // ============================================================================
-// SECTION 9: WORLD CLASS (PHYSICS ONLY)
+// SECTION 9: WORLD CLASS
 // ============================================================================
 
 class World {
@@ -3502,7 +3657,7 @@ class GameEngine {
                 const value = parseFloat(e.target.value);
                 if (!isFinite(value)) return;
                 arenaConfig[configKey] = value;
-                display.textContent = value.toFixed ? value.toFixed(0) : value;
+                display.textContent = value.toFixed(3);
                 if (typeof callback === 'function') {
                     try { callback.call(this, value); } catch (err) { console.error(err); }
                 }
@@ -3569,7 +3724,7 @@ class GameEngine {
         this.world.spawnAgents(count, blueWeapon, redWeapon);
         this.updateAgentList();
         this.updateStats();
-        Logger.log('🚀 AI Arena v6.0.7 Professional initialized', 'success');
+        Logger.log('🚀 AI Arena v6.0.8 Professional initialized', 'success');
     }
 
     toggle() {
@@ -3669,7 +3824,7 @@ class GameEngine {
     }
 
     save() {
-        const data = { version: '6.0.7-PROFESSIONAL', timestamp: Date.now(), config: { agentCount: document.getElementById('agentCount').value, learningRate: arenaConfig.learningRate, agentSpeed: arenaConfig.agentSpeed, viewRadius: arenaConfig.viewRadius }, world: { episode: this.world.episode, step: this.world.step, totalFights: this.world.totalFights, walls: this.world.walls }, agents: this.world.enemies.map(a => a.toJSON()) };
+        const data = { version: '6.0.8-PROFESSIONAL', timestamp: Date.now(), config: { agentCount: document.getElementById('agentCount').value, learningRate: arenaConfig.learningRate, agentSpeed: arenaConfig.agentSpeed, viewRadius: arenaConfig.viewRadius }, world: { episode: this.world.episode, step: this.world.step, totalFights: this.world.totalFights, walls: this.world.walls }, agents: this.world.enemies.map(a => a.toJSON()) };
         localStorage.setItem('aiArenaV6Pro', JSON.stringify(data));
         Logger.log('💾 Saved', 'success');
     }
@@ -3682,9 +3837,9 @@ class GameEngine {
         arenaConfig.learningRate = data.config?.learningRate || 0.015;
         arenaConfig.agentSpeed = data.config?.agentSpeed || 10;
         arenaConfig.viewRadius = data.config?.viewRadius || 250;
-        document.getElementById('learningRateValue').textContent = arenaConfig.learningRate;
-        document.getElementById('agentSpeedValue').textContent = arenaConfig.agentSpeed;
-        document.getElementById('viewRadiusValue').textContent = arenaConfig.viewRadius;
+        document.getElementById('learningRateValue').textContent = arenaConfig.learningRate.toFixed(3);
+        document.getElementById('agentSpeedValue').textContent = arenaConfig.agentSpeed.toFixed(0);
+        document.getElementById('viewRadiusValue').textContent = arenaConfig.viewRadius.toFixed(0);
         this.world.episode = data.world?.episode || 0;
         this.world.step = data.world?.step || 0;
         this.world.totalFights = data.world?.totalFights || 0;
@@ -3696,7 +3851,7 @@ class GameEngine {
     }
 
     exportWeights() {
-        const data = { version: '6.0.7-PROFESSIONAL', timestamp: Date.now(), agents: this.world.enemies.map(a => a.toJSON()) };
+        const data = { version: '6.0.8-PROFESSIONAL', timestamp: Date.now(), agents: this.world.enemies.map(a => a.toJSON()) };
         const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = `arena-v6-pro-${Date.now()}.json`; a.click();
@@ -3710,7 +3865,7 @@ class GameEngine {
         reader.onload = (ev) => {
             try {
                 const data = JSON.parse(ev.target.result);
-                if (data.version !== '6.0.7-PROFESSIONAL') throw new Error('Wrong version');
+                if (data.version !== '6.0.8-PROFESSIONAL') throw new Error('Wrong version');
                 this.world.enemies = data.agents.map((a, i) => Agent.fromJSON(a, i < data.agents.length/2 ? '#00d4ff' : '#ff5577'));
                 this.updateAgentList();
                 Logger.log('📥 Imported', 'success');
