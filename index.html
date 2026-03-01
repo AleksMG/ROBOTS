@@ -345,8 +345,8 @@ window.arenaConfig = {
     enableTactical: true, enableReflexPath: true,
     learningRate: 0.015, lambda: 0.95, gamma: 0.99, entropyCoeff: 0.01,
     mutationRate: 0.10, skillGrowthRate: 0.04, hebbianRate: 0.002,
-    agentSpeed: 10, agentAcceleration: 0.3, agentFriction: 0.95,
-    agentCollisionRadius: 22, agentMaxVelocity: 10,
+    agentSpeed: 10, agentAcceleration: 0.3, agentFriction: 0.92,
+    agentCollisionRadius: 22, agentMaxVelocity: 15,
     viewRadius: 250,
     seed: 'ARENA_V6_PRO_' + Date.now().toFixed(0),
     timestamp: Date.now(), version: '6.0.8-PROFESSIONAL',
@@ -358,14 +358,14 @@ window.arenaConfig = {
     }),
     PHYSICS: Object.freeze({
         AGENT_COLLISION_RADIUS: 22, AGENT_REPULSION_STRENGTH: 2.5,
-        MAX_VELOCITY: 25, VELOCITY_DAMPING: 0.92,
-        KNOCKBACK_MASS: 1.0, FRICTION_GROUND: 0.99,
+        MAX_VELOCITY: 25, VELOCITY_DAMPING: 0.88,
+        KNOCKBACK_MASS: 1.0, FRICTION_GROUND: 0.97,
         COLLISION_ELASTICITY: 0.5
     }),
     EVOLUTION: Object.freeze({
         DEATH_PENALTY: 0, FLEE_PENALTY: -0.5, WIN_BONUS: 200,
         LEARN_FROM_WINNER_RATE: 0.50, FORCED_COMBAT_AFTER_DEATH: 30,
-        MUTATION_ON_DEATH: 0.1, COMBAT_SKILL_GROWTH: 0.05
+        MUTATION_ON_DEATH: 0.1, COMBAT_SKILL_GROWTH: 0.01
     }),
     TACTICAL: Object.freeze({
         FLANK_BONUS: 0.05, FRONT_PENALTY: 0.00, MIN_FLANK_COMMIT: 0.4, CIRCLE_STRENGTH: 0.25,
@@ -4302,4 +4302,4 @@ function initArena() { try { window.arenaGame = new GameEngine(); console.log('â
 window.addEventListener('beforeunload', () => { if (window.arenaGame) window.arenaGame = null; });
 </script>
 </body>
-</html>
+    </html>
