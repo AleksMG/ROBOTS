@@ -345,8 +345,8 @@ window.arenaConfig = {
     enableTactical: true, enableReflexPath: true,
     learningRate: 0.015, lambda: 0.95, gamma: 0.99, entropyCoeff: 0.01,
     mutationRate: 0.10, skillGrowthRate: 0.04, hebbianRate: 0.002,
-    agentSpeed: 10, agentAcceleration: 0.3, agentFriction: 0.92,
-    agentCollisionRadius: 22, agentMaxVelocity: 15,
+    agentSpeed: 10, agentAcceleration: 0.3, agentFriction: 0.95,
+    agentCollisionRadius: 22, agentMaxVelocity: 10,
     viewRadius: 250,
     seed: 'ARENA_V6_PRO_' + Date.now().toFixed(0),
     timestamp: Date.now(), version: '6.0.8-PROFESSIONAL',
@@ -358,8 +358,8 @@ window.arenaConfig = {
     }),
     PHYSICS: Object.freeze({
         AGENT_COLLISION_RADIUS: 22, AGENT_REPULSION_STRENGTH: 2.5,
-        MAX_VELOCITY: 25, VELOCITY_DAMPING: 0.88,
-        KNOCKBACK_MASS: 1.0, FRICTION_GROUND: 0.92,
+        MAX_VELOCITY: 25, VELOCITY_DAMPING: 0.92,
+        KNOCKBACK_MASS: 1.0, FRICTION_GROUND: 0.99,
         COLLISION_ELASTICITY: 0.5
     }),
     EVOLUTION: Object.freeze({
